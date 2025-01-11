@@ -9,6 +9,12 @@ export function cli() {
         short: 'X',
         default: "GET"
       },
+      headers: {
+        type: 'string',
+        short: 'H',
+        multiple: true
+      },
+      debug: { type: 'boolean', default: false }
     },
     allowPositionals: true
   });

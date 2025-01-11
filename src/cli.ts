@@ -14,6 +14,10 @@ export function cli() {
         short: 'H',
         multiple: true
       },
+      include: {
+        type: 'boolean',
+        short: 'I',
+      },
       debug: { type: 'boolean', default: false }
     },
     allowPositionals: true

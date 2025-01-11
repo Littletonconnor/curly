@@ -1,6 +1,6 @@
-import { styleText } from "node:util"
-import { cli } from "./cli"
-import { CONTENT_TYPES } from "./constants"
+import { styleText } from 'node:util'
+import { cli } from './cli'
+import { CONTENT_TYPES } from './constants'
 
 type FetchOptions = ReturnType<typeof cli>['values']
 
@@ -34,9 +34,9 @@ export async function resolveData(response: Response) {
   const contentType = response.headers['content-type'] ?? ''
 
   if (CONTENT_TYPES.json.includes(contentType)) {
-    return await response.json();
+    return await response.json()
   } else if (CONTENT_TYPES.arrayBuffer.includes(contentType)) {
-    return await response.arrayBuffer();
+    return await response.arrayBuffer()
   } else if (CONTENT_TYPES.formData.includes(contentType)) {
     return await response.formData()
   } else if (CONTENT_TYPES.text.includes(contentType)) {
@@ -50,10 +50,10 @@ export async function resolveData(response: Response) {
 // Without having to specify content-type headers.
 async function inferContentType(response: Response) {
   try {
-    // heuristic we're using here is to always treat curly requests as json first. 
-    return await response.clone().json();
+    // heuristic we're using here is to always treat curly requests as json first.
+    return await response.clone().json()
   } catch (_: unknown) {
-    return response.text();
+    return response.text()
   }
 }
 
@@ -62,7 +62,6 @@ export function buildFetchOptions(options: FetchOptions) {
     method: buildMethod(options.method),
     headers: buildHeaders(options.headers),
   }
-
 }
 
 function buildHeaders(headers: string[] | undefined) {
@@ -92,17 +91,23 @@ export function buildPrintType(options: FetchOptions): 'debug' | 'headers' | 'de
   }
 }
 
-export function stout<T>(type: 'debug' | 'headers' | 'default' = 'default', url: string, options: RequestInit, status: number, data: T) {
+export function stout<T>(
+  type: 'debug' | 'headers' | 'default' = 'default',
+  url: string,
+  options: RequestInit,
+  status: number,
+  data: T,
+) {
   switch (type) {
     case 'debug':
       printDebug(url, options, status)
-      break;
+      break
     case 'headers':
       printHeaders(options, status)
-      break;
+      break
     default:
       console.log(data)
-      break;
+      break
   }
 }
 
@@ -110,25 +115,25 @@ export function printHeaders(options: RequestInit, status: number) {
   if (!options.headers) {
     console.log('[CURLY] NO HEADERS FOUND')
     return
-  };
+  }
 
-  const headersInstance = new Headers(options.headers) // Type shenanigans?? 
-  const headersObj = Object.fromEntries(headersInstance.entries());
+  const headersInstance = new Headers(options.headers) // Type shenanigans??
+  const headersObj = Object.fromEntries(headersInstance.entries())
   console.log('---- [CURLY] HEADERS ----------')
-  console.log(`status: ${status}`);
+  console.log(`status: ${status}`)
   for (const [key, value] of Object.entries(headersObj)) {
-    console.log(`${key}: ${value}`);
+    console.log(`${key}: ${value}`)
   }
 }
 
 export function printDebug(url: string, options: RequestInit, status: number) {
-  const { method, body } = options;
+  const { method, body } = options
 
-  console.log(`---- [CURLY] DEBUG MODE ---------`);
-  console.log(`URL      : ${url}`);
-  console.log(`Method   : ${method ?? 'GET'}`);
-  console.log(`status   : ${status}`);
-  console.log(`Body     : ${body || 'None'}`);
+  console.log(`---- [CURLY] DEBUG MODE ---------`)
+  console.log(`URL      : ${url}`)
+  console.log(`Method   : ${method ?? 'GET'}`)
+  console.log(`status   : ${status}`)
+  console.log(`Body     : ${body || 'None'}`)
 }
 
 export async function asyncCompute<T>(fn: () => Promise<T>) {

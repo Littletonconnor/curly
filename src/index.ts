@@ -1,17 +1,22 @@
-import { styleText } from "node:util"
-import { cli } from './cli';
-import { curl, printHelpMessage, stout, resolveData, asyncCompute, buildPrintType } from './utils';
+import { styleText } from 'node:util'
+import { cli } from './cli'
+import { curl, printHelpMessage, stout, resolveData, asyncCompute, buildPrintType } from './utils'
 
 async function main() {
   const { values, positionals } = cli()
 
   if (values.help) {
     printHelpMessage()
-    process.exit(0);
-  };
+    process.exit(0)
+  }
 
   if (positionals.length !== 1) {
-    console.error(styleText('red', '[curly] You must provide only one positional argument (e.g., curly [arguments] google.com)'))
+    console.error(
+      styleText(
+        'red',
+        '[curly] You must provide only one positional argument (e.g., curly [arguments] google.com)',
+      ),
+    )
     process.exit(1)
   }
 

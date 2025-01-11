@@ -1,4 +1,4 @@
-import { parseArgs } from 'node:util';
+import { parseArgs } from 'node:util'
 
 export function cli() {
   return parseArgs({
@@ -7,15 +7,19 @@ export function cli() {
       method: {
         type: 'string',
         short: 'X',
-        default: "GET"
+        default: 'GET',
       },
       headers: {
         type: 'string',
         short: 'H',
-        multiple: true
+        multiple: true,
       },
-      debug: { type: 'boolean', default: false }
+      include: {
+        type: 'boolean',
+        short: 'I',
+      },
+      debug: { type: 'boolean', default: false },
     },
-    allowPositionals: true
-  });
+    allowPositionals: true,
+  })
 }

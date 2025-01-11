@@ -1,0 +1,35 @@
+{
+  "name": "curly",
+  "version": "0.0.1",
+  "author": "Connor Littleton",
+  "description": "A CLI tool for making curl easier to work with.",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "hopp": "bin/curly.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsup --config ./tscup.config.ts",
+    "dev": "tsup --watch",
+    "prettier:write": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "test": "npm run build && vitest run",
+    "types": "tsc --noEmit"
+  },
+  "keywords": [
+    "cli",
+    "curly"
+  ],
+  "private": false,
+  "devDependencies": {
+    "prettier": "^3.4.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  },
+  "dependencies": {
+    "@types/node": "^22.10.5"
+  }
+}

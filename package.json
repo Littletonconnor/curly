@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsup --config ./tscup.config.ts",
-    "dev": "tsup --watch",
+    "dev": "NODE_NO_WARNINGS=1 node --experimental-strip-types src/index.ts",
     "prettier:write": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "test": "npm run build && vitest run",
     "types": "tsc --noEmit"

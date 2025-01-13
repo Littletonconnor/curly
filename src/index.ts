@@ -1,6 +1,6 @@
 import { styleText } from 'node:util'
-import { cli } from './cli'
-import { curl, printHelpMessage, stout, resolveData, asyncCompute, buildPrintType } from './utils'
+import { cli } from './cli.ts'
+import { curl, printHelpMessage, stout, resolveData, asyncCompute } from './utils.ts'
 
 async function main() {
   const { values, positionals } = cli()
@@ -29,7 +29,7 @@ async function main() {
     }
   })
 
-  stout(buildPrintType(values), url, response, response.status, data)
+  stout(url, values, response, data)
 }
 
 try {

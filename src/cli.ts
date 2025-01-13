@@ -18,6 +18,8 @@ export function cli() {
         type: 'boolean',
         short: 'I',
       },
+      data: { type: 'string', short: 'd' },
+      'data-raw': { type: 'string' },
       debug: { type: 'boolean', default: false },
     },
     allowPositionals: true,

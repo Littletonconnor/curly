@@ -1,6 +1,6 @@
 import { styleText } from 'node:util'
-import { cli } from './cli'
-import { CONTENT_TYPES } from './constants'
+import { cli } from './cli.ts'
+import { CONTENT_TYPES } from './constants.ts'
 
 type FetchOptions = ReturnType<typeof cli>['values']
 
@@ -61,7 +61,13 @@ export function buildFetchOptions(options: FetchOptions) {
   return {
     method: buildMethod(options.method),
     headers: buildHeaders(options.headers),
+    body: buildBody(options.data, options['data-raw']),
   }
+}
+
+function buildMethod(method: string) {
+  console.log('METHOD', method)
+  return method ?? 'GET'
 }
 
 function buildHeaders(headers: string[] | undefined) {
@@ -77,8 +83,31 @@ function buildHeaders(headers: string[] | undefined) {
   }, {})
 }
 
-function buildMethod(method: string) {
-  return method
+function buildBody(
+  data: ReturnType<typeof cli>['values']['data'],
+  dataRaw: ReturnType<typeof cli>['values']['data-raw'],
+) {
+  if (!data && !dataRaw) return undefined
+
+  // Example of data: name=John Doe,age=30
+  // Example of raw-data: name=John Doe,age=30
+  if (dataRaw) {
+    if (isValidJson(dataRaw)) {
+      console.log('RAW DATA', dataRaw)
+      return dataRaw
+    } else {
+      console.error(
+        styleText(
+          'red',
+          `[curly]: data-raw must be valid json (e.g., --data-raw '{"name": "Connor"}').`,
+        ),
+      )
+    }
+  } else if (data) {
+    console.log('DATA', data)
+  }
+
+  return undefined
 }
 
 export function buildPrintType(options: FetchOptions): 'debug' | 'headers' | 'default' {
@@ -91,19 +120,25 @@ export function buildPrintType(options: FetchOptions): 'debug' | 'headers' | 'de
   }
 }
 
-export function stout<T>(
-  type: 'debug' | 'headers' | 'default' = 'default',
-  url: string,
-  options: RequestInit,
-  status: number,
-  data: T,
-) {
+function isValidJson(str: unknown) {
+  if (typeof str !== 'string') return false
+
+  try {
+    JSON.parse(str)
+    return true
+  } catch (_: unknown) {
+    return false
+  }
+}
+
+export function stout<T>(url: string, requestOptions: FetchOptions, response: Response, data: T) {
+  const type = buildPrintType(requestOptions)
   switch (type) {
     case 'debug':
-      printDebug(url, options, status)
+      printDebug(url, requestOptions, response.status)
       break
     case 'headers':
-      printHeaders(options, status)
+      printHeaders(requestOptions, response.status)
       break
     default:
       console.log(data)
@@ -111,13 +146,13 @@ export function stout<T>(
   }
 }
 
-export function printHeaders(options: RequestInit, status: number) {
+export function printHeaders(options: FetchOptions, status: number) {
   if (!options.headers) {
     console.log('[CURLY] NO HEADERS FOUND')
     return
   }
 
-  const headersInstance = new Headers(options.headers) // Type shenanigans??
+  const headersInstance = new Headers(options.headers as unknown as HeadersInit) // TODO: Fix types
   const headersObj = Object.fromEntries(headersInstance.entries())
   console.log('---- [CURLY] HEADERS ----------')
   console.log(`status: ${status}`)
@@ -126,14 +161,12 @@ export function printHeaders(options: RequestInit, status: number) {
   }
 }
 
-export function printDebug(url: string, options: RequestInit, status: number) {
-  const { method, body } = options
-
+export function printDebug(url: string, options: FetchOptions, status: number) {
   console.log(`---- [CURLY] DEBUG MODE ---------`)
   console.log(`URL      : ${url}`)
-  console.log(`Method   : ${method ?? 'GET'}`)
+  console.log(`Method   : ${options.method ?? 'GET'}`)
   console.log(`status   : ${status}`)
-  console.log(`Body     : ${body || 'None'}`)
+  console.log(`Body     : ${buildBody(options.data, options['data-raw']) ?? 'None'}`)
 }
 
 export async function asyncCompute<T>(fn: () => Promise<T>) {

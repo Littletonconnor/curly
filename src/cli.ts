@@ -18,7 +18,7 @@ export function cli() {
         type: 'boolean',
         short: 'I',
       },
-      data: { type: 'string', short: 'd' },
+      data: { type: 'string', short: 'd', multiple: true },
       'data-raw': { type: 'string' },
       debug: { type: 'boolean', default: false },
     },

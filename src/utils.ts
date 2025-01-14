@@ -66,7 +66,6 @@ export function buildFetchOptions(options: FetchOptions) {
 }
 
 function buildMethod(method: string) {
-  console.log('METHOD', method)
   return method ?? 'GET'
 }
 
@@ -89,11 +88,9 @@ function buildBody(
 ) {
   if (!data && !dataRaw) return undefined
 
-  // Example of data: name=John Doe,age=30
-  // Example of raw-data: name=John Doe,age=30
+  // Example of raw-data: '{"name": "John Doe", "age": "30"}'
   if (dataRaw) {
     if (isValidJson(dataRaw)) {
-      console.log('RAW DATA', dataRaw)
       return dataRaw
     } else {
       console.error(
@@ -103,8 +100,22 @@ function buildBody(
         ),
       )
     }
+    // Example of data: name=John Doe,age=30
   } else if (data) {
-    console.log('DATA', data)
+    const formattedData = data.reduce((obj, d) => {
+      if (!d.includes('=')) {
+        console.error(
+          styleText('red', '[curly]: data must be formatted correctly (e.g., key1=value1).'),
+        )
+        process.exit(1)
+      }
+
+      const [key, value] = d.split('=')
+      obj[key] = value
+      return obj
+    }, {})
+
+    return JSON.stringify(formattedData)
   }
 
   return undefined

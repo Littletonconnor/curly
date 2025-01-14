@@ -1,6 +1,5 @@
-import { styleText } from 'node:util'
 import { cli } from './cli.ts'
-import { curl, printHelpMessage, stout, resolveData, asyncCompute } from './utils.ts'
+import { curl, printHelpMessage, stout, resolveData, asyncCompute, logger } from './utils.ts'
 
 async function main() {
   const { values, positionals } = cli()
@@ -11,13 +10,9 @@ async function main() {
   }
 
   if (positionals.length !== 1) {
-    console.error(
-      styleText(
-        'red',
-        '[curly] You must provide only one positional argument (e.g., curly [arguments] google.com)',
-      ),
+    logger().error(
+      'You must provide only one positional argument (e.g., curly [arguments] google.com)',
     )
-    process.exit(1)
   }
 
   const url = positionals[0]

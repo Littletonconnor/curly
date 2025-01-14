@@ -1,4 +1,4 @@
-import { styleText } from 'node:util'
+import { inspect, styleText } from 'node:util'
 import { cli } from './cli.ts'
 import { CONTENT_TYPES } from './constants.ts'
 
@@ -74,8 +74,7 @@ function buildHeaders(headers: string[] | undefined) {
 
   return headers.reduce((obj, h) => {
     if (!h.includes(':')) {
-      console.error(styleText('red', '[curly]: Headers are improperly formatted.'))
-      process.exit(1)
+      logger().error('Headers are improperly formatted.')
     }
     const [left, right] = h.split(':')
     return { ...obj, [left.trim()]: right.trim() }
@@ -93,21 +92,13 @@ function buildBody(
     if (isValidJson(dataRaw)) {
       return dataRaw
     } else {
-      console.error(
-        styleText(
-          'red',
-          `[curly]: data-raw must be valid json (e.g., --data-raw '{"name": "Connor"}').`,
-        ),
-      )
+      logger().error(`data-raw must be valid json (e.g., --data-raw '{"name": "Connor"}').`)
     }
     // Example of data: name=John Doe,age=30
   } else if (data) {
     const formattedData = data.reduce((obj, d) => {
       if (!d.includes('=')) {
-        console.error(
-          styleText('red', '[curly]: data must be formatted correctly (e.g., key1=value1).'),
-        )
-        process.exit(1)
+        logger().error('data must be formatted correctly (e.g., key1=value1).')
       }
 
       const [key, value] = d.split('=')
@@ -152,7 +143,7 @@ export function stout<T>(url: string, requestOptions: FetchOptions, response: Re
       printHeaders(requestOptions, response.status)
       break
     default:
-      console.log(data)
+      console.log(inspect(data, { depth: null, maxArrayLength: null, colors: true }))
       break
   }
 }
@@ -182,4 +173,22 @@ export function printDebug(url: string, options: FetchOptions, status: number) {
 
 export async function asyncCompute<T>(fn: () => Promise<T>) {
   return await fn()
+}
+
+export function logger() {
+  return {
+    info(...args: string[]) {
+      console.log(styleText('gray', `[curly(info)]: ${args.join(' ')}`))
+    },
+    success(...args: string[]) {
+      console.log(styleText('green', `[curly(success)]: ${args.join(' ')}`))
+    },
+    warn(...args: string[]) {
+      console.log(styleText('dim', `[curly(warn)]: ${args.join(' ')}`))
+    },
+    error(...args: string[]) {
+      console.log(styleText('red', `[curly(error)]: ${args.join(' ')}`))
+      process.exit(1)
+    },
+  }
 }

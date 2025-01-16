@@ -16,6 +16,10 @@ export function cli() {
       },
       include: {
         type: 'boolean',
+        short: 'i',
+      },
+      head: {
+        type: 'boolean',
         short: 'I',
       },
       data: { type: 'string', short: 'd', multiple: true },

@@ -6,7 +6,7 @@
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "hopp": "bin/curly.js"
+    "curly": "bin/curly.js"
   },
   "engines": {
     "node": ">=20"

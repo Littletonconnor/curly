@@ -1,12 +1,12 @@
 {
-  "name": "curly",
+  "name": "@cwl/curly",
   "version": "0.0.1",
   "author": "Connor Littleton",
   "description": "A CLI tool for making curl easier to work with.",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
-    "hopp": "bin/curly.js"
+    "curly": "bin/curly.js"
   },
   "engines": {
     "node": ">=20"

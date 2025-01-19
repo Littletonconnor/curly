@@ -1,3 +1,73 @@
 # Curly
 
-A simpler curl alternative
+![Curly Banner](./banner.svg)
+
+A command-line tool for making `curl` requests simpler and more intuitive. Think of `curly` as a light wrapper around `fetch` in Node.js - plus some handy CLI niceties.
+
+## Features
+* **Simple JSON Posting**: Automatically sets `Content-Type`: `application/json` if you're posting data. 
+* **Automatic Content-Type Parsing**: Tries to parse JSON responses by default. This makes it easier to make requests to JSON APIs or HTML documents without having to specify `Content-Type` headers.
+* **Helper Flags** (like `--help`, `--debug`, `--include`) for easier debugging and data introspection.
+* **Familiar options**: Mimics some curl style flags (`-X`, `-H`, `-d`, `-I`).
+
+## Installation
+
+There are two main ways to install curly: globally via npm (for everyday usage) or by "linking" locally for development.
+
+### Global Installation
+* Ensure you have Node >= 20 installed.
+* Run `npm install -g @cwl/curly` 
+* Verify that curly is installed `curly --help`
+
+### Linking
+If you're developing `curly` and want to test your changes without publishing:
+* Clone or download this repository.
+* Install dependencies `npm install`
+* Build the CLI `npm run build`
+* Create a symlink in your global `npm` bin folder: `npm link`
+* Confirm the CLI is now accessible: `which curly`
+
+## Usage
+```sh
+Usage: curly [OPTIONS] <url>
+```
+
+### Examples:
+
+Simple GET request
+
+```sh
+curly https://jsonplaceholder.typicode.com/posts/1
+```
+* By default curly will use GET.
+
+HEAD request
+
+```sh
+curly -I https://jsonplaceholder.typicode.com/posts/1
+
+# OR
+
+curly --head https://jsonplaceholder.typicode.com/posts/1
+```
+
+Include only headers in output
+
+```sh
+curly -i https://jsonplaceholder.typicode.com/posts/1
+```
+
+POST raw JSON data
+```sh
+curly -X POST --data-raw '{"title": "foo", "body": "bar"}' https://jsonplaceholder.typicode.com/posts
+```
+
+POST key/value pairs as JSON (an easier alternative to --data-raw)
+```sh
+curly -X POST -d title=foo -d body=bar https://jsonplaceholder.typicode.com/posts
+```
+
+Debug mode:
+```sh
+curly --debug https://jsonplaceholder.typicode.com/posts/1
+```

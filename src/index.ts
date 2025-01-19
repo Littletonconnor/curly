@@ -22,7 +22,9 @@ export async function main() {
     const response = await curl(url, values)
 
     const data = await asyncCompute(async () => {
-      return await resolveData(response)
+      if (!values.head) {
+        return await resolveData(response)
+      }
     })
 
     stout(url, values, response, data)

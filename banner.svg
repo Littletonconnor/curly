@@ -1,0 +1,56 @@
+<!-- banner.svg -->
+<svg
+  width="500"
+  height="250"
+  viewBox="0 0 500 250"
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <title>Curly CLI</title>
+  <!-- Terminal background -->
+  <rect
+    x="0"
+    y="0"
+    width="500"
+    height="250"
+    fill="#2d2d2d"
+    rx="12"
+    ry="12"
+  />
+  <!-- Top bar -->
+  <rect
+    x="0"
+    y="0"
+    width="500"
+    height="40"
+    fill="#3a3a3a"
+    rx="12"
+    ry="12"
+  />
+  <!-- "Traffic lights" circles (like macOS terminal) -->
+  <circle cx="20" cy="20" r="8" fill="#ff5f56"/>
+  <circle cx="45" cy="20" r="8" fill="#ffbd2e"/>
+  <circle cx="70" cy="20" r="8" fill="#27c93f"/>
+  
+  <!-- Terminal prompt text -->
+  <text
+    x="30"
+    y="80"
+    fill="#00ff00"
+    font-family="monospace"
+    font-size="18"
+  >
+    connor@macbook:~$ curly --help
+  </text>
+  
+  <!-- Output text -->
+  <text
+    x="30"
+    y="110"
+    fill="#ffffff"
+    font-family="monospace"
+    font-size="16"
+  >
+    A simpler approach to cURL
+  </text>
+</svg>

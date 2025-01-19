@@ -124,11 +124,13 @@ function buildBody(options: FetchOptions) {
   return undefined
 }
 
-export function buildPrintType(options: FetchOptions): 'debug' | 'include' | 'default' {
+export function buildPrintType(options: FetchOptions): 'debug' | 'include' | 'head' | 'default' {
   if (options.debug) {
     return 'debug'
   } else if (options.include) {
     return 'include'
+  } else if (options.head) {
+    return 'head'
   } else {
     return 'default'
   }
@@ -150,6 +152,9 @@ export function stout<T>(url: string, requestOptions: FetchOptions, response: Re
   switch (type) {
     case 'debug':
       printDebug(url, requestOptions, response.status)
+      break
+    case 'head':
+      printHeaders(response.headers, response.status)
       break
     case 'include':
       printHeaders(response.headers, response.status)

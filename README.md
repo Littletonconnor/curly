@@ -73,7 +73,7 @@ curly https://jsonplaceholder.typicode.com/posts?userId=1
 
 # OR 
 
-curly -q userId=1 https://jsonplaceholder.typicode.com/posts?
+curly -q userId=1 https://jsonplaceholder.typicode.com/posts
 ```
 
 Debug mode:

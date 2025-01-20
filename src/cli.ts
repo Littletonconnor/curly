@@ -23,6 +23,7 @@ export function cli() {
         short: 'I',
       },
       data: { type: 'string', short: 'd', multiple: true },
+      query: { type: 'string', short: 'q', multiple: true },
       'data-raw': { type: 'string' },
       debug: { type: 'boolean', default: false },
     },

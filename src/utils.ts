@@ -17,6 +17,8 @@ export function printHelpMessage() {
 
     -H, --header 
 
+    -q, --query <key=value>      Add query parameters to the URL.
+
     -I, --head                  Fetch the headers only.
                                   Example(s):
                                     curl -I https://example.com
@@ -27,7 +29,7 @@ export function printHelpMessage() {
 }
 
 export async function curl(url: string, options: FetchOptions) {
-  return await fetch(url, buildFetchOptions(options))
+  return await fetch(buildUrl(url, options.query), buildFetchOptions(options))
 }
 
 export async function resolveData(response: Response) {
@@ -55,6 +57,23 @@ async function inferContentType(response: Response) {
   } catch (_: unknown) {
     return response.text()
   }
+}
+
+export function buildUrl(url: string, queryParams: FetchOptions['query']) {
+  if (!queryParams) return url
+
+  const urlWithQueryParams = new URL(url)
+
+  for (const q of queryParams) {
+    if (!q.includes('=')) {
+      logger().error(`query params must be valid (e.g., -q foo=bar).`)
+    }
+
+    const [key, value] = q.split('=')
+    urlWithQueryParams.searchParams.append(key, value)
+  }
+
+  return urlWithQueryParams.href
 }
 
 export function buildFetchOptions(options: FetchOptions) {

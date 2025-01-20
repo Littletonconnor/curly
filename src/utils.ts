@@ -5,25 +5,33 @@ import { CONTENT_TYPES } from './constants.ts'
 type FetchOptions = ReturnType<typeof cli>['values']
 
 export function printHelpMessage() {
-  const message = `Usage: curly [--method <METHOD>] <url>
-  Options:
-    -h --help                   Show help menu
+  const message = `Usage: curly [OPTIONS] <url>
 
-    -X --method <METHOD>        HTTP method to use (default: GET)
+Options:
+  -h, --help                   Show help menu
 
-    -d <key=value,...>          Comma-separated key=value pairs
+  -X, --method <METHOD>        HTTP method to use (default: GET)
 
-    --d-raw <data>              Raw data input
+  -d <key=value,...>           Key=value pairs for request body
+                               Example: curly -X POST -d name=Connor -d age=28 https://example.com/api
 
-    -H, --header 
+  --data-raw <data>            Raw data input
+                               Example: curly --data-raw '{"name": "Connor"}' https://example.com/api
 
-    -q, --query <key=value>      Add query parameters to the URL.
+  -H, --header <header>        Specify request headers
+                               Example: curly -H "Content-Type: application/json" https://example.com/api
 
-    -I, --head                  Fetch the headers only.
-                                  Example(s):
-                                    curl -I https://example.com
+  -q, --query <key=value>      Add query parameters to the URL
+                               Example: curly -q "search=cli" https://example.com/api
 
-    --debug                     Print debug information
+  -I, --head                   Fetch only the headers
+                               Example: curly -I https://example.com
+
+  -i, --include                Include HTTP headers in the output
+                               Example: curly -i https://example.com
+
+  --debug                      Print debug information
+                               Example: curly --debug https://example.com
 `
   console.log(message)
 }

@@ -67,6 +67,15 @@ POST key/value pairs as JSON (an easier alternative to --data-raw)
 curly -X POST -d title=foo -d body=bar https://jsonplaceholder.typicode.com/posts
 ```
 
+Query params
+```sh
+curly https://jsonplaceholder.typicode.com/posts?userId=1
+
+# OR 
+
+curly -q userId=1 https://jsonplaceholder.typicode.com/posts?
+```
+
 Debug mode:
 ```sh
 curly --debug https://jsonplaceholder.typicode.com/posts/1

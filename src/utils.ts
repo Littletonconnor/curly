@@ -1,5 +1,6 @@
 import { inspect, styleText } from 'node:util'
 import { cli } from './cli.ts'
+import { promises } from 'fs';
 import { CONTENT_TYPES } from './constants.ts'
 
 type FetchOptions = ReturnType<typeof cli>['values']
@@ -171,6 +172,47 @@ function isValidJson(str: unknown) {
     return true
   } catch (_: unknown) {
     return false
+  }
+}
+
+export async function toOutput<T>(url: string, requestOptions: FetchOptions, response: Response, data: T) {
+  let buffer = ''
+
+  const type = buildPrintType(requestOptions)
+  const headersObj = Object.fromEntries(response.headers.entries())
+  switch (type) {
+    case 'debug':
+      buffer += `---- [CURLY] DEBUG MODE ---------\n`
+      buffer += `URL      : ${url}\n`
+      buffer += `Method   : ${requestOptions.method ?? 'GET'}\n`
+      buffer += `status   : ${response.status}\n`
+      buffer += `Body     : ${buildBody(requestOptions) ?? 'None'}\n`
+      break
+    case 'head':
+      buffer += '---- [CURLY] HEADERS ----------\n'
+      buffer += `status: ${response.status}\n`
+      for (const [key, value] of Object.entries(headersObj)) {
+        buffer += `${key}: ${value}\n`
+      }
+      break
+    case 'include':
+      buffer += '---- [CURLY] HEADERS ----------\n'
+      buffer += `status: ${response.status}\n`
+      for (const [key, value] of Object.entries(headersObj)) {
+        buffer += `${key}: ${value}\n`
+      }
+      buffer += '\n---- [CURLY] RESPONSE ----------\n'
+      buffer += inspect(data, { depth: null, maxArrayLength: null, colors: true })
+      break
+    default:
+      buffer += inspect(data, { depth: null, maxArrayLength: null, colors: true })
+      break
+  }
+
+  try {
+    await promises.writeFile(requestOptions.output!, buffer, 'utf8')
+  } catch (e: unknown) {
+    logger().error(`Failed to write to output path ${requestOptions.output}`)
   }
 }
 

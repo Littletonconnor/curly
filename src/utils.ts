@@ -1,6 +1,6 @@
 import { inspect, styleText } from 'node:util'
 import { cli } from './cli.ts'
-import { promises } from 'fs';
+import { promises, readFileSync } from 'fs'
 import { CONTENT_TYPES } from './constants.ts'
 
 type FetchOptions = ReturnType<typeof cli>['values']
@@ -25,8 +25,15 @@ Options:
   -q, --query <key=value>      Add query parameters to the URL
                                Example: curly -q "search=cli" https://example.com/api
 
+  -o, --output                 Write output to a file instead of stdout
+                               Example: curly -o ./test.tsxt https://example.com/api
+
   -I, --head                   Fetch only the headers
                                Example: curly -I https://example.com
+
+  -b, --cookie                 Pass the data to the HTTP server in the cookie header.
+                               Can be in the form of a string, or a file.
+                               Example: curly -b "NAME1=VALUE1;" https://example.com
 
   -i, --include                Include HTTP headers in the output
                                Example: curly -i https://example.com
@@ -110,20 +117,44 @@ function buildMethod(options: FetchOptions) {
  * curly --data-raw '{"userId": "1"}' -X -H 'Content-type: application/json' -H 'foo:bar' POST https://jsonplaceholder.typicode.com/todos
  *  headers created: {'Content-Type': 'application/json', 'foo': 'bar'}
  */
-function buildHeaders(options: FetchOptions) {
+function buildHeaders(options: FetchOptions): HeadersInit {
   if (!options.headers && (options.data || options['data-raw'])) {
     return { 'Content-Type': 'application/json' }
   }
 
-  return (
-    options?.headers?.reduce((obj, h) => {
-      if (!h.includes(':')) {
-        logger().error('Headers are improperly formatted.')
-      }
-      const [left, right] = h.split(':')
-      return { ...obj, [left.trim()]: right.trim() }
-    }, {}) ?? {}
-  )
+  const headers = options?.headers?.reduce((obj, h) => {
+    if (!h.includes(':')) {
+      logger().error('Headers are improperly formatted.')
+    }
+    const [key, value] = h.split(':')
+    return { ...obj, [key.trim()]: value.trim() }
+  }, {})
+
+  return {
+    ...headers,
+    ...buildCookieHeaders(options),
+  }
+}
+
+function buildCookieHeaders(options: FetchOptions) {
+  if (!options.cookie) return { Cookie: '' }
+
+  try {
+    const cookieValue = readFileSync(options.cookie, 'utf8')
+    const sanitizedCookieValue = cookieValue
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0)
+      .join(';')
+    return { Cookie: sanitizedCookieValue }
+  } catch (e: any) {
+    if (e.code === 'ENOENT') {
+      return { Cookie: options.cookie }
+    } else {
+      logger().error('Error reading cookie file. It does not exist.')
+      return { Cookie: '' }
+    }
+  }
 }
 
 function buildBody(options: FetchOptions) {
@@ -175,7 +206,12 @@ function isValidJson(str: unknown) {
   }
 }
 
-export async function toOutput<T>(url: string, requestOptions: FetchOptions, response: Response, data: T) {
+export async function toOutput<T>(
+  url: string,
+  requestOptions: FetchOptions,
+  response: Response,
+  data: T,
+) {
   let buffer = ''
 
   const type = buildPrintType(requestOptions)
@@ -216,7 +252,7 @@ export async function toOutput<T>(url: string, requestOptions: FetchOptions, res
   }
 }
 
-export function stout<T>(url: string, requestOptions: FetchOptions, response: Response, data: T) {
+export function stdout<T>(url: string, requestOptions: FetchOptions, response: Response, data: T) {
   const type = buildPrintType(requestOptions)
   switch (type) {
     case 'debug':

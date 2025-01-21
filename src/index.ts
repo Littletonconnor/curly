@@ -1,5 +1,13 @@
 import { cli } from './cli.ts'
-import { curl, printHelpMessage, stout, resolveData, asyncCompute, logger, toOutput } from './utils.ts'
+import {
+  curl,
+  printHelpMessage,
+  stdout,
+  resolveData,
+  asyncCompute,
+  logger,
+  toOutput,
+} from './utils.ts'
 
 export async function main() {
   try {
@@ -30,7 +38,7 @@ export async function main() {
     if (values.output) {
       toOutput(url, values, response, data)
     } else {
-      stout(url, values, response, data)
+      stdout(url, values, response, data)
     }
   } catch (e) {
     console.error(e)

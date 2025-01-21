@@ -18,6 +18,10 @@ export function cli() {
         type: 'boolean',
         short: 'i',
       },
+      output: {
+        type: 'string',
+        short: 'o',
+      },
       head: {
         type: 'boolean',
         short: 'I',

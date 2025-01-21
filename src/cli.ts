@@ -22,6 +22,10 @@ export function cli() {
         type: 'string',
         short: 'o',
       },
+      cookie: {
+        type: 'string',
+        short: 'b',
+      },
       head: {
         type: 'boolean',
         short: 'I',

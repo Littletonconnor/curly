@@ -55,7 +55,6 @@ export function buildUrl(url: string, queryParams: FetchOptions['query']) {
 }
 
 export function buildFetchOptions(options: FetchOptions) {
-  console.log('HEADERS', buildHeaders(options))
   return {
     method: buildMethod(options),
     headers: buildHeaders(options),

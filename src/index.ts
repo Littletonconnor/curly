@@ -1,13 +1,6 @@
 import { cli } from './cli.ts'
-import {
-  curl,
-  printHelpMessage,
-  stdout,
-  resolveData,
-  asyncCompute,
-  logger,
-  toOutput,
-} from './utils.ts'
+import { curl, resolveData } from './fetch.ts'
+import { printHelpMessage, stdout, asyncCompute, logger, toOutput } from './utils.ts'
 
 export async function main() {
   try {

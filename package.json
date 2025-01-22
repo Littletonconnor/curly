@@ -13,7 +13,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsup --config ./tscup.config.ts",
+    "build": "tsup --config ./tsup.config.ts",
     "dev": "npm run build && ./bin/curly.js",
     "prettier:write": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "test": "npm run build && vitest run",

@@ -107,9 +107,10 @@ export function buildCookieHeaders(options: FetchOptions) {
     return { Cookie: sanitizedCookieValue }
   } catch (e: any) {
     if (e.code === 'ENOENT') {
+      logger().warn('Error reading file from cookie. Defaulting to options cookie instead.')
       return { Cookie: options.cookie }
     } else {
-      logger().error('Error reading cookie file. It does not exist.')
+      logger().error('Error reading cookie file.')
       // TODO: figure out how to not require this with typescript.
       // Since the programs exits at the logger step anyways.
       return { Cookie: '' }

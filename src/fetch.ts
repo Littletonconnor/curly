@@ -99,21 +99,20 @@ export function buildHeaders(options: FetchOptions): HeadersInit {
 }
 
 export function buildCookieHeaders(options: FetchOptions) {
-  if (!options.cookie) return { Cookie: '' }
+  if (!options.cookie) return { 'Set-Cookie': '' }
 
   try {
     const cookieValue = readFileSync(options.cookie, 'utf8')
     const sanitizedCookieValue = applyCookieHeader(cookieValue)
-    return { Cookie: sanitizedCookieValue }
+    return { 'Set-Cookie': sanitizedCookieValue }
   } catch (e: any) {
     if (e.code === 'ENOENT') {
-      logger().warn('Error reading file from cookie. Defaulting to options cookie instead.')
-      return { Cookie: options.cookie }
+      return { 'Set-Cookie': options.cookie }
     } else {
-      logger().error('Error reading cookie file.')
+      logger().warn('Error reading cookie file.')
       // TODO: figure out how to not require this with typescript.
       // Since the programs exits at the logger step anyways.
-      return { Cookie: '' }
+      return { 'Set-Cookie': '' }
     }
   }
 }

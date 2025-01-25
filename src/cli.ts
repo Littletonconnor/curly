@@ -26,6 +26,10 @@ export function cli() {
         type: 'string',
         short: 'b',
       },
+      'cookie-jar': {
+        type: 'string',
+        short: 'c',
+      },
       head: {
         type: 'boolean',
         short: 'I',

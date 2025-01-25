@@ -72,6 +72,30 @@ Write to an output file
 curly -o ./test.txt https://jsonplaceholder.typicode.com/posts
 ```
 
+Save cookies to a cookie jar file
+```sh
+curly -c ./cookies.json https://example.com/login
+```
+
+Send cookies with your request
+```sh
+curly -b "NAME1=VALUE1;" https://example.com/login
+
+# OR pass cookies through regular headers
+
+curly -H "Set-Cookie: NAME1=VALUE1;" https://example.com/login
+
+# OR use a file (can be json or netscape)
+
+curly -b ./cookie_file.json https://example.com/login
+```
+
+Send and save cookies with your request
+```sh
+curly -b "NAME1=VALUE1;" -c ./cookies.json https://example.com/login
+```
+
+
 Query params
 ```sh
 curly https://jsonplaceholder.typicode.com/posts?userId=1

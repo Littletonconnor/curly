@@ -1,6 +1,7 @@
 import { inspect, styleText } from 'node:util'
 import { promises } from 'fs'
 import { buildBody, type FetchOptions } from './fetch.ts'
+import { parseSetCookieHeaders } from './cookies.ts'
 
 export function printHelpMessage() {
   const message = `Usage: curly [OPTIONS] <url>
@@ -31,6 +32,10 @@ Options:
   -b, --cookie                 Pass the data to the HTTP server in the cookie header.
                                Can be in the form of a string, or a file.
                                Example: curly -b "NAME1=VALUE1;" https://example.com
+
+  -c, --cookie-jar             Specify to which file you want curl to write all cookies after a completed operation.
+                               Example: curly -c saved_cookies.txt https://example.com 
+                              
 
   -i, --include                Include HTTP headers in the output
                                Example: curly -i https://example.com
@@ -64,23 +69,55 @@ export function isValidJson(str: unknown) {
   }
 }
 
-export async function toOutput<T>(
-  url: string,
-  requestOptions: FetchOptions,
-  response: Response,
-  data: T,
-) {
+/**
+ * Extracts cookie names and values from Set-Cookie headers.
+ *
+ * **Note:** Currently, this function only parses the cookie name and value.
+ * Future improvements will include parsing additional attributes such as `path`,
+ * `expires`, `secure`, and `HttpOnly`.
+ *
+ * @param headers - The HTTP headers containing Set-Cookie entries.
+ * @returns An object mapping each cookie name to its corresponding value.
+ *
+ * @example
+ * ```typescript
+ * // Given the following Set-Cookie header:
+ * // 'login_xsrf=GQMerzziut0/gKulOmK4qQ==; path=/; secure; HttpOnly'
+ *
+ * const headers = new Headers();
+ * headers.append('Set-Cookie', 'login_xsrf=GQMerzziut0/gKulOmK4qQ==; path=/; secure; HttpOnly');
+ *
+ * const cookies = parseSetCookieHeaders(headers);
+ * console.log(cookies);
+ * // Output:
+ * // {
+ * //   login_xsrf: 'GQMerzziut0/gKulOmK4qQ=='
+ * // }
+ * ```
+ */
+export async function toCookieJar(options: FetchOptions, response: Response) {
+  const cookieHeaders = parseSetCookieHeaders(response.headers)
+  const cookieJarFilePath = options['cookie-jar']!
+
+  try {
+    await promises.writeFile(cookieJarFilePath, JSON.stringify(cookieHeaders), 'utf-8')
+  } catch (error: unknown) {
+    logger().warn(`Failed to write to output path ${cookieJarFilePath}`)
+  }
+}
+
+export async function toOutput<T>(url: string, options: FetchOptions, response: Response, data: T) {
   let buffer = ''
 
-  const type = buildPrintType(requestOptions)
+  const type = buildPrintType(options)
   const headersObj = Object.fromEntries(response.headers.entries())
   switch (type) {
     case 'debug':
       buffer += `---- [CURLY] DEBUG MODE ---------\n`
       buffer += `URL      : ${url}\n`
-      buffer += `Method   : ${requestOptions.method ?? 'GET'}\n`
+      buffer += `Method   : ${options.method ?? 'GET'}\n`
       buffer += `status   : ${response.status}\n`
-      buffer += `Body     : ${buildBody(requestOptions) ?? 'None'}\n`
+      buffer += `Body     : ${buildBody(options) ?? 'None'}\n`
       break
     case 'head':
       buffer += '---- [CURLY] HEADERS ----------\n'
@@ -104,9 +141,9 @@ export async function toOutput<T>(
   }
 
   try {
-    await promises.writeFile(requestOptions.output!, buffer, 'utf8')
+    await promises.writeFile(options.output!, buffer, 'utf8')
   } catch (e: unknown) {
-    logger().error(`Failed to write to output path ${requestOptions.output}`)
+    logger().warn(`Failed to write to output path ${options.output}`)
   }
 }
 

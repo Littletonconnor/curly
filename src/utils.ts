@@ -46,13 +46,16 @@ Options:
   console.log(message)
 }
 
-export function buildPrintType(options: FetchOptions): 'debug' | 'include' | 'head' | 'default' {
+type PrintType = 'debug' | 'include' | 'head' | 'summary' | 'default'
+export function buildPrintType(options: FetchOptions): PrintType {
   if (options.debug) {
     return 'debug'
   } else if (options.include) {
     return 'include'
   } else if (options.head) {
     return 'head'
+  } else if (options.summary) {
+    return 'summary'
   } else {
     return 'default'
   }
@@ -162,6 +165,11 @@ export function stdout<T>(url: string, requestOptions: FetchOptions, response: R
       printStatusCode(response.status)
       console.log(`response size: ${responseSize} bytes`)
       break
+    case 'summary':
+      console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
+      printStatusCode(response.status)
+      console.log(`response size: ${responseSize} bytes`)
+      break
     case 'include':
       printHeaders(response.headers)
       console.log(styleText('white', '\n📄 ---- [CURLY] RESPONSE ----'))
@@ -189,8 +197,6 @@ function printStatusCode(status: number) {
     console.log('status code: ', styleText('redBright', status.toString()))
   }
 }
-
-// TODO: Add response size helper. Print MB if its large enough. Otherwise print Bytes
 
 export function printHeaders(headers: Headers) {
   const headersObj = Object.fromEntries(headers.entries())

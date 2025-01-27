@@ -34,6 +34,10 @@ export function cli() {
         type: 'boolean',
         short: 'I',
       },
+      summary: {
+        type: 'boolean',
+        short: 'S',
+      },
       data: { type: 'string', short: 'd', multiple: true },
       query: { type: 'string', short: 'q', multiple: true },
       'data-raw': { type: 'string' },

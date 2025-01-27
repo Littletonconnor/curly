@@ -137,7 +137,6 @@ export function buildBody(options: FetchOptions) {
       return obj
     }, {})
 
-    // TODO: Also include headers here
     return JSON.stringify(formattedData)
   }
 

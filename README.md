@@ -42,6 +42,17 @@ curly https://jsonplaceholder.typicode.com/posts/1
 ```
 * By default curly will use GET.
 
+
+Quickly get a summary of your request, which includes the byte size of the response and the status code.
+```sh
+curly -S https://jsonplaceholder.typicode.com/posts/1
+
+# OR 
+
+curly --summary https://jsonplaceholder.typicode.com/posts/1
+```
+* Status codes are automatically colored red for you if they are > 300 and green otherwise.
+
 HEAD request
 
 ```sh

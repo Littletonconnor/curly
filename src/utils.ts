@@ -120,7 +120,8 @@ export async function toOutput<T>(url: string, options: FetchOptions, response: 
       buffer += `Body     : ${buildBody(options) ?? 'None'}\n`
       break
     case 'head':
-      buffer += '---- [CURLY] HEADERS ----------\n'
+      buffer += '📜 ---- [CURLY] HEADERS ----------'
+
       buffer += `status: ${response.status}\n`
       for (const [key, value] of Object.entries(headersObj)) {
         buffer += `${key}: ${value}\n`
@@ -149,43 +150,62 @@ export async function toOutput<T>(url: string, options: FetchOptions, response: 
 
 export function stdout<T>(url: string, requestOptions: FetchOptions, response: Response, data: T) {
   const type = buildPrintType(requestOptions)
+  const responseSize = Buffer.byteLength(JSON.stringify(data))
+
   switch (type) {
     case 'debug':
       printDebug(url, requestOptions, response.status)
       break
     case 'head':
-      printHeaders(response.headers, response.status)
+      printHeaders(response.headers)
+      console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
+      printStatusCode(response.status)
+      console.log(`response size: ${responseSize} bytes`)
       break
     case 'include':
-      printHeaders(response.headers, response.status)
-      console.log('\n---- [CURLY] RESPONSE ----------')
+      printHeaders(response.headers)
+      console.log(styleText('white', '\n📄 ---- [CURLY] RESPONSE ----'))
       console.log(inspect(data, { depth: null, maxArrayLength: null, colors: true }))
+
+      console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
+      printStatusCode(response.status)
+      console.log(`response size: ${responseSize} bytes`)
       break
     default:
+      console.log(styleText('white', '\n📄 ---- [CURLY] RESPONSE ----'))
       console.log(inspect(data, { depth: null, maxArrayLength: null, colors: true }))
+
+      console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
+      printStatusCode(response.status)
+      console.log(`response size: ${responseSize} bytes`)
       break
   }
 }
 
-export function printHeaders(headers: Headers, status: number) {
+function printStatusCode(status: number) {
+  if (status < 400) {
+    console.log('status code: ', styleText('greenBright', status.toString()))
+  } else {
+    console.log('status code: ', styleText('redBright', status.toString()))
+  }
+}
+
+// TODO: Add response size helper. Print MB if its large enough. Otherwise print Bytes
+
+export function printHeaders(headers: Headers) {
   const headersObj = Object.fromEntries(headers.entries())
-  console.log('---- [CURLY] HEADERS ----------')
-  console.log(`status: ${status}`)
+  console.log(styleText('blue', '\n📜---- [CURLY] HEADERS ----'))
   for (const [key, value] of Object.entries(headersObj)) {
     console.log(`${key}: ${value}`)
   }
 }
 
 export function printDebug(url: string, options: FetchOptions, status: number) {
-  console.log(`---- [CURLY] DEBUG MODE ---------`)
-  console.log(`URL      : ${url}`)
-  console.log(`Method   : ${options.method ?? 'GET'}`)
-  console.log(`status   : ${status}`)
-  console.log(`Body     : ${buildBody(options) ?? 'None'}`)
-}
-
-export async function asyncCompute<T>(fn: () => Promise<T>) {
-  return await fn()
+  console.log(styleText('gray', '\n🐛 ---- [CURLY] DEBUG MODE ----'))
+  console.log(`URL: ${url}`)
+  console.log(`Method: ${options.method ?? 'GET'}`)
+  printStatusCode(status)
+  console.log(`Body: ${buildBody(options) ?? 'None'}`)
 }
 
 export function logger() {

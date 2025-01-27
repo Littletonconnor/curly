@@ -1,6 +1,6 @@
 import { cli } from './cli.ts'
 import { curl, resolveData } from './fetch.ts'
-import { printHelpMessage, stdout, asyncCompute, logger, toOutput, toCookieJar } from './utils.ts'
+import { printHelpMessage, stdout, logger, toOutput, toCookieJar } from './utils.ts'
 
 export async function main() {
   try {
@@ -22,11 +22,7 @@ export async function main() {
     const url = positionals[0]
     const response = await curl(url, values)
 
-    const data = await asyncCompute(async () => {
-      if (!values.head) {
-        return await resolveData(response)
-      }
-    })
+    const data = await resolveData(response)
 
     if (values['cookie-jar']) {
       toCookieJar(values, response)

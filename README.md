@@ -9,6 +9,7 @@ A command-line tool for making `curl` requests simpler and more intuitive. Think
 * **Automatic Content-Type Parsing**: Tries to parse JSON responses by default. This makes it easier to make requests to JSON APIs or HTML documents without having to specify `Content-Type` headers.
 * **Helper Flags** (like `--help`, `--debug`, `--include`) for easier debugging and data introspection.
 * **Familiar options**: Mimics some curl style flags (`-X`, `-H`, `-d`, `-I`).
+* **Pretty Printing**: The CLI automatically pretty prints the output for you, and groups response data into easily viewable chunks.
 
 ## Installation
 

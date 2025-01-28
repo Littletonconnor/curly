@@ -1,13 +1,23 @@
 import { readFileSync } from 'fs'
 import { cli } from './cli'
 import { CONTENT_TYPES } from './constants'
-import { isValidJson, logger } from './utils'
+import { isValidJson } from './utils'
 import { applyCookieHeader } from './cookies'
+import { logger } from './logger'
 
 export type FetchOptions = ReturnType<typeof cli>['values']
 
 export async function curl(url: string, options: FetchOptions) {
-  return await fetch(buildUrl(url, options.query), buildFetchOptions(options))
+  const fetchOptions = buildFetchOptions(options)
+
+  logger().debug(`Calling fetch for the following URL: ${url}`)
+  logger().debug(`Fetch options: ${JSON.stringify(fetchOptions)}`)
+
+  const response = await fetch(buildUrl(url, options.query), fetchOptions)
+
+  logger().debug(`Fetch response finished`)
+
+  return response
 }
 
 export async function resolveData(response: Response) {

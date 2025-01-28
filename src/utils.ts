@@ -2,6 +2,7 @@ import { inspect, styleText } from 'node:util'
 import { promises } from 'fs'
 import { buildBody, type FetchOptions } from './fetch.ts'
 import { parseSetCookieHeaders } from './cookies.ts'
+import { logger } from './logger.ts'
 
 export function printHelpMessage() {
   const message = `Usage: curly [OPTIONS] <url>
@@ -212,22 +213,4 @@ export function printDebug(url: string, options: FetchOptions, status: number) {
   console.log(`Method: ${options.method ?? 'GET'}`)
   printStatusCode(status)
   console.log(`Body: ${buildBody(options) ?? 'None'}`)
-}
-
-export function logger() {
-  return {
-    info(...args: string[]) {
-      console.log(styleText('gray', `[curly(info)]: ${args.join(' ')}`))
-    },
-    success(...args: string[]) {
-      console.log(styleText('green', `[curly(success)]: ${args.join(' ')}`))
-    },
-    warn(...args: string[]) {
-      console.log(styleText('dim', `[curly(warn)]: ${args.join(' ')}`))
-    },
-    error(...args: string[]) {
-      console.log(styleText('red', `[curly(error)]: ${args.join(' ')}`))
-      process.exit(1)
-    },
-  }
 }

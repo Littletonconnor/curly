@@ -1,6 +1,7 @@
 import { cli } from './cli.ts'
 import { curl, resolveData } from './fetch.ts'
-import { printHelpMessage, stdout, logger, toOutput, toCookieJar } from './utils.ts'
+import { logger } from './logger.ts'
+import { printHelpMessage, stdout, toOutput, toCookieJar } from './utils.ts'
 
 export async function main() {
   try {
@@ -9,6 +10,10 @@ export async function main() {
     if (values.help) {
       printHelpMessage()
       process.exit(0)
+    }
+
+    if (values.debug) {
+      process.env.DEBUG = 'true'
     }
 
     if (positionals.length !== 1) {

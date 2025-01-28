@@ -1,4 +1,4 @@
-import { logger } from './utils'
+import { logger } from './logger'
 
 // TODO: this currently only support name, value
 // and not other options like expiration dates, etc.

@@ -25,7 +25,8 @@ export async function main() {
     }
 
     const url = positionals[0]
-    const response = await curl(url, values)
+    // TODO: fix types here
+    const response = (await curl(url, values)) as unknown as Response
 
     const data = await resolveData(response)
 

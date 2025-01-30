@@ -10,18 +10,18 @@ export type FetchOptions = ReturnType<typeof cli>['values']
 export async function curl(url: string, options: FetchOptions) {
   const fetchOptions = buildFetchOptions(options)
 
-  logger().debug(`Calling fetch for the following URL: ${url}`)
-  logger().debug(`Fetch options: ${JSON.stringify(fetchOptions)}`)
-
-  const response = await fetch(buildUrl(url, options.query), fetchOptions)
-
-  logger().debug(`Fetch response finished`)
-
-  return response
+  try {
+    const response = await fetch(buildUrl(url, options.query), fetchOptions)
+    logger().debug('Fetch response finished')
+    return response
+  } catch (e) {
+    logger().error(`Fetch response failed: ${e.message}`)
+  }
 }
 
 export async function resolveData(response: Response) {
   const contentType = response.headers['content-type'] ?? ''
+  logger().debug(`Attempting to resolve Content-Type of ${contentType}`)
 
   if (CONTENT_TYPES.json.includes(contentType)) {
     return await response.json()
@@ -32,25 +32,29 @@ export async function resolveData(response: Response) {
   } else if (CONTENT_TYPES.text.includes(contentType)) {
     return await response.text()
   } else {
+    logger().debug('Content-Type was not found, so attempting to infer it instead. ')
     return inferContentType(response)
   }
 }
 
-// Attempts to mimic the curl API by allowing consumers of the CLI hit API or HTML documents
-// Without having to specify content-type headers.
 async function inferContentType(response: Response) {
   try {
-    // heuristic we're using here is to always treat curly requests as json first.
+    logger().debug('Attempting to resolve the response as JSON.')
     return await response.clone().json()
   } catch (_: unknown) {
+    logger().debug('Resolving as JSON did not work. Attempting to now resolve as text.')
     return response.text()
   }
 }
 
 export function buildUrl(url: string, queryParams: FetchOptions['query']) {
-  if (!queryParams) return url
+  if (!queryParams) {
+    logger().debug(`Calling fetch for the following URL: ${url}`)
+    return url
+  }
 
   const urlWithQueryParams = new URL(url)
+  logger().debug(`Found query params so building those on top of the url ${queryParams}`)
 
   for (const q of queryParams) {
     if (!q.includes('=')) {
@@ -61,6 +65,7 @@ export function buildUrl(url: string, queryParams: FetchOptions['query']) {
     urlWithQueryParams.searchParams.append(key, value)
   }
 
+  logger().debug(`Constructed URL with QueryParams`, urlWithQueryParams.href)
   return urlWithQueryParams.href
 }
 

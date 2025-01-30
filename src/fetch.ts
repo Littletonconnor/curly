@@ -10,11 +10,13 @@ export type FetchOptions = ReturnType<typeof cli>['values']
 export async function curl(url: string, options: FetchOptions) {
   const fetchOptions = buildFetchOptions(options)
 
-  const response = await fetch(buildUrl(url, options.query), fetchOptions)
-
-  logger().debug('Fetch response finished')
-
-  return response
+  try {
+    const response = await fetch(buildUrl(url, options.query), fetchOptions)
+    logger().debug('Fetch response finished')
+    return response
+  } catch (e) {
+    logger().error(`Fetch response failed: ${e.message}`)
+  }
 }
 
 export async function resolveData(response: Response) {

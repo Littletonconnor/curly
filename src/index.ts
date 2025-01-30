@@ -25,12 +25,12 @@ export async function main() {
     }
 
     const url = positionals[0]
-    const response = await curl(url, values)
+    // TODO: fix types here
+    const response = (await curl(url, values)) as unknown as Response
 
     const data = await resolveData(response)
 
     if (values['cookie-jar']) {
-      logger().debug(`Found cookie-jar flag, attempting to write to a cookie-jar file`)
       toCookieJar(values, response)
     }
 

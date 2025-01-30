@@ -30,6 +30,7 @@ export async function main() {
     const data = await resolveData(response)
 
     if (values['cookie-jar']) {
+      logger().debug(`Found cookie-jar flag, attempting to write to a cookie-jar file`)
       toCookieJar(values, response)
     }
 

@@ -100,10 +100,12 @@ export function isValidJson(str: unknown) {
  * ```
  */
 export async function toCookieJar(options: FetchOptions, response: Response) {
+  logger().debug(`Found cookie-jar flag, attempting to write to a cookie-jar file`)
   const cookieHeaders = parseSetCookieHeaders(response.headers)
   const cookieJarFilePath = options['cookie-jar']!
 
   try {
+    logger().debug(`Writing cookie-jar headers to ${cookieJarFilePath}`)
     await promises.writeFile(cookieJarFilePath, JSON.stringify(cookieHeaders), 'utf-8')
   } catch (error: unknown) {
     logger().warn(`Failed to write to output path ${cookieJarFilePath}`)
@@ -111,6 +113,7 @@ export async function toCookieJar(options: FetchOptions, response: Response) {
 }
 
 export async function toOutput<T>(url: string, options: FetchOptions, response: Response, data: T) {
+  logger().debug(`Writing response to output file`)
   let buffer = ''
 
   const type = buildPrintType(options)
@@ -146,6 +149,7 @@ export async function toOutput<T>(url: string, options: FetchOptions, response: 
   }
 
   try {
+    logger().debug(`Writing response to ${options.output}`)
     await promises.writeFile(options.output!, buffer, 'utf8')
   } catch (e: unknown) {
     logger().warn(`Failed to write to output path ${options.output}`)
@@ -153,6 +157,7 @@ export async function toOutput<T>(url: string, options: FetchOptions, response: 
 }
 
 export function stdout<T>(url: string, requestOptions: FetchOptions, response: Response, data: T) {
+  logger().debug(`Writing response to stdout`)
   const type = buildPrintType(requestOptions)
   const responseSize = Buffer.byteLength(JSON.stringify(data))
 

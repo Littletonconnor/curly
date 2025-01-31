@@ -9,19 +9,22 @@ export type FetchOptions = ReturnType<typeof cli>['values']
 
 export async function curl(url: string, options: FetchOptions) {
   const fetchOptions = buildFetchOptions(options)
-
   try {
+    logger().debug(`Calling fetch with options: ${JSON.stringify(fetchOptions)}`)
     const response = await fetch(buildUrl(url, options.query), fetchOptions)
     logger().debug('Fetch response finished')
     return response
   } catch (e) {
     logger().error(`Fetch response failed: ${e.message}`)
+    throw e
   }
 }
 
 export async function resolveData(response: Response) {
   const contentType = response.headers['content-type'] ?? ''
-  logger().debug(`Attempting to resolve Content-Type of ${contentType}`)
+  logger().debug(
+    `Attempting to resolve Content-Type of: ${contentType ? contentType : 'Not specified'}`,
+  )
 
   if (CONTENT_TYPES.json.includes(contentType)) {
     return await response.json()
@@ -49,12 +52,11 @@ async function inferContentType(response: Response) {
 
 export function buildUrl(url: string, queryParams: FetchOptions['query']) {
   if (!queryParams) {
-    logger().debug(`Calling fetch for the following URL: ${url}`)
+    logger().debug(`Calling fetch with url: ${url}`)
     return url
   }
 
   const urlWithQueryParams = new URL(url)
-  logger().debug(`Found query params so building those on top of the url ${queryParams}`)
 
   for (const q of queryParams) {
     if (!q.includes('=')) {
@@ -65,7 +67,7 @@ export function buildUrl(url: string, queryParams: FetchOptions['query']) {
     urlWithQueryParams.searchParams.append(key, value)
   }
 
-  logger().debug(`Constructed URL with QueryParams`, urlWithQueryParams.href)
+  logger().debug(`Calling fetch with url: ${urlWithQueryParams}`)
   return urlWithQueryParams.href
 }
 
@@ -114,7 +116,7 @@ export function buildHeaders(options: FetchOptions): HeadersInit {
 }
 
 export function buildCookieHeaders(options: FetchOptions) {
-  if (!options.cookie) return { 'Set-Cookie': '' }
+  if (!options.cookie) return undefined
 
   try {
     const cookieValue = readFileSync(options.cookie, 'utf8')
@@ -125,9 +127,7 @@ export function buildCookieHeaders(options: FetchOptions) {
       return { 'Set-Cookie': options.cookie }
     } else {
       logger().warn('Error reading cookie file.')
-      // TODO: figure out how to not require this with typescript.
-      // Since the programs exits at the logger step anyways.
-      return { 'Set-Cookie': '' }
+      return undefined
     }
   }
 }

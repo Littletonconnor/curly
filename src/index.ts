@@ -1,7 +1,7 @@
 import { cli } from './cli.ts'
 import { curl, resolveData } from './fetch.ts'
 import { logger } from './logger.ts'
-import { printHelpMessage, stdout, toOutput, toCookieJar } from './utils.ts'
+import { printHelpMessage, stdout } from './utils.ts'
 
 export async function main() {
   try {
@@ -25,20 +25,11 @@ export async function main() {
     }
 
     const url = positionals[0]
-    // TODO: fix types here
-    const response = (await curl(url, values)) as unknown as Response
+    const response = await curl(url, values)
 
     const data = await resolveData(response)
 
-    if (values['cookie-jar']) {
-      toCookieJar(values, response)
-    }
-
-    if (values.output) {
-      toOutput(url, values, response, data)
-    } else {
-      stdout(url, values, response, data)
-    }
+    stdout(url, values, response, data)
   } catch (e) {
     console.error(e)
     process.exit(1)

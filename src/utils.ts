@@ -47,16 +47,18 @@ Options:
   console.log(message)
 }
 
-type PrintType = 'debug' | 'include' | 'head' | 'summary' | 'default'
+type PrintType = 'include' | 'head' | 'summary' | 'default' | 'output' | 'cookie-jar'
 export function buildPrintType(options: FetchOptions): PrintType {
-  if (options.debug) {
-    return 'debug'
-  } else if (options.include) {
+  if (options.include) {
     return 'include'
   } else if (options.head) {
     return 'head'
   } else if (options.summary) {
     return 'summary'
+  } else if (options.output) {
+    return 'output'
+  } else if (options['cookie-jar']) {
+    return 'cookie-jar'
   } else {
     return 'default'
   }
@@ -119,13 +121,6 @@ export async function toOutput<T>(url: string, options: FetchOptions, response: 
   const type = buildPrintType(options)
   const headersObj = Object.fromEntries(response.headers.entries())
   switch (type) {
-    case 'debug':
-      buffer += `---- [CURLY] DEBUG MODE ---------\n`
-      buffer += `URL      : ${url}\n`
-      buffer += `Method   : ${options.method ?? 'GET'}\n`
-      buffer += `status   : ${response.status}\n`
-      buffer += `Body     : ${buildBody(options) ?? 'None'}\n`
-      break
     case 'head':
       buffer += '📜 ---- [CURLY] HEADERS ----------'
 
@@ -156,15 +151,12 @@ export async function toOutput<T>(url: string, options: FetchOptions, response: 
   }
 }
 
-export function stdout<T>(url: string, requestOptions: FetchOptions, response: Response, data: T) {
+export function stdout<T>(url: string, options: FetchOptions, response: Response, data: T) {
   logger().debug(`Writing response to stdout`)
-  const type = buildPrintType(requestOptions)
+  const type = buildPrintType(options)
   const responseSize = Buffer.byteLength(JSON.stringify(data))
 
   switch (type) {
-    case 'debug':
-      printDebug(url, requestOptions, response.status)
-      break
     case 'head':
       printHeaders(response.headers)
       console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
@@ -175,6 +167,15 @@ export function stdout<T>(url: string, requestOptions: FetchOptions, response: R
       console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
       printStatusCode(response.status)
       console.log(`response size: ${responseSize} bytes`)
+      break
+    case 'output':
+      toOutput(url, options, response, data)
+      console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
+      printStatusCode(response.status)
+      console.log(`response size: ${responseSize} bytes`)
+      break
+    case 'cookie-jar':
+      toCookieJar(options, response)
       break
     case 'include':
       printHeaders(response.headers)

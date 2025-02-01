@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "tsup --config ./tsup.config.ts",
-    "dev:old": "npm run build && ./bin/curly.js",
+    "dev": "npm run build && ./bin/curly.js",
     "prettier:write": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "test": "npm run build && vitest run",
     "types": "tsc --noEmit"

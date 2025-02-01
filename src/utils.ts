@@ -1,14 +1,46 @@
+import os from 'os'
+import path from 'path'
 import { inspect, styleText } from 'node:util'
 import { promises } from 'fs'
 import { buildBody, type FetchOptions } from './fetch.ts'
 import { parseSetCookieHeaders } from './cookies.ts'
 import { logger } from './logger.ts'
 
+type PrintType = 'include' | 'head' | 'summary' | 'default' | 'output' | 'cookie-jar'
+export function buildPrintType(options: FetchOptions): PrintType {
+  if (options.include) {
+    return 'include'
+  } else if (options.head) {
+    return 'head'
+  } else if (options.summary) {
+    return 'summary'
+  } else if (options.output) {
+    return 'output'
+  } else if (options['cookie-jar']) {
+    return 'cookie-jar'
+  } else {
+    return 'default'
+  }
+}
+
+export function isValidJson(str: unknown) {
+  if (typeof str !== 'string') return false
+
+  try {
+    JSON.parse(str)
+    return true
+  } catch (_: unknown) {
+    return false
+  }
+}
+
 export function printHelpMessage() {
   const message = `Usage: curly [OPTIONS] <url>
 
 Options:
   -h, --help                   Show help menu
+
+  -history, --history          Show hisory logs (defaults to ~./curly_history.txt)
 
   -X, --method <METHOD>        HTTP method to use (default: GET)
 
@@ -47,31 +79,42 @@ Options:
   console.log(message)
 }
 
-type PrintType = 'include' | 'head' | 'summary' | 'default' | 'output' | 'cookie-jar'
-export function buildPrintType(options: FetchOptions): PrintType {
-  if (options.include) {
-    return 'include'
-  } else if (options.head) {
-    return 'head'
-  } else if (options.summary) {
-    return 'summary'
-  } else if (options.output) {
-    return 'output'
-  } else if (options['cookie-jar']) {
-    return 'cookie-jar'
-  } else {
-    return 'default'
+// TODO: build some removal system in here.
+// Example: We get to 1000 lines of history so we start to remove old entries.
+export async function writeHistoryFile() {
+  const filePath = path.join(os.homedir(), 'curly_history.txt')
+  const args = process.argv.slice(2)
+  const command = `curly ${args.join(' ')}\n`
+
+  try {
+    logger().debug(`Attempting to write history file at ${filePath}`)
+    await promises.appendFile(filePath, command, 'utf8')
+    logger().debug(`Successfully wrote to history file at ${filePath}`)
+  } catch (e) {
+    logger().error(`There was an error writing to the history file ${e}`)
   }
 }
 
-export function isValidJson(str: unknown) {
-  if (typeof str !== 'string') return false
+export async function printHistoryFile() {
+  const filePath = path.join(os.homedir(), 'curly_history.txt')
 
   try {
-    JSON.parse(str)
-    return true
-  } catch (_: unknown) {
-    return false
+    logger().debug(`Attempting to read history file at ${filePath}`)
+
+    console.log(styleText('yellowBright', '\n📄 ---- [CURLY] HISTORY ----'))
+    const fileContentBlog = await promises.readFile(filePath, { encoding: 'utf8' })
+    const content = fileContentBlog.split('\n')
+    for (const line of content) {
+      console.log(line)
+    }
+
+    logger().debug(`Successfully read history file at ${filePath}`)
+  } catch (e) {
+    if (e.code === 'ENOENT') {
+      logger().error('history file does not yet exist. Run at least one curly command!')
+    } else {
+      logger().error(`There was an error reading to the history file ${e}`)
+    }
   }
 }
 
@@ -101,7 +144,7 @@ export function isValidJson(str: unknown) {
  * // }
  * ```
  */
-export async function toCookieJar(options: FetchOptions, response: Response) {
+export async function writetoCookieJar(options: FetchOptions, response: Response) {
   logger().debug(`Found cookie-jar flag, attempting to write to a cookie-jar file`)
   const cookieHeaders = parseSetCookieHeaders(response.headers)
   const cookieJarFilePath = options['cookie-jar']!
@@ -114,7 +157,7 @@ export async function toCookieJar(options: FetchOptions, response: Response) {
   }
 }
 
-export async function toOutput<T>(url: string, options: FetchOptions, response: Response, data: T) {
+export async function writeToOutputFile<T>(options: FetchOptions, response: Response, data: T) {
   logger().debug(`Writing response to output file`)
   let buffer = ''
 
@@ -169,13 +212,13 @@ export function stdout<T>(url: string, options: FetchOptions, response: Response
       console.log(`response size: ${responseSize} bytes`)
       break
     case 'output':
-      toOutput(url, options, response, data)
+      writeToOutputFile(options, response, data)
       console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
       printStatusCode(response.status)
       console.log(`response size: ${responseSize} bytes`)
       break
     case 'cookie-jar':
-      toCookieJar(options, response)
+      writetoCookieJar(options, response)
       break
     case 'include':
       printHeaders(response.headers)

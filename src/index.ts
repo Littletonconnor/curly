@@ -1,19 +1,24 @@
 import { cli } from './cli.ts'
 import { curl, resolveData } from './fetch.ts'
 import { logger } from './logger.ts'
-import { printHelpMessage, stdout } from './utils.ts'
+import { printHelpMessage, printHistoryFile, stdout, writeHistoryFile } from './utils.ts'
 
 export async function main() {
   try {
     const { values, positionals } = cli()
+
+    if (values.debug) {
+      process.env.DEBUG = 'true'
+    }
 
     if (values.help) {
       printHelpMessage()
       process.exit(0)
     }
 
-    if (values.debug) {
-      process.env.DEBUG = 'true'
+    if (values.history) {
+      await printHistoryFile()
+      process.exit(0)
     }
 
     if (positionals.length !== 1) {
@@ -30,6 +35,7 @@ export async function main() {
     const data = await resolveData(response)
 
     stdout(url, values, response, data)
+    await writeHistoryFile()
   } catch (e) {
     console.error(e)
     process.exit(1)

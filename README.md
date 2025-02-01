@@ -10,6 +10,7 @@ A command-line tool for making `curl` requests simpler and more intuitive. Think
 * **Helper Flags** (like `--help`, `--debug`, `--include`) for easier debugging and data introspection.
 * **Familiar options**: Mimics some curl style flags (`-X`, `-H`, `-d`, `-I`).
 * **Pretty Printing**: The CLI automatically pretty prints the output for you, and groups response data into easily viewable chunks.
+* **Viewing history**: Easily view history of commands you have written.
 
 ## Installation
 
@@ -116,6 +117,12 @@ curly https://jsonplaceholder.typicode.com/posts?userId=1
 
 curly -q userId=1 https://jsonplaceholder.typicode.com/posts
 ```
+
+Viewing history
+```sh
+Usage: curly --history
+```
+* History is automatically written to ~/curly_history.txt
 
 Debug mode:
 ```sh

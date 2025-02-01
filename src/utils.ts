@@ -34,16 +34,6 @@ export function isValidJson(str: unknown) {
   }
 }
 
-async function writeHistoryFile() {
-  const filePath = path.join(os.homedir(), 'curly_history.txt')
-
-  try {
-    await promises.access(filePath)
-  } catch (e) {
-    await promises.writeFile(filePath, 'utf8')
-  }
-}
-
 export function printHelpMessage() {
   const message = `Usage: curly [OPTIONS] <url>
 
@@ -87,6 +77,22 @@ Options:
                                Example: curly --debug https://example.com
 `
   console.log(message)
+}
+
+// TODO: build some removal system in here.
+// Example: We get to 1000 lines of history so we start to remove old entries.
+export async function writeHistoryFile() {
+  const filePath = path.join(os.homedir(), 'curly_history.txt')
+  const args = process.argv.slice(2)
+  const command = `curly ${args.join(' ')}\n`
+
+  try {
+    logger().debug(`Attempting to write history file at ${filePath}`)
+    await promises.appendFile(filePath, command, 'utf8')
+    logger().debug(`Successfully wrote to history file at ${filePath}`)
+  } catch (e) {
+    logger().error(`There was an error writing to the history file ${e}`)
+  }
 }
 
 export async function printHistoryFile() {

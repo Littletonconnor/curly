@@ -8,7 +8,7 @@ import { logger } from './logger.ts'
 
 type PrintType = 'include' | 'head' | 'summary' | 'default' | 'output' | 'cookie-jar'
 export function buildPrintType(options: FetchOptions): PrintType {
-  if (options.include) {
+  if (options['cookie-jar']) {
     return 'include'
   } else if (options.head) {
     return 'head'
@@ -16,11 +16,15 @@ export function buildPrintType(options: FetchOptions): PrintType {
     return 'summary'
   } else if (options.output) {
     return 'output'
-  } else if (options['cookie-jar']) {
+  } else if (options.include) {
     return 'cookie-jar'
   } else {
     return 'default'
   }
+}
+
+function buildHeadersArray(options: FetchOptions) {
+  return Object.keys(options).filter((option) => option)
 }
 
 export function isValidJson(str: unknown) {
@@ -144,7 +148,7 @@ export async function printHistoryFile() {
  * // }
  * ```
  */
-export async function writetoCookieJar(options: FetchOptions, response: Response) {
+export async function writeToCookieJar(options: FetchOptions, response: Response) {
   logger().debug(`Found cookie-jar flag, attempting to write to a cookie-jar file`)
   const cookieHeaders = parseSetCookieHeaders(response.headers)
   const cookieJarFilePath = options['cookie-jar']!
@@ -165,23 +169,28 @@ export async function writeToOutputFile<T>(options: FetchOptions, response: Resp
   const headersObj = Object.fromEntries(response.headers.entries())
   switch (type) {
     case 'head':
-      buffer += '📜 ---- [CURLY] HEADERS ----------'
-
-      buffer += `status: ${response.status}\n`
+      buffer += styleText('blue', '\n📜---- [CURLY] HEADERS ----')
       for (const [key, value] of Object.entries(headersObj)) {
-        buffer += `${key}: ${value}\n`
+        buffer += `${key}: ${value}`
       }
+
+      if (response.status < 400) {
+        buffer += `status code: ${styleText('greenBright', response.status.toString())}`
+      } else {
+        buffer += `status code: ${styleText('redBright', response.status.toString())}`
+      }
+
       break
     case 'include':
-      buffer += '---- [CURLY] HEADERS ----------\n'
-      buffer += `status: ${response.status}\n`
+      buffer += styleText('blue', '\n📜---- [CURLY] HEADERS ----')
       for (const [key, value] of Object.entries(headersObj)) {
-        buffer += `${key}: ${value}\n`
+        buffer += `${key}: ${value}`
       }
-      buffer += '\n---- [CURLY] RESPONSE ----------\n'
+      console.log(styleText('white', '\n📄 ---- [CURLY] RESPONSE ----'))
       buffer += inspect(data, { depth: null, maxArrayLength: null, colors: true })
       break
     default:
+      console.log(styleText('white', '\n📄 ---- [CURLY] RESPONSE ----'))
       buffer += inspect(data, { depth: null, maxArrayLength: null, colors: true })
       break
   }
@@ -194,10 +203,23 @@ export async function writeToOutputFile<T>(options: FetchOptions, response: Resp
   }
 }
 
-export function stdout<T>(url: string, options: FetchOptions, response: Response, data: T) {
+export function stdout<T>(options: FetchOptions, response: Response, data: T) {
   logger().debug(`Writing response to stdout`)
+
   const type = buildPrintType(options)
   const responseSize = Buffer.byteLength(JSON.stringify(data))
+  const headersArray = buildHeadersArray(options)
+
+  for (const header of headersArray) {
+    if (header === 'head') {
+    }
+    if (header === 'summary') {
+    }
+    if (header === 'output') {
+    }
+    if (header === 'cookie-jar') {
+    }
+  }
 
   switch (type) {
     case 'head':
@@ -218,7 +240,7 @@ export function stdout<T>(url: string, options: FetchOptions, response: Response
       console.log(`response size: ${responseSize} bytes`)
       break
     case 'cookie-jar':
-      writetoCookieJar(options, response)
+      writeToCookieJar(options, response)
       break
     case 'include':
       printHeaders(response.headers)

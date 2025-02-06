@@ -34,7 +34,7 @@ export async function main() {
 
     const data = await resolveData(response)
 
-    stdout(url, values, response, data)
+    stdout(values, response, data)
     await writeHistoryFile()
   } catch (e) {
     console.error(e)

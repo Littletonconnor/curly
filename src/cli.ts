@@ -8,7 +8,6 @@ export function cli() {
       method: {
         type: 'string',
         short: 'X',
-        default: 'GET',
       },
       headers: {
         type: 'string',

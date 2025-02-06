@@ -80,7 +80,13 @@ export function buildFetchOptions(options: FetchOptions) {
 }
 
 export function buildMethod(options: FetchOptions) {
-  return options.method ?? 'GET'
+  if (options.method) {
+    return options.method
+  } else if (options.data || options['data-raw']) {
+    return 'POST'
+  } else {
+    return 'GET'
+  }
 }
 
 /*

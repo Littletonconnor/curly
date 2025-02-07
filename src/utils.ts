@@ -161,39 +161,10 @@ export async function writeToCookieJar(options: FetchOptions, response: Response
   }
 }
 
-export async function writeToOutputFile<T>(options: FetchOptions, response: Response, data: T) {
+export async function writeToOutputFile<T>(options: FetchOptions, data: T) {
   logger().debug(`Writing response to output file`)
-  let buffer = ''
 
-  const type = buildPrintType(options)
-  const headersObj = Object.fromEntries(response.headers.entries())
-  switch (type) {
-    case 'head':
-      buffer += styleText('blue', '\n📜---- [CURLY] HEADERS ----')
-      for (const [key, value] of Object.entries(headersObj)) {
-        buffer += `${key}: ${value}`
-      }
-
-      if (response.status < 400) {
-        buffer += `status code: ${styleText('greenBright', response.status.toString())}`
-      } else {
-        buffer += `status code: ${styleText('redBright', response.status.toString())}`
-      }
-
-      break
-    case 'include':
-      buffer += styleText('blue', '\n📜---- [CURLY] HEADERS ----')
-      for (const [key, value] of Object.entries(headersObj)) {
-        buffer += `${key}: ${value}`
-      }
-      console.log(styleText('white', '\n📄 ---- [CURLY] RESPONSE ----'))
-      buffer += inspect(data, { depth: null, maxArrayLength: null, colors: true })
-      break
-    default:
-      console.log(styleText('white', '\n📄 ---- [CURLY] RESPONSE ----'))
-      buffer += inspect(data, { depth: null, maxArrayLength: null, colors: true })
-      break
-  }
+  const buffer = inspect(data, { depth: null, maxArrayLength: null, colors: true })
 
   try {
     logger().debug(`Writing response to ${options.output}`)
@@ -206,60 +177,31 @@ export async function writeToOutputFile<T>(options: FetchOptions, response: Resp
 export function stdout<T>(options: FetchOptions, response: Response, data: T) {
   logger().debug(`Writing response to stdout`)
 
-  const type = buildPrintType(options)
-  const responseSize = Buffer.byteLength(JSON.stringify(data))
   const headersArray = buildHeadersArray(options)
 
   for (const header of headersArray) {
     if (header === 'head') {
+      printHeaders(response.headers)
+      printSummary(data, response)
+      break
     }
-    if (header === 'summary') {
+    if (header === 'include') {
+      printHeaders(response.headers)
     }
     if (header === 'output') {
+      writeToOutputFile(options, data)
     }
     if (header === 'cookie-jar') {
+      writeToCookieJar(options, response)
+    }
+    if (header === 'summary') {
+      printSummary(data, response)
     }
   }
 
-  switch (type) {
-    case 'head':
-      printHeaders(response.headers)
-      console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
-      printStatusCode(response.status)
-      console.log(`response size: ${responseSize} bytes`)
-      break
-    case 'summary':
-      console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
-      printStatusCode(response.status)
-      console.log(`response size: ${responseSize} bytes`)
-      break
-    case 'output':
-      writeToOutputFile(options, response, data)
-      console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
-      printStatusCode(response.status)
-      console.log(`response size: ${responseSize} bytes`)
-      break
-    case 'cookie-jar':
-      writeToCookieJar(options, response)
-      break
-    case 'include':
-      printHeaders(response.headers)
-      console.log(styleText('white', '\n📄 ---- [CURLY] RESPONSE ----'))
-      console.log(inspect(data, { depth: null, maxArrayLength: null, colors: true }))
+  if (options.head || options.summary) return
 
-      console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
-      printStatusCode(response.status)
-      console.log(`response size: ${responseSize} bytes`)
-      break
-    default:
-      console.log(styleText('white', '\n📄 ---- [CURLY] RESPONSE ----'))
-      console.log(inspect(data, { depth: null, maxArrayLength: null, colors: true }))
-
-      console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
-      printStatusCode(response.status)
-      console.log(`response size: ${responseSize} bytes`)
-      break
-  }
+  printResponse(data, response)
 }
 
 function printStatusCode(status: number) {
@@ -268,6 +210,20 @@ function printStatusCode(status: number) {
   } else {
     console.log('status code: ', styleText('redBright', status.toString()))
   }
+}
+
+export function printResponse<T>(data: T, response: Response) {
+  console.log(styleText('white', '\n📄 ---- [CURLY] RESPONSE ----'))
+  console.log(inspect(data, { depth: null, maxArrayLength: null, colors: true }))
+  printSummary(data, response)
+}
+
+export function printSummary<T>(data: T, response: Response) {
+  const responseSize = Buffer.byteLength(JSON.stringify(data))
+
+  console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
+  printStatusCode(response.status)
+  console.log(`response size: ${responseSize} bytes`)
 }
 
 export function printHeaders(headers: Headers) {

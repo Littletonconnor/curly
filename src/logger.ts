@@ -3,6 +3,8 @@ import { styleText } from 'node:util'
 export function logger() {
   return {
     debug(...args: string[]) {
+      if (process.env.DEBUG !== 'true') return
+
       const now = new Date().toISOString()
       const level = styleText('greenBright', 'debug')
       const time = styleText('gray', `${now}`)

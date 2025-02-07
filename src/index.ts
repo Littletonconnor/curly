@@ -5,6 +5,7 @@ import { printHelpMessage, printHistoryFile, stdout, writeHistoryFile } from './
 
 export async function main() {
   try {
+    await writeHistoryFile()
     const { values, positionals } = cli()
 
     if (values.debug) {
@@ -35,7 +36,6 @@ export async function main() {
     const data = await resolveData(response)
 
     stdout(values, response, data)
-    await writeHistoryFile()
   } catch (e) {
     console.error(e)
     process.exit(1)

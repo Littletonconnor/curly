@@ -12,7 +12,7 @@ export function applyCookieHeader(fileData: string) {
   } catch (error) {
     try {
       cookie = parseNetscapeCookies(fileData)
-    } catch (error) {
+    } catch (error: any) {
       logger().error('Failed parsing cookies as both JSON and Netscape: ', error)
     }
   }
@@ -114,14 +114,13 @@ function parseNetscapeCookies(fileData: string) {
 /**
  * Writes the extracted Set-Cookie headers to a specified cookie jar file.
  *
- * Currently supports JSON format. Future updates may include support for the Netscape cookie format.
+ * Currently, supports JSON format. Future updates may include support for the Netscape cookie format.
  *
- * @param options - The fetch options containing the 'cookie-jar' file path.
- * @param response - The HTTP response from which to extract Set-Cookie headers.
+ * @param headers - The headers returned from the response.
  */
 export function parseSetCookieHeaders(headers: Headers) {
   const setCookieHeaders = headers.getSetCookie()
-  const cookieJar = {}
+  const cookieJar: Record<string, string> = {}
 
   logger().debug(`Parsing set-cookie headers: ${setCookieHeaders}`)
   for (const cookie of setCookieHeaders) {

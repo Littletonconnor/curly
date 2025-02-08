@@ -1,7 +1,7 @@
-import { cli } from './cli.ts'
-import { curl, resolveData } from './fetch.ts'
-import { logger } from './logger.ts'
-import { printHelpMessage, printHistoryFile, stdout, writeHistoryFile } from './utils.ts'
+import { cli } from './cli'
+import { curl, resolveData } from './fetch'
+import { logger } from './logger'
+import { printHelpMessage, printHistoryFile, stdout, writeHistoryFile } from './utils'
 
 export async function main() {
   try {
@@ -35,7 +35,7 @@ export async function main() {
 
     const data = await resolveData(response)
 
-    stdout(values, response, data)
+    await stdout(values, response, data)
   } catch (e) {
     console.error(e)
     process.exit(1)

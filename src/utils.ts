@@ -2,9 +2,9 @@ import os from 'os'
 import path from 'path'
 import { inspect, styleText } from 'node:util'
 import { promises } from 'fs'
-import { buildBody, type FetchOptions } from './fetch.ts'
-import { parseSetCookieHeaders } from './cookies.ts'
-import { logger } from './logger.ts'
+import { buildBody, type FetchOptions } from './fetch'
+import { parseSetCookieHeaders } from './cookies'
+import { logger } from './logger'
 
 type PrintType = 'include' | 'head' | 'summary' | 'default' | 'output' | 'cookie-jar'
 export function buildPrintType(options: FetchOptions): PrintType {
@@ -113,7 +113,7 @@ export async function printHistoryFile() {
     }
 
     logger().debug(`Successfully read history file at ${filePath}`)
-  } catch (e) {
+  } catch (e: any) {
     if (e.code === 'ENOENT') {
       logger().error('history file does not yet exist. Run at least one curly command!')
     } else {
@@ -129,7 +129,6 @@ export async function printHistoryFile() {
  * Future improvements will include parsing additional attributes such as `path`,
  * `expires`, `secure`, and `HttpOnly`.
  *
- * @param headers - The HTTP headers containing Set-Cookie entries.
  * @returns An object mapping each cookie name to its corresponding value.
  *
  * @example
@@ -147,6 +146,8 @@ export async function printHistoryFile() {
  * //   login_xsrf: 'GQMerzziut0/gKulOmK4qQ=='
  * // }
  * ```
+ * @param options
+ * @param response
  */
 export async function writeToCookieJar(options: FetchOptions, response: Response) {
   logger().debug(`Found cookie-jar flag, attempting to write to a cookie-jar file`)
@@ -174,7 +175,7 @@ export async function writeToOutputFile<T>(options: FetchOptions, data: T) {
   }
 }
 
-export function stdout<T>(options: FetchOptions, response: Response, data: T) {
+export async function stdout<T>(options: FetchOptions, response: Response, data: T) {
   logger().debug(`Writing response to stdout`)
 
   const headersArray = buildHeadersArray(options)
@@ -189,10 +190,10 @@ export function stdout<T>(options: FetchOptions, response: Response, data: T) {
       printHeaders(response.headers)
     }
     if (header === 'output') {
-      writeToOutputFile(options, data)
+      await writeToOutputFile(options, data)
     }
     if (header === 'cookie-jar') {
-      writeToCookieJar(options, response)
+      await writeToCookieJar(options, response)
     }
     if (header === 'summary') {
       printSummary(data, response)

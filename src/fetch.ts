@@ -14,14 +14,14 @@ export async function curl(url: string, options: FetchOptions) {
     const response = await fetch(buildUrl(url, options.query), fetchOptions)
     logger().debug('Fetch response finished')
     return response
-  } catch (e) {
+  } catch (e: any) {
     logger().error(`Fetch response failed: ${e.message}`)
     throw e
   }
 }
 
 export async function resolveData(response: Response) {
-  const contentType = response.headers['content-type'] ?? ''
+  const contentType = response.headers.get('content-type') ?? ''
   logger().debug(
     `Attempting to resolve Content-Type of: ${contentType ? contentType : 'Not specified'}`,
   )
@@ -148,7 +148,7 @@ export function buildBody(options: FetchOptions) {
       logger().error(`data-raw must be valid json (e.g., --data-raw '{"name": "Connor"}').`)
     }
   } else if (options.data) {
-    const formattedData = options.data.reduce((obj, d) => {
+    const formattedData = options.data.reduce<Record<string, string>>((obj, d) => {
       if (!d.includes('=')) {
         logger().error('data must be formatted correctly (e.g., key1=value1).')
       }

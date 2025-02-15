@@ -132,3 +132,4 @@ curly --debug https://jsonplaceholder.typicode.com/posts/1
 ## TODO
 - [ ] Add full cookie support (right now we just support name, value pairs).
 - [ ] Add testing.
+- [ ] Make this an actual npm package so we can globally install / use it.

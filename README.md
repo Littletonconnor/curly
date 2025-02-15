@@ -128,3 +128,7 @@ Debug mode:
 ```sh
 curly --debug https://jsonplaceholder.typicode.com/posts/1
 ```
+
+## TODO
+- [ ] Add full cookie support (right now we just support name, value pairs).
+- [ ] Add testing.

@@ -97,10 +97,13 @@ export function buildMethod(options: FetchOptions) {
  *
  * Example(s)
  * curly --data-raw '{"userId": "1"}' -X POST https://jsonplaceholder.typicode.com/todos
- *  headers created: {'Content-Type': 'application/json'}
+ * headers created: {'Content-Type': 'application/json'}
  *
  * curly --data-raw '{"userId": "1"}' -X -H 'Content-type: application/json' -H 'foo:bar' POST https://jsonplaceholder.typicode.com/todos
- *  headers created: {'Content-Type': 'application/json', 'foo': 'bar'}
+ * headers created: {'Content-Type': 'application/json', 'foo': 'bar'}
+ *
+ * curly --data-raw '{"userId": "1"}' -X -H 'Content-type: application/json' -H 'Cookie: VALUE1;VALUE2' -H 'foo:bar' POST https://jsonplaceholder.typicode.com/todos
+ * headers created: {'Content-Type': 'application/json', 'foo': 'bar', 'cookie': 'VALUE1;VALUE2'}
  */
 export function buildHeaders(options: FetchOptions): HeadersInit {
   if (!options.headers && (options.data || options['data-raw'])) {
@@ -110,7 +113,11 @@ export function buildHeaders(options: FetchOptions): HeadersInit {
   const headers = options?.headers?.reduce((obj, h) => {
     if (!h.includes(':')) {
       logger().error('Headers are improperly formatted.')
+    } else if (h.toLowerCase().includes('cookie')) {
+      const [name, value] = h.split(/:(.+)/).map((part) => part.trim())
+      return { ...obj, [name]: value }
     }
+
     const [key, value] = h.split(':')
     return { ...obj, [key.trim()]: value.trim() }
   }, {})

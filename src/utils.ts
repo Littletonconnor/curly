@@ -206,14 +206,6 @@ export async function stdout<T>(options: FetchOptions, response: Response, data:
   printResponse(data)
 }
 
-function printStatusCode(status: number) {
-  if (status < 400) {
-    console.log('status code: ', styleText('greenBright', status.toString()))
-  } else {
-    console.log('status code: ', styleText('redBright', status.toString()))
-  }
-}
-
 function getStatusText(status: number) {
   return STATUS_CODES[status] || 'unknown status'
 }

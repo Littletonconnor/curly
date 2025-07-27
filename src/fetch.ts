@@ -71,7 +71,8 @@ export function buildUrl(url: string, queryParams: FetchOptions['query']) {
   return urlWithQueryParams.href
 }
 
-export function buildFetchOptions(options: FetchOptions) {
+// TODO: Fix this type issue
+export function buildFetchOptions(options: FetchOptions): any {
   return {
     method: buildMethod(options),
     headers: buildHeaders(options),
@@ -105,7 +106,7 @@ export function buildMethod(options: FetchOptions) {
  * curly --data-raw '{"userId": "1"}' -X -H 'Content-type: application/json' -H 'Cookie: VALUE1;VALUE2' -H 'foo:bar' POST https://jsonplaceholder.typicode.com/todos
  * headers created: {'Content-Type': 'application/json', 'foo': 'bar', 'cookie': 'VALUE1;VALUE2'}
  */
-export function buildHeaders(options: FetchOptions): HeadersInit {
+export function buildHeaders(options: FetchOptions) {
   if (!options.headers && (options.data || options['data-raw'])) {
     return { 'Content-Type': 'application/json' }
   }

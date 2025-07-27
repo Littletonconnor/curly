@@ -1,10 +1,12 @@
+import { promises } from 'fs'
+import { STATUS_CODES } from 'node:http'
+import { inspect, styleText } from 'node:util'
 import os from 'os'
 import path from 'path'
-import { inspect, styleText } from 'node:util'
-import { promises } from 'fs'
-import { buildBody, type FetchOptions } from './fetch'
 import { parseSetCookieHeaders } from './cookies'
+import { buildBody, type FetchOptions } from './fetch'
 import { logger } from './logger'
+import { drawTable } from './table'
 
 type PrintType = 'include' | 'head' | 'summary' | 'default' | 'output' | 'cookie-jar'
 export function buildPrintType(options: FetchOptions): PrintType {
@@ -71,8 +73,8 @@ Options:
                                Example: curly -b "NAME1=VALUE1;" https://example.com
 
   -c, --cookie-jar             Specify to which file you want curl to write all cookies after a completed operation.
-                               Example: curly -c saved_cookies.txt https://example.com 
-                              
+                               Example: curly -c saved_cookies.txt https://example.com
+
 
   -i, --include                Include HTTP headers in the output
                                Example: curly -i https://example.com
@@ -183,7 +185,6 @@ export async function stdout<T>(options: FetchOptions, response: Response, data:
   for (const header of headersArray) {
     if (header === 'head') {
       printHeaders(response.headers)
-      printSummary(data, response)
       break
     }
     if (header === 'include') {
@@ -196,13 +197,13 @@ export async function stdout<T>(options: FetchOptions, response: Response, data:
       await writeToCookieJar(options, response)
     }
     if (header === 'summary') {
-      printSummary(data, response)
+      printSummary(data, response, options)
     }
   }
 
   if (options.head || options.summary) return
 
-  printResponse(data, response)
+  printResponse(data)
 }
 
 function printStatusCode(status: number) {
@@ -213,32 +214,32 @@ function printStatusCode(status: number) {
   }
 }
 
-export function printResponse<T>(data: T, response: Response) {
-  console.log(styleText('white', '\n📄 ---- [CURLY] RESPONSE ----'))
-  console.log(inspect(data, { depth: null, maxArrayLength: null, colors: true }))
-  printSummary(data, response)
+function getStatusText(status: number) {
+  return STATUS_CODES[status] || 'unknown status'
 }
 
-export function printSummary<T>(data: T, response: Response) {
-  const responseSize = Buffer.byteLength(JSON.stringify(data))
+export function printResponse<T>(data: T) {
+  console.log(inspect(data, { depth: null, maxArrayLength: null, colors: true }))
+}
 
-  console.log(styleText('magenta', '\n📊 ---- [CURLY] SUMMARY ----'))
-  printStatusCode(response.status)
-  console.log(`response size: ${responseSize} bytes`)
+export function printSummary<T>(data: T, response: Response, options: FetchOptions) {
+  const responseSize = Buffer.byteLength(JSON.stringify(data))
+  const rows = [
+    { label: 'Status', value: `${response.status} ${getStatusText(response.status)}` },
+    { label: 'Size', value: `${responseSize} bytes` },
+    { label: 'Method', value: `${options.method ?? 'GET'}` },
+    { label: 'Request Body', value: buildBody(options) ?? 'N/A' },
+  ]
+
+  drawTable(rows)
 }
 
 export function printHeaders(headers: Headers) {
   const headersObj = Object.fromEntries(headers.entries())
-  console.log(styleText('blue', '\n📜---- [CURLY] HEADERS ----'))
+  const rows = []
   for (const [key, value] of Object.entries(headersObj)) {
-    console.log(`${key}: ${value}`)
+    rows.push({ label: key, value })
   }
-}
 
-export function printDebug(url: string, options: FetchOptions, status: number) {
-  console.log(styleText('gray', '\n🐛 ---- [CURLY] DEBUG MODE ----'))
-  console.log(`URL: ${url}`)
-  console.log(`Method: ${options.method ?? 'GET'}`)
-  printStatusCode(status)
-  console.log(`Body: ${buildBody(options) ?? 'None'}`)
+  drawTable(rows)
 }

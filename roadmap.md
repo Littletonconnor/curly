@@ -17,7 +17,6 @@
 - Retry logic with backoff
 - Session support (persistent cookies/headers across requests)
 - Add some sort of multi request functionality where you can make multiple requests in parallel and grab averages like request duration, status codes, etc.
-- Fix bytes since I think it's not accurate.
 
 ## Response Handling
 

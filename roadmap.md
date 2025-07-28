@@ -16,6 +16,7 @@
 - Timeout settings (--timeout)
 - Retry logic with backoff
 - Session support (persistent cookies/headers across requests)
+- Add some sort of multi request functionality where you can make multiple requests in parallel and grab averages like request duration, status codes, etc.
 
 ## Response Handling
 
@@ -54,4 +55,5 @@ Which of these categories interest you most? We could prioritize based on what w
 
 ## Other
 
+- Setup eslint (or oxlint).
 - Publish this as an actual NPM package.

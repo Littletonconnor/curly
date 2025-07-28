@@ -11,32 +11,70 @@ export async function curl(url: string, options: FetchOptions) {
   const fetchOptions = buildFetchOptions(options)
   try {
     logger().debug(`Calling fetch with options: ${JSON.stringify(fetchOptions)}`)
+    const startTime = performance.now()
     const response = await fetch(buildUrl(url, options.query), fetchOptions)
+    const duration = performance.now() - startTime
     logger().debug('Fetch response finished')
-    return response
+    return { response, duration }
   } catch (e: any) {
     logger().error(`Fetch response failed: ${e.message}`)
     throw e
   }
 }
 
-export async function resolveData(response: Response) {
+export async function buildResponse({
+  response,
+  duration,
+}: {
+  response: Response
+  duration: number
+}) {
   const contentType = response.headers.get('content-type') ?? ''
   logger().debug(
     `Attempting to resolve Content-Type of: ${contentType ? contentType : 'Not specified'}`,
   )
 
+  const size = await getResponseSize(response)
+
+  let data
   if (CONTENT_TYPES.json.includes(contentType)) {
-    return await response.json()
+    data = await response.json()
   } else if (CONTENT_TYPES.arrayBuffer.includes(contentType)) {
-    return await response.arrayBuffer()
+    data = await response.arrayBuffer()
   } else if (CONTENT_TYPES.formData.includes(contentType)) {
-    return await response.formData()
+    data = await response.formData()
   } else if (CONTENT_TYPES.text.includes(contentType)) {
-    return await response.text()
+    data = await response.text()
   } else {
     logger().debug('Content-Type was not found, so attempting to infer it instead. ')
-    return inferContentType(response)
+    data = await inferContentType(response)
+  }
+
+  return {
+    response: data,
+    duration,
+    headers: response.headers,
+    status: response.status,
+    size,
+  }
+}
+
+async function getResponseSize(response: Response) {
+  const clonedResponse = response.clone()
+  const text = await clonedResponse.text()
+  const bytes = Buffer.byteLength(text)
+  return formatBytes(bytes)
+}
+
+function formatBytes(bytes: number) {
+  if (bytes < 1024) {
+    return `${bytes} B`
+  } else if (bytes < 1024 * 1024) {
+    return `${(bytes / 1024).toFixed(2)} KB`
+  } else if (bytes < 1024 * 1024 * 1024) {
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
+  } else {
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
   }
 }
 

@@ -4,9 +4,10 @@ import { inspect, styleText } from 'node:util'
 import os from 'os'
 import path from 'path'
 import { parseSetCookieHeaders } from './cookies'
-import { buildBody, type FetchOptions } from './fetch'
+import { buildBody, buildResponse, type FetchOptions } from './fetch'
 import { logger } from './logger'
 import { drawTable } from './table'
+import { Data } from './types'
 
 type PrintType = 'include' | 'head' | 'summary' | 'default' | 'output' | 'cookie-jar'
 export function buildPrintType(options: FetchOptions): PrintType {
@@ -151,9 +152,12 @@ export async function printHistoryFile() {
  * @param options
  * @param response
  */
-export async function writeToCookieJar(options: FetchOptions, response: Response) {
+export async function writeToCookieJar(
+  data: Awaited<ReturnType<typeof buildResponse>>,
+  options: FetchOptions,
+) {
   logger().debug(`Found cookie-jar flag, attempting to write to a cookie-jar file`)
-  const cookieHeaders = parseSetCookieHeaders(response.headers)
+  const cookieHeaders = parseSetCookieHeaders(data.headers)
   const cookieJarFilePath = options['cookie-jar']!
 
   try {
@@ -164,10 +168,10 @@ export async function writeToCookieJar(options: FetchOptions, response: Response
   }
 }
 
-export async function writeToOutputFile<T>(options: FetchOptions, data: T) {
+export async function writeToOutputFile(data: Data, options: FetchOptions) {
   logger().debug(`Writing response to output file`)
 
-  const buffer = inspect(data, { depth: null, maxArrayLength: null, colors: true })
+  const buffer = inspect(data.response, { depth: null, maxArrayLength: null, colors: true })
 
   try {
     logger().debug(`Writing response to ${options.output}`)
@@ -177,27 +181,27 @@ export async function writeToOutputFile<T>(options: FetchOptions, data: T) {
   }
 }
 
-export async function stdout<T>(options: FetchOptions, response: Response, data: T) {
+export async function stdout(data: Data, options: FetchOptions) {
   logger().debug(`Writing response to stdout`)
 
   const headersArray = buildHeadersArray(options)
 
   for (const header of headersArray) {
     if (header === 'head') {
-      printHeaders(response.headers)
+      printHeaders(data.headers)
       break
     }
     if (header === 'include') {
-      printHeaders(response.headers)
+      printHeaders(data.headers)
     }
     if (header === 'output') {
-      await writeToOutputFile(options, data)
+      await writeToOutputFile(data, options)
     }
     if (header === 'cookie-jar') {
-      await writeToCookieJar(options, response)
+      await writeToCookieJar(data, options)
     }
     if (header === 'summary') {
-      printSummary(data, response, options)
+      printSummary(data, options)
     }
   }
 
@@ -206,27 +210,19 @@ export async function stdout<T>(options: FetchOptions, response: Response, data:
   printResponse(data)
 }
 
-function printStatusCode(status: number) {
-  if (status < 400) {
-    console.log('status code: ', styleText('greenBright', status.toString()))
-  } else {
-    console.log('status code: ', styleText('redBright', status.toString()))
-  }
-}
-
 function getStatusText(status: number) {
   return STATUS_CODES[status] || 'unknown status'
 }
 
-export function printResponse<T>(data: T) {
+export function printResponse(data: Data) {
   console.log(inspect(data, { depth: null, maxArrayLength: null, colors: true }))
 }
 
-export function printSummary<T>(data: T, response: Response, options: FetchOptions) {
-  const responseSize = Buffer.byteLength(JSON.stringify(data))
+export function printSummary(data: Data, options: FetchOptions) {
   const rows = [
-    { label: 'Status', value: `${response.status} ${getStatusText(response.status)}` },
-    { label: 'Size', value: `${responseSize} bytes` },
+    { label: 'Status', value: `${data.status} ${getStatusText(data.status)}` },
+    { label: 'Duration', value: `${data.duration.toFixed(2)} ms` },
+    { label: 'Size', value: `${data.size}` },
     { label: 'Method', value: `${options.method ?? 'GET'}` },
     { label: 'Request Body', value: buildBody(options) ?? 'N/A' },
   ]

@@ -1,5 +1,5 @@
 import { cli } from './cli'
-import { curl, resolveData } from './fetch'
+import { curl, buildResponse } from './fetch'
 import { logger } from './logger'
 import { printHelpMessage, printHistoryFile, stdout, writeHistoryFile } from './utils'
 
@@ -33,9 +33,9 @@ export async function main() {
     const url = positionals[0]
     const response = await curl(url, values)
 
-    const data = await resolveData(response)
+    const data = await buildResponse(response)
 
-    await stdout(values, response, data)
+    await stdout(data, values)
   } catch (e) {
     console.error(e)
     process.exit(1)

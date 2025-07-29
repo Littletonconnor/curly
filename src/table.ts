@@ -1,4 +1,5 @@
 const PADDING = 4
+const MAX_VALUE_WIDTH = 80 // Maximum width for values to prevent wrapping
 
 const BOX_CHARS = {
   topLeft: '┌',
@@ -12,6 +13,11 @@ const BOX_CHARS = {
   bottomMiddle: '┴',
   horizontal: '─',
   vertical: '│',
+}
+
+function truncateString(str: string, maxLength: number): string {
+  if (str.length <= maxLength) return str
+  return str.substring(0, maxLength - 3) + '...'
 }
 
 export function drawTable(rows: Array<{ label: string; value: string }>) {
@@ -32,7 +38,8 @@ export function drawDataRow(label: string, value: string, leftWidth: number, rig
   let row = BOX_CHARS.vertical
   row += ' ' + label.padEnd(leftWidth) + '   '
   row += BOX_CHARS.vertical
-  row += '   ' + value.padStart(rightWidth) + ' '
+  const truncatedValue = truncateString(value, MAX_VALUE_WIDTH)
+  row += '   ' + truncatedValue.padStart(rightWidth) + ' '
   row += BOX_CHARS.vertical
   return row
 }
@@ -43,7 +50,8 @@ export function calculateColumnWidths(rows: Array<{ label: string; value: string
 
   for (const row of rows) {
     longestLabel = Math.max(longestLabel, row.label.length)
-    longestValue = Math.max(longestValue, row.value.length)
+    const valueLength = Math.min(row.value.length, MAX_VALUE_WIDTH)
+    longestValue = Math.max(longestValue, valueLength)
   }
 
   return [longestLabel, longestValue]

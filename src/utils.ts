@@ -188,34 +188,33 @@ export async function stdout(data: Data, options: FetchOptions) {
 
   for (const header of headersArray) {
     if (header === 'head') {
-      printHeaders(data.headers)
+      printHeaders(data.headers, options)
       break
-    }
-    if (header === 'include') {
-      printHeaders(data.headers)
-    }
-    if (header === 'output') {
+    } else if (header === 'include') {
+      printHeaders(data.headers, options)
+      console.log()
+      printResponse(data.response)
+    } else if (header === 'output') {
       await writeToOutputFile(data, options)
-    }
-    if (header === 'cookie-jar') {
+      printResponse(data.response)
+    } else if (header === 'cookie-jar') {
       await writeToCookieJar(data, options)
-    }
-    if (header === 'summary') {
+      printResponse(data.response)
+    } else if (header === 'summary') {
       printSummary(data, options)
+      break
+    } else {
+      printResponse(data.response)
     }
   }
-
-  if (options.head || options.summary) return
-
-  printResponse(data)
 }
 
 function getStatusText(status: number) {
   return STATUS_CODES[status] || 'unknown status'
 }
 
-export function printResponse(data: Data) {
-  console.log(inspect(data, { depth: null, maxArrayLength: null, colors: true }))
+export function printResponse(response: Data['response']) {
+  console.log(inspect(response, { depth: null, maxArrayLength: null, colors: true }))
 }
 
 export function printSummary(data: Data, options: FetchOptions) {
@@ -227,15 +226,23 @@ export function printSummary(data: Data, options: FetchOptions) {
     { label: 'Request Body', value: buildBody(options) ?? 'N/A' },
   ]
 
-  drawTable(rows)
+  if (options.table) {
+    drawTable(rows)
+  } else {
+    rows.forEach(({ label, value }) => console.log(`${label}=${value}`))
+  }
 }
 
-export function printHeaders(headers: Headers) {
+export function printHeaders(headers: Headers, options: FetchOptions) {
   const headersObj = Object.fromEntries(headers.entries())
   const rows = []
   for (const [key, value] of Object.entries(headersObj)) {
     rows.push({ label: key, value })
   }
 
-  drawTable(rows)
+  if (options.table) {
+    drawTable(rows)
+  } else {
+    Object.entries(headersObj).forEach(([k, v]) => console.log(`${k}=${v}`))
+  }
 }

@@ -1,33 +1,34 @@
-import { cli } from './cli'
-import { curl, buildResponse } from './fetch'
-import { logger } from './logger'
-import { printHelpMessage, printHistoryFile, stdout, writeHistoryFile } from './utils'
+import { cli, printHelpMessage } from './lib/cli'
+import { printHistoryFile, writeHistoryFile } from './lib/utils'
+import { executeRequest } from './commands/request'
+import { load } from './commands/load-test'
 
 export async function main() {
   try {
     await writeHistoryFile()
-    const { values, positionals } = cli()
+    const { values: cliFlags, positionals } = cli()
 
-    if (values.debug) {
+    if (cliFlags.debug) {
       process.env.DEBUG = 'true'
     }
 
-    if (values.help) {
+    if (cliFlags.help) {
       printHelpMessage()
       process.exit(0)
     }
 
-    if (values.history) {
+    if (cliFlags.history) {
       await printHistoryFile()
       process.exit(0)
     }
 
     const url = positionals[positionals.length - 1]
-    const response = await curl(url, values)
 
-    const data = await buildResponse(response)
-
-    await stdout(data, values)
+    if (cliFlags['load-test']) {
+      await load(url, cliFlags)
+    } else {
+      await executeRequest(url, cliFlags)
+    }
   } catch (e) {
     console.error(e)
     process.exit(1)

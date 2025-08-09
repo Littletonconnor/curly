@@ -28,7 +28,6 @@ export function cli() {
       },
       'cookie-jar': {
         type: 'string',
-        short: 'c',
       },
       head: {
         type: 'boolean',
@@ -43,6 +42,10 @@ export function cli() {
       query: { type: 'string', short: 'q', multiple: true },
       table: { type: 'boolean', short: 'T' },
       debug: { type: 'boolean', default: false },
+      'load-test': { type: 'boolean', default: false },
+      requests: { type: 'string', short: 'n' },
+      concurrency: { type: 'string', short: 'c' },
+      duration: { type: 'string' },
     },
     allowPositionals: true,
   })

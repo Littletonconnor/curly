@@ -144,3 +144,106 @@ Debug mode:
 ```sh
 curly --debug https://jsonplaceholder.typicode.com/posts/1
 ```
+
+## Architecture
+
+Curly follows a modular architecture designed for maintainability, testability, and extensibility. The codebase is organized into clear functional areas with well-defined separation of concerns.
+
+### Project Structure
+
+```
+src/
+├── commands/           # CLI command implementations
+│   ├── request/       # Default HTTP request command
+│   │   └── index.ts   # Single request execution
+│   └── load-test/     # Load testing command
+│       ├── index.ts   # Load test orchestration
+│       └── stats.ts   # Statistics collection and analysis
+├── core/              # Core business logic
+│   ├── http/          # HTTP-related functionality
+│   │   ├── client.ts  # HTTP client and request building
+│   │   ├── cookies.ts # Cookie parsing and handling
+│   │   └── index.ts   # HTTP module exports
+│   └── config/        # Configuration and constants
+│       ├── constants.ts # Content-type definitions
+│       └── index.ts    # Config module exports
+├── lib/               # Shared libraries and utilities
+│   ├── cli/           # CLI-specific utilities
+│   │   ├── parser.ts  # Command-line argument parsing
+│   │   ├── help.ts    # Help text generation
+│   │   └── index.ts   # CLI module exports
+│   ├── output/        # Output formatting utilities
+│   │   ├── formatters.ts # Response output formatting
+│   │   ├── table.ts      # Table rendering utilities
+│   │   └── index.ts      # Output module exports
+│   └── utils/         # General utilities
+│       ├── logger.ts  # Debug and error logging
+│       ├── history.ts # Command history management
+│       ├── file.ts    # File operations and validation
+│       └── index.ts   # Utils module exports
+├── types/             # TypeScript type definitions
+│   └── index.ts       # Shared type definitions
+└── index.ts           # Main entry point and orchestration
+```
+
+### Directory Overview
+
+#### `commands/`
+
+Contains implementations for different CLI commands. Each command is self-contained and focuses on a specific functionality:
+
+- **`request/`**: Handles single HTTP requests with output formatting
+- **`load-test/`**: Manages load testing scenarios with statistics collection
+
+This structure makes it easy to add new commands without affecting existing functionality.
+
+#### `core/`
+
+Houses the essential business logic that powers the application:
+
+- **`http/`**: All HTTP-related functionality including request building, response handling, and cookie management
+- **`config/`**: Application configuration, constants, and settings
+
+Core modules are designed to be reusable across different commands.
+
+#### `lib/`
+
+Contains shared libraries and utilities organized by function:
+
+- **`cli/`**: Command-line interface utilities including argument parsing and help generation
+- **`output/`**: Response formatting, table rendering, and output management
+- **`utils/`**: General-purpose utilities like logging, file operations, and history management
+
+#### `types/`
+
+Centralized TypeScript type definitions used throughout the application.
+
+### Naming Conventions
+
+- **Files**: Use kebab-case for file names (`load-test.ts`, `cookie-jar.ts`)
+- **Directories**: Use kebab-case for directory names (`load-test/`, `cli/`)
+- **Functions**: Use camelCase (`executeRequest`, `buildResponse`)
+- **Types**: Use PascalCase (`FetchOptions`, `RequestResult`)
+- **Constants**: Use SCREAMING_SNAKE_CASE (`CONTENT_TYPES`, `DEFAULT_REQUESTS`)
+
+### Adding New Features
+
+When adding new functionality to Curly, follow these guidelines:
+
+1. **New Commands**: Add to `src/commands/` with a dedicated directory
+2. **Core Logic**: Add shared business logic to `src/core/`
+3. **Utilities**: Add reusable utilities to appropriate `src/lib/` subdirectories
+4. **Types**: Add shared types to `src/types/index.ts`
+
+### Import Strategy
+
+The architecture uses barrel exports (`index.ts` files) to provide clean import paths:
+
+```typescript
+// Clean imports using barrel exports
+import { cli, printHelpMessage } from './lib/cli'
+import { curl, buildResponse } from './core/http'
+
+// Avoid deep imports when possible
+import { logger } from './lib/utils/logger' // Only when needed
+```

@@ -1,8 +1,7 @@
-import { cli } from './cli'
-import { curl, buildResponse } from './fetch'
-import { load } from './load'
-import { logger } from './logger'
-import { printHelpMessage, printHistoryFile, stdout, writeHistoryFile } from './utils'
+import { cli, printHelpMessage } from './lib/cli'
+import { printHistoryFile, writeHistoryFile } from './lib/utils'
+import { executeRequest } from './commands/request'
+import { load } from './commands/load-test'
 
 export async function main() {
   try {
@@ -28,9 +27,7 @@ export async function main() {
     if (cliFlags['load-test']) {
       await load(url, cliFlags)
     } else {
-      const response = await curl(url, cliFlags)
-      const data = await buildResponse(response)
-      await stdout(data, cliFlags)
+      await executeRequest(url, cliFlags)
     }
   } catch (e) {
     console.error(e)

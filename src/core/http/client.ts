@@ -1,9 +1,9 @@
 import { readFileSync } from 'fs'
-import { cli } from './cli'
-import { CONTENT_TYPES } from './constants'
-import { isValidJson } from './utils'
+import { cli } from '../../lib/cli/parser'
+import { CONTENT_TYPES } from '../config/constants'
+import { isValidJson } from '../../lib/utils/file'
 import { applyCookieHeader } from './cookies'
-import { logger } from './logger'
+import { logger } from '../../lib/utils/logger'
 
 export type FetchOptions = ReturnType<typeof cli>['values']
 
@@ -172,8 +172,7 @@ export function buildCookieHeaders(options: FetchOptions) {
 
   try {
     const cookieValue = readFileSync(options.cookie, 'utf8')
-    const sanitizedCookieValue = applyCookieHeader(cookieValue)
-    return { 'Set-Cookie': sanitizedCookieValue }
+    return { 'Set-Cookie': applyCookieHeader(cookieValue) }
   } catch (e: any) {
     if (e.code === 'ENOENT') {
       return { 'Set-Cookie': options.cookie }

@@ -1,5 +1,5 @@
-import { curl, buildResponse, type FetchOptions } from '../fetch'
-import { logger } from '../logger'
+import { curl, buildResponse, type FetchOptions } from '../../core/http/client'
+import { logger } from '../../lib/utils/logger'
 import { StatsCollector } from './stats'
 
 const DEFAULT_REQUESTS = '200'

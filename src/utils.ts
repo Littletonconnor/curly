@@ -64,7 +64,7 @@ Options:
                                Example: curly -q "search=cli" https://example.com/api
 
   -o, --output                 Write output to a file instead of stdout
-                               Example: curly -o ./test.tsxt https://example.com/api
+                               Example: curly -o ./test.txt https://example.com/api
 
   -I, --head                   Fetch only the headers
                                Example: curly -I https://example.com

@@ -25,6 +25,7 @@ export function cli() {
       cookie: {
         type: 'string',
         short: 'b',
+        multiple: true,
       },
       'cookie-jar': {
         type: 'string',

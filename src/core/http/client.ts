@@ -167,19 +167,51 @@ export function buildHeaders(options: FetchOptions) {
   }
 }
 
+/**
+ * Builds cookie headers from command-line options.
+ *
+ * This deviates from curl's behavior for better user experience:
+ * - curl uses -b <data|filename> and determines file vs data by presence of '='
+ * - We allow multiple key=value pairs that we concatenate automatically
+ * - File input requires exactly one cookie argument
+ */
 export function buildCookieHeaders(options: FetchOptions) {
-  if (!options.cookie) return undefined
+  if (!options.cookie || options.cookie.length === 0) {
+    return undefined
+  }
 
+  const firstCookieValue = options.cookie[0]
+
+  if (firstCookieValue.includes('=')) {
+    return buildCookieHeaderFromKeyValuePairs(options.cookie)
+  } else {
+    return buildCookieHeaderFromFile(options.cookie)
+  }
+}
+
+function buildCookieHeaderFromKeyValuePairs(cookieValues: string[]) {
+  const invalidCookies = cookieValues.filter((cookie) => !cookie.includes('='))
+
+  if (invalidCookies.length > 0) {
+    logger().error(`Invalid cookie format. Expected key=value, got: ${invalidCookies.join(', ')}`)
+  }
+
+  const cookieString = cookieValues.join('; ')
+  return { Cookie: cookieString }
+}
+
+function buildCookieHeaderFromFile(cookiePaths: string[]) {
+  if (cookiePaths.length !== 1) {
+    logger().error('When reading cookies from a file, provide exactly one file path')
+  }
+
+  const cookiePath = cookiePaths[0]
   try {
-    const cookieValue = readFileSync(options.cookie, 'utf8')
-    return { 'Set-Cookie': applyCookieHeader(cookieValue) }
-  } catch (e: any) {
-    if (e.code === 'ENOENT') {
-      return { 'Set-Cookie': options.cookie }
-    } else {
-      logger().warn('Error reading cookie file.')
-      return undefined
-    }
+    const cookieContent = readFileSync(cookiePath, 'utf8')
+    return { Cookie: applyCookieHeader(cookieContent) }
+  } catch (error) {
+    logger().warn(`Failed to read cookie file: ${cookiePath}`)
+    return undefined
   }
 }
 
@@ -190,7 +222,7 @@ export function buildBody(options: FetchOptions) {
     if (isValidJson(options['data-raw'])) {
       return options['data-raw']
     } else {
-      logger().error(`data-raw must be valid json (e.g., --data-raw '{"name": "Connor"}').`)
+      logger().error(`data-raw must be valid json (e.g., --data-raw '{"name": "John Doe"}').`)
     }
   } else if (options.data) {
     const formattedData = options.data.reduce<Record<string, string>>((obj, d) => {

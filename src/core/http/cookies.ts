@@ -5,7 +5,6 @@ import { logger } from '../../lib/utils/logger'
 export function applyCookieHeader(fileData: string) {
   let cookie = ''
   try {
-    // heuristic here will be to try and parse as JSON first
     cookie = parseJsonCookies(fileData)
 
     return cookie
@@ -129,6 +128,6 @@ export function parseSetCookieHeaders(headers: Headers) {
     cookieJar[name] = value
   }
 
-  logger().debug(`Parsing set-cookie headers complete: ${cookieJar}`)
+  logger().debug(`Parsing set-cookie headers complete: ${JSON.stringify(cookieJar)}`)
   return cookieJar
 }

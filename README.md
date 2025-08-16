@@ -39,110 +39,244 @@ If you're developing `curly` and want to test your changes without publishing:
 Usage: curly [OPTIONS] <url>
 ```
 
-### Examples:
+### Options
 
-Simple GET request
+| Option          | Short | Description                                                             |
+| --------------- | ----- | ----------------------------------------------------------------------- |
+| `--help`        | `-h`  | Display help information                                                |
+| `--method`      | `-X`  | HTTP method (GET, POST, PUT, DELETE, etc.)                              |
+| `--headers`     | `-H`  | Add custom headers (can be used multiple times)                         |
+| `--data`        | `-d`  | Send data as key=value pairs (can be used multiple times)               |
+| `--data-raw`    |       | Send raw JSON data                                                      |
+| `--query`       | `-q`  | Add query parameters (can be used multiple times)                       |
+| `--cookie`      | `-b`  | Send cookies (file path or key=value pairs, can be used multiple times) |
+| `--cookie-jar`  |       | Save received cookies to a file                                         |
+| `--output`      | `-o`  | Write response to a file                                                |
+| `--include`     | `-i`  | Include response headers in output                                      |
+| `--head`        | `-I`  | Send HEAD request (headers only)                                        |
+| `--summary`     | `-S`  | Show request summary (status, size, duration)                           |
+| `--table`       | `-T`  | Format output as a table                                                |
+| `--debug`       |       | Enable debug logging                                                    |
+| `--history`     |       | View command history                                                    |
+| `--load-test`   |       | Run load testing mode                                                   |
+| `--requests`    | `-n`  | Number of requests for load testing                                     |
+| `--concurrency` | `-c`  | Concurrency level for load testing                                      |
+| `--duration`    |       | Duration for load testing                                               |
+
+### Examples
+
+#### Basic Requests
+
+##### Simple GET request (default method)
 
 ```sh
 curly https://jsonplaceholder.typicode.com/posts/1
 ```
 
-- By default curly will use GET.
-
-Quickly get a summary of your request, which includes the byte size of the response and the status code.
+##### POST request with method flag
 
 ```sh
-curly -S https://jsonplaceholder.typicode.com/posts/1
-
-# OR
-
-curly --summary https://jsonplaceholder.typicode.com/posts/1
+curly -X POST https://jsonplaceholder.typicode.com/posts
 ```
 
-- Status codes are automatically colored red for you if they are > 300 and green otherwise.
-
-HEAD request
+##### PUT request
 
 ```sh
-curly -I https://jsonplaceholder.typicode.com/posts/1
-
-# OR
-
-curly --head https://jsonplaceholder.typicode.com/posts/1
+curly -X PUT https://jsonplaceholder.typicode.com/posts/1
 ```
 
-Include only headers in output
+##### DELETE request
+
+```sh
+curly -X DELETE https://jsonplaceholder.typicode.com/posts/1
+```
+
+#### Working with Headers
+
+##### Add custom headers
+
+```sh
+curly -H "Authorization: Bearer token123" -H "Accept: application/json" https://api.example.com/data
+```
+
+##### Include response headers in output
 
 ```sh
 curly -i https://jsonplaceholder.typicode.com/posts/1
 ```
 
-POST raw JSON data
+##### HEAD request (headers only, no body)
 
 ```sh
-curly -X POST --data-raw '{"title": "foo", "body": "bar"}' https://jsonplaceholder.typicode.com/posts
-```
-
-POST key/value pairs as JSON (an easier alternative to --data-raw)
-
-```sh
-curly -X POST -d title=foo -d body=bar https://jsonplaceholder.typicode.com/posts
-```
-
-Write to an output file
-
-```sh
-curly -o ./test.txt https://jsonplaceholder.typicode.com/posts
-```
-
-Save cookies to a cookie jar file
-
-```sh
-curly -c ./cookies.json https://example.com/login
-```
-
-Send cookies with your request
-
-```sh
-curly -b "NAME1=VALUE1;" https://example.com/login
-
-# OR pass cookies through regular headers
-
-curly -H "Set-Cookie: NAME1=VALUE1;" https://example.com/login
-
-# OR use a file (can be json or netscape)
-
-curly -b ./cookie_file.json https://example.com/login
-```
-
-Send and save cookies with your request
-
-```sh
-curly -b "NAME1=VALUE1;" -c ./cookies.json https://example.com/login
-```
-
-Query params
-
-```sh
-curly https://jsonplaceholder.typicode.com/posts?userId=1
-
+curly -I https://jsonplaceholder.typicode.com/posts/1
 # OR
-
-curly -q userId=1 https://jsonplaceholder.typicode.com/posts
+curly --head https://jsonplaceholder.typicode.com/posts/1
 ```
 
-Viewing history
+#### Sending Data
+
+##### POST JSON data using key=value pairs (automatically converted to JSON)
 
 ```sh
-Usage: curly --history
+curly -X POST -d title=foo -d body=bar -d userId=1 https://jsonplaceholder.typicode.com/posts
+# Sends: {"title": "foo", "body": "bar", "userId": "1"}
 ```
 
-- History is automatically written to ~/curly_history.txt
+##### POST raw JSON data
 
-Debug mode:
+```sh
+curly -X POST --data-raw '{"title": "foo", "body": "bar", "userId": 1}' https://jsonplaceholder.typicode.com/posts
+```
+
+##### Multiple data fields
+
+```sh
+curly -X POST -d name=John -d email=john@example.com -d age=30 https://api.example.com/users
+```
+
+#### Query Parameters
+
+##### Add query parameters using URL
+
+```sh
+curly https://jsonplaceholder.typicode.com/posts?userId=1&completed=true
+```
+
+##### Add query parameters using flags
+
+```sh
+curly -q userId=1 -q completed=true https://jsonplaceholder.typicode.com/posts
+```
+
+#### Cookie Management
+
+##### Send cookies as key=value pairs
+
+```sh
+curly -b sessionId=abc123 -b userId=456 https://example.com/api
+# Sends Cookie header: sessionId=abc123; userId=456
+```
+
+##### Send cookies from a file
+
+```sh
+# Reads cookies from a JSON or Netscape format file
+curly -b ./cookies.txt https://example.com/api
+```
+
+##### Save received cookies to a jar file
+
+```sh
+curly --cookie-jar ./cookies.json https://example.com/login
+```
+
+##### Send and save cookies in one request
+
+```sh
+curly -b sessionId=old123 --cookie-jar ./new-cookies.json https://example.com/refresh
+```
+
+**Note:** Unlike curl which uses `-c` for cookie jar, curly uses `--cookie-jar` for clarity
+
+#### Output Options
+
+##### Save response to a file
+
+```sh
+curly -o ./response.json https://jsonplaceholder.typicode.com/posts/1
+```
+
+##### Show request summary (status, size, duration, method)
+
+```sh
+curly -S https://jsonplaceholder.typicode.com/posts/1
+# OR
+curly --summary https://jsonplaceholder.typicode.com/posts/1
+```
+
+##### Format output as a table (works with summary and headers)
+
+```sh
+curly -S -T https://jsonplaceholder.typicode.com/posts/1
+curly -I -T https://jsonplaceholder.typicode.com/posts/1
+```
+
+#### Load Testing
+
+##### Basic load test (100 requests with concurrency of 10)
+
+```sh
+curly --load-test -n 100 -c 10 https://api.example.com/endpoint
+```
+
+##### Load test for specific duration
+
+```sh
+curly --load-test --duration 30s -c 20 https://api.example.com/endpoint
+```
+
+##### Load test with POST data
+
+```sh
+curly --load-test -X POST -d name=test -n 50 https://api.example.com/create
+```
+
+#### Debugging and History
+
+##### Enable debug mode (shows detailed request/response information)
 
 ```sh
 curly --debug https://jsonplaceholder.typicode.com/posts/1
+# OR set DEBUG environment variable
+DEBUG=true curly https://jsonplaceholder.typicode.com/posts/1
+```
+
+##### View command history
+
+```sh
+curly --history
+```
+
+- History is automatically saved to `~/curly_history.txt`
+
+#### Complex Examples
+
+##### API request with authentication and custom headers
+
+```sh
+curly -X GET \
+  -H "Authorization: Bearer eyJhbGc..." \
+  -H "Accept: application/json" \
+  -H "X-API-Version: 2" \
+  https://api.example.com/users/profile
+```
+
+##### POST form data with cookies
+
+```sh
+curly -X POST \
+  -d username=john \
+  -d password=secret \
+  -b ./cookies.txt \
+  --cookie-jar ./new-cookies.txt \
+  https://example.com/login
+```
+
+##### Download file with progress info
+
+```sh
+curly -S -o ./download.pdf https://example.com/files/document.pdf
+```
+
+##### Complex query with multiple parameters
+
+```sh
+curly -q page=1 \
+  -q limit=20 \
+  -q sort=created_at \
+  -q order=desc \
+  -q status=active \
+  https://api.example.com/items
 ```
 
 ## Architecture
@@ -151,7 +285,7 @@ Curly follows a modular architecture designed for maintainability, testability, 
 
 ### Project Structure
 
-```
+```text
 src/
 ├── commands/           # CLI command implementations
 │   ├── request/       # Default HTTP request command

@@ -54,4 +54,28 @@ export class StatsCollector {
       errors: this.results.filter((r) => r.error).map((r) => r.error),
     }
   }
+
+  printSummary(duration: number) {
+    const { min, max, mean, total } = this.getStats()
+    const requestsPerSecond = total / duration
+
+    console.log('')
+    console.log('Summary:')
+    console.log('  Slowest:      ', max.toFixed(2))
+    console.log('  Fastest:      ', min.toFixed(2))
+    console.log('  Average:      ', mean.toFixed(2))
+    console.log('  Requests/sec: ', requestsPerSecond.toFixed(2))
+  }
+
+  printStatusCodeDistribution() {
+    const statusCodes = this.getStatusCodes()
+    if (!statusCodes) return
+
+    console.log('')
+    console.log('')
+    console.log('Status code distribution:')
+    for (const [key, value] of Object.entries(statusCodes)) {
+      console.log(`  [${key}] ${value} responses`)
+    }
+  }
 }

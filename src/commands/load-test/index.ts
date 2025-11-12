@@ -8,17 +8,11 @@ const DEFAULT_CONCURRENCY = '50'
 export async function load(url: string, options: FetchOptions) {
   const requests = parseInt(options.requests || DEFAULT_REQUESTS)
   const concurrency = parseInt(options.concurrency || DEFAULT_CONCURRENCY)
-  const duration = options.duration ? parseInt(options.duration) : undefined
 
   logger().debug(`Starting load test: ${requests} requests with ${concurrency} concurrency`)
 
-  console.log(`Load test configuration`)
-  console.log(`URL: ${url}`)
-  console.log(`Requests ${duration ? 'unlimited (time-based)' : requests}`)
-  console.log(`Concurrency: ${concurrency}`)
-  if (duration) console.log(`Duration: ${duration} seconds`)
-
   const stats = new StatsCollector()
+  const startTime = performance.now()
 
   for (let i = 0; i < requests; i += concurrency) {
     const batchSize = Math.min(concurrency, requests - i)
@@ -39,8 +33,10 @@ export async function load(url: string, options: FetchOptions) {
     stats.addResults(batchResults)
   }
 
-  const results = stats.getStats()
-  console.log('results', results)
+  const endTime = performance.now()
+  const totalDuration = (endTime - startTime) / 1000
+  stats.printSummary(totalDuration)
+  stats.printStatusCodeDistribution()
 
   logger().debug(`Finished load test: ${requests} requests with ${concurrency} concurrency`)
 }

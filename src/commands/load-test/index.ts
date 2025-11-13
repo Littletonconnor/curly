@@ -22,8 +22,8 @@ export async function load(url: string, options: FetchOptions) {
         curl(url, options)
           .then(buildResponse)
           .catch((error) => ({
-            duration: 0,
             status: 0,
+            duration: 0,
             size: '0',
             error: error.message,
           })),

@@ -54,14 +54,13 @@ Usage: curly [OPTIONS] <url>
 | `--output`      | `-o`  | Write response to a file                                                |
 | `--include`     | `-i`  | Include response headers in output                                      |
 | `--head`        | `-I`  | Send HEAD request (headers only)                                        |
-| `--summary`     | `-S`  | Show request summary (status, size, duration)                           |
+| `--summary`     | `-S`  | Show request summary (status, size)                                     |
 | `--table`       | `-T`  | Format output as a table                                                |
 | `--debug`       |       | Enable debug logging                                                    |
 | `--history`     |       | View command history                                                    |
 | `--load-test`   |       | Run load testing mode                                                   |
 | `--requests`    | `-n`  | Number of requests for load testing                                     |
 | `--concurrency` | `-c`  | Concurrency level for load testing                                      |
-| `--duration`    |       | Duration for load testing                                               |
 
 ### Examples
 
@@ -186,7 +185,7 @@ curly -b sessionId=old123 --cookie-jar ./new-cookies.json https://example.com/re
 curly -o ./response.json https://jsonplaceholder.typicode.com/posts/1
 ```
 
-##### Show request summary (status, size, duration, method)
+##### Show request summary (status, size, method)
 
 ```sh
 curly -S https://jsonplaceholder.typicode.com/posts/1
@@ -202,18 +201,6 @@ curly -I -T https://jsonplaceholder.typicode.com/posts/1
 ```
 
 #### Load Testing
-
-##### Basic load test (100 requests with concurrency of 10)
-
-```sh
-curly --load-test -n 100 -c 10 https://api.example.com/endpoint
-```
-
-##### Load test for specific duration
-
-```sh
-curly --load-test --duration 30s -c 20 https://api.example.com/endpoint
-```
 
 ##### Load test with POST data
 

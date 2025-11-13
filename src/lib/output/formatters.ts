@@ -25,10 +25,6 @@ export function buildPrintType(options: FetchOptions): PrintType {
   }
 }
 
-function buildHeadersArray(options: FetchOptions) {
-  return Object.keys(options).filter((option) => option)
-}
-
 export async function writeToCookieJar(
   data: Awaited<ReturnType<typeof buildResponse>>,
   options: FetchOptions,
@@ -63,21 +59,19 @@ export async function stdout(data: Data, options: FetchOptions) {
 
   if (options.head) {
     printHeaders(data.headers, options)
-    await writeToCookieJar(data, options)
   } else if (options.include) {
     printHeaders(data.headers, options)
-    await writeToCookieJar(data, options)
     console.log()
     printResponse(data.response)
   } else if (options.output) {
-    await writeToCookieJar(data, options)
     await writeToOutputFile(data, options)
     printResponse(data.response)
   } else if (options.summary) {
-    await writeToCookieJar(data, options)
     printSummary(data, options)
-  } else {
+  } else if (options['cookie-jar']) {
     await writeToCookieJar(data, options)
+    printResponse(data.response)
+  } else {
     printResponse(data.response)
   }
 }

@@ -1,6 +1,5 @@
 import { curl, buildResponse, type FetchOptions } from '../../core/http/client'
 import { logger } from '../../lib/utils/logger'
-import { toSeconds } from '../../lib/utils/time'
 import { StatsCollector } from './stats'
 
 const DEFAULT_REQUESTS = '200'

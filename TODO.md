@@ -10,26 +10,22 @@ Simple but effective load testing functionality inspired by `hey`, allowing user
 
 - ✅ Basic load test structure (`src/commands/load-test/index.ts`)
 - ✅ Statistics collector (`src/commands/load-test/stats.ts`)
-- ✅ CLI options (`-n, --requests`, `-c, --concurrency`, `--duration`, `--load-test`)
+- ✅ CLI options (`-n, --requests`, `-c, --concurrency`)
 - ✅ Formatted summary report with proper output (`printSummary()` and `printStatusCodeDistribution()`)
 - ✅ Requests per second calculation
+- ✅ Auto-detect load test mode (removed need for `--load-test` flag)
+- ✅ Summary format matches `hey` output style (Total, Slowest, Fastest, Average, Requests/sec)
+- ✅ Response time histogram
 - ⏳ Progress indicator during execution
 - ⏳ Data transfer tracking
-- ⏳ Auto-detect load test mode (remove need for `--load-test` flag)
+- ⏳ Latency distribution (percentiles: 10%, 25%, 50%, 75%, 90%, 95%, 99%)
 
 ### CLI Options
 
 - `-n, --requests`: Number of requests to run (default: 200)
 - `-c, --concurrency`: Number of concurrent workers (default: 50)
-- `--duration`: Time-based testing in seconds (alternative to -n)
-- `--load-test`: Flag to enable load testing mode
 
-**TODO: Make `--load-test` flag unnecessary**
-
-- Currently requires `--load-test` flag to avoid conflicts with other flags
-- **Proposed solution**: Auto-detect load test mode when any load-test-specific flags are present (`-n`, `-c`, or `--duration`)
-- This would allow: `curly -n 1000 -c 10 https://api.example.com` instead of `curly --load-test -n 1000 -c 10 https://api.example.com`
-- Need to ensure no conflicts with existing flags
+**✅ Auto-detection implemented**: Load test mode is automatically detected when `-n` or `-c` flags are present, allowing: `curly -n 1000 -c 10 https://api.example.com`
 
 ### Implementation Components
 
@@ -41,7 +37,7 @@ Simple but effective load testing functionality inspired by `hey`, allowing user
 - ✅ Response status code and error tracking
 - ✅ Total duration tracking for requests/sec calculation
 - ⏳ DNS and connect time tracking
-- ⏳ Remove duration flag
+- ⏳ Progress indicator during execution
 
 #### 2. Statistics Collector (`src/commands/load-test/stats.ts`)
 
@@ -51,47 +47,68 @@ Simple but effective load testing functionality inspired by `hey`, allowing user
 - ✅ Requests per second calculation
 - ✅ Summary output formatting (`printSummary()`)
 - ✅ Status code distribution output (`printStatusCodeDistribution()`)
+- ✅ Response time histogram (`printHistogram()`)
+- ⏳ Latency distribution output (`printLatencyDistribution()`)
 
 #### 3. Load Test Output
 
 - ✅ Summary report with:
+  - Total duration
   - Slowest/Fastest/Average response times
   - Requests per second
   - Status code breakdown
+- ✅ Response time histogram (visual bar chart)
 - ⏳ Progress indicator during execution
-- ⏳ Response time distribution (percentiles in summary)
-- ⏳ Optional table format using existing table utility
+- ⏳ Latency distribution (percentiles: 10%, 25%, 50%, 75%, 90%, 95%, 99%)
 - ⏳ Error breakdown and sample errors display
 
 ### Example Usage
 
 ```bash
 # Basic load test - 1000 requests with 10 concurrent
-curly --load-test -n 1000 -c 10 https://api.example.com
-
-# Time-based test - run for 30 seconds
-curly --load-test --duration 30 -c 20 https://api.example.com
+curly -n 1000 -c 10 https://api.example.com
 
 # With authentication and custom headers
-curly --load-test -n 500 -c 5 -H "Authorization: Bearer token" https://api.example.com
+curly -n 500 -c 5 -H "Authorization: Bearer token" https://api.example.com
 
 # POST requests with body
-curly --load-test -n 100 -c 10 -X POST -d name=test https://api.example.com/users
+curly -n 100 -c 10 -X POST -d name=test https://api.example.com/users
 ```
 
 ### Example Output
 
 ```
 Summary:
-  Slowest:      523.45
-  Fastest:      45.12
-  Average:      125.33
-  Requests/sec: 80.00
+  Total:        1.5160 secs
+  Slowest:      0.3617 secs
+  Fastest:      0.0541 secs
+  Average:      0.1168 secs
+  Requests/sec: 65.9638
 
+Response time histogram:
+  0.054 [1]     |■
+  0.085 [34]    |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.116 [36]    |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.146 [14]    |■■■■■■■■■■■■■■■■
+  0.177 [5]     |■■■■■■
+  0.208 [0]     |
+  0.239 [0]     |
+  0.269 [0]     |
+  0.300 [0]     |
+  0.331 [7]     |■■■■■■■■
+  0.362 [3]     |■■■
+
+Latency distribution:
+  10% in 0.0624 secs
+  25% in 0.0698 secs
+  50% in 0.0947 secs
+  75% in 0.1210 secs
+  90% in 0.3041 secs
+  95% in 0.3213 secs
+  99% in 0.3617 secs
 
 Status code distribution:
-  [200] 950 responses
-  [500] 30 responses
+  [200] 100 responses
 ```
 
 ### Implementation Notes
@@ -99,9 +116,9 @@ Status code distribution:
 - ✅ Reuse existing fetch logic from `src/core/http/client.ts`
 - ✅ Maintain compatibility with all existing options
 - ✅ Keep load testing code modular and separate
-- ⏳ Consider Node.js worker threads for high concurrency
 - ✅ Memory-efficient statistics collection
-- ⏳ Auto-detect load test mode to remove need for explicit `--load-test` flag
+- ✅ Auto-detect load test mode (no explicit flag needed)
+- ⏳ Consider Node.js worker threads for high concurrency
 
 ---
 

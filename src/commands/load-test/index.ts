@@ -22,8 +22,8 @@ export async function load(url: string, options: FetchOptions) {
         curl(url, options)
           .then(buildResponse)
           .catch((error) => ({
-            duration: 0,
             status: 0,
+            duration: 0,
             size: '0',
             error: error.message,
           })),
@@ -36,6 +36,7 @@ export async function load(url: string, options: FetchOptions) {
   const endTime = performance.now()
   const totalDuration = (endTime - startTime) / 1000
   stats.printSummary(totalDuration)
+  stats.printHistogram()
   stats.printStatusCodeDistribution()
 
   logger().debug(`Finished load test: ${requests} requests with ${concurrency} concurrency`)

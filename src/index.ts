@@ -24,7 +24,8 @@ export async function main() {
 
     const url = positionals[positionals.length - 1]
 
-    if (cliFlags['load-test']) {
+    const isLoadTest = cliFlags.concurrency || cliFlags.requests
+    if (isLoadTest) {
       await load(url, cliFlags)
     } else {
       await executeRequest(url, cliFlags)

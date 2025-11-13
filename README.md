@@ -2,14 +2,15 @@
 
 ![Curly Banner](./banner.svg)
 
-A command-line tool for making `curl` requests simpler and more intuitive. Think of `curly` as a light wrapper around `fetch` in Node.js - plus some handy CLI niceties.
+A command-line tool for making HTTP requests simpler and more intuitive. Think of `curly` as a modern alternative to `curl` - a light wrapper around `fetch` in Node.js with curl-like syntax, plus built-in load testing capabilities.
 
 ## Features
 
 - **Simple JSON Posting**: Automatically sets `Content-Type`: `application/json` if you're posting data.
 - **Automatic Content-Type Parsing**: Tries to parse JSON responses by default. This makes it easier to make requests to JSON APIs or HTML documents without having to specify `Content-Type` headers.
+- **Load Testing**: Built-in load testing with automatic mode detection. Fire off multiple concurrent requests and get detailed performance statistics including response time histograms.
 - **Helper Flags** (like `--help`, `--debug`, `--include`) for easier debugging and data introspection.
-- **Familiar options**: Mimics some curl style flags (`-X`, `-H`, `-d`, `-I`).
+- **Familiar options**: Mimics curl-style flags (`-X`, `-H`, `-d`, `-I`) for easy migration from curl.
 - **Pretty Printing**: The CLI automatically pretty prints the output for you, and groups response data into easily viewable chunks.
 - **Viewing history**: Easily view history of commands you have written.
 
@@ -54,14 +55,12 @@ Usage: curly [OPTIONS] <url>
 | `--output`      | `-o`  | Write response to a file                                                |
 | `--include`     | `-i`  | Include response headers in output                                      |
 | `--head`        | `-I`  | Send HEAD request (headers only)                                        |
-| `--summary`     | `-S`  | Show request summary (status, size, duration)                           |
+| `--summary`     | `-S`  | Show request summary (status, size)                                     |
 | `--table`       | `-T`  | Format output as a table                                                |
 | `--debug`       |       | Enable debug logging                                                    |
 | `--history`     |       | View command history                                                    |
-| `--load-test`   |       | Run load testing mode                                                   |
-| `--requests`    | `-n`  | Number of requests for load testing                                     |
-| `--concurrency` | `-c`  | Concurrency level for load testing                                      |
-| `--duration`    |       | Duration for load testing                                               |
+| `--requests`    | `-n`  | Number of requests for load testing (auto-detects load test mode)       |
+| `--concurrency` | `-c`  | Concurrency level for load testing (auto-detects load test mode)        |
 
 ### Examples
 
@@ -96,7 +95,7 @@ curly -X DELETE https://jsonplaceholder.typicode.com/posts/1
 ##### Add custom headers
 
 ```sh
-curly -H "Authorization: Bearer token123" -H "Accept: application/json" https://api.example.com/data
+curly -H "Accept: application/json" -H "X-Custom-Header: my-value" https://jsonplaceholder.typicode.com/posts/1
 ```
 
 ##### Include response headers in output
@@ -131,7 +130,7 @@ curly -X POST --data-raw '{"title": "foo", "body": "bar", "userId": 1}' https://
 ##### Multiple data fields
 
 ```sh
-curly -X POST -d name=John -d email=john@example.com -d age=30 https://api.example.com/users
+curly -X POST -d title="My Post" -d body="Post content" -d userId=1 https://jsonplaceholder.typicode.com/posts
 ```
 
 #### Query Parameters
@@ -153,7 +152,7 @@ curly -q userId=1 -q completed=true https://jsonplaceholder.typicode.com/posts
 ##### Send cookies as key=value pairs
 
 ```sh
-curly -b sessionId=abc123 -b userId=456 https://example.com/api
+curly -b sessionId=abc123 -b userId=456 https://jsonplaceholder.typicode.com/posts/1
 # Sends Cookie header: sessionId=abc123; userId=456
 ```
 
@@ -186,7 +185,7 @@ curly -b sessionId=old123 --cookie-jar ./new-cookies.json https://example.com/re
 curly -o ./response.json https://jsonplaceholder.typicode.com/posts/1
 ```
 
-##### Show request summary (status, size, duration, method)
+##### Show request summary (status, size, method)
 
 ```sh
 curly -S https://jsonplaceholder.typicode.com/posts/1
@@ -203,22 +202,24 @@ curly -I -T https://jsonplaceholder.typicode.com/posts/1
 
 #### Load Testing
 
-##### Basic load test (100 requests with concurrency of 10)
+Load testing mode is automatically detected when `-n` or `-c` flags are present.
+
+##### Basic load test
 
 ```sh
-curly --load-test -n 100 -c 10 https://api.example.com/endpoint
-```
-
-##### Load test for specific duration
-
-```sh
-curly --load-test --duration 30s -c 20 https://api.example.com/endpoint
+curly -n 100 -c 10 https://jsonplaceholder.typicode.com/posts/1
 ```
 
 ##### Load test with POST data
 
 ```sh
-curly --load-test -X POST -d name=test -n 50 https://api.example.com/create
+curly -n 50 -c 5 -X POST -d title=test -d body=content -d userId=1 https://jsonplaceholder.typicode.com/posts
+```
+
+##### High concurrency load test
+
+```sh
+curly -n 1000 -c 50 https://jsonplaceholder.typicode.com/users
 ```
 
 #### Debugging and History
@@ -241,143 +242,168 @@ curly --history
 
 #### Complex Examples
 
-##### API request with authentication and custom headers
+##### GET request with query parameters
 
 ```sh
-curly -X GET \
-  -H "Authorization: Bearer eyJhbGc..." \
-  -H "Accept: application/json" \
-  -H "X-API-Version: 2" \
-  https://api.example.com/users/profile
+curly -q userId=1 https://jsonplaceholder.typicode.com/posts
 ```
 
-##### POST form data with cookies
+##### GET nested resource (comments for a post)
+
+```sh
+curly https://jsonplaceholder.typicode.com/posts/1/comments
+```
+
+##### GET with multiple query parameters
+
+```sh
+curly -q postId=1 -q id=1 https://jsonplaceholder.typicode.com/comments
+```
+
+##### POST with JSON data (key=value pairs)
 
 ```sh
 curly -X POST \
-  -d username=john \
-  -d password=secret \
-  -b ./cookies.txt \
-  --cookie-jar ./new-cookies.txt \
-  https://example.com/login
+  -d title="My New Post" \
+  -d body="This is the content" \
+  -d userId=1 \
+  https://jsonplaceholder.typicode.com/posts
 ```
 
-##### Download file with progress info
+##### POST with raw JSON data
 
 ```sh
-curly -S -o ./download.pdf https://example.com/files/document.pdf
+curly -X POST \
+  --data-raw '{"title": "My New Post", "body": "This is the content", "userId": 1}' \
+  https://jsonplaceholder.typicode.com/posts
 ```
 
-##### Complex query with multiple parameters
+##### PUT request (update existing resource)
 
 ```sh
-curly -q page=1 \
-  -q limit=20 \
-  -q sort=created_at \
-  -q order=desc \
-  -q status=active \
-  https://api.example.com/items
+curly -X PUT \
+  -d id=1 \
+  -d title="Updated Title" \
+  -d body="Updated body content" \
+  -d userId=1 \
+  https://jsonplaceholder.typicode.com/posts/1
 ```
 
-## Architecture
+##### PATCH request (partial update)
 
-Curly follows a modular architecture designed for maintainability, testability, and extensibility. The codebase is organized into clear functional areas with well-defined separation of concerns.
-
-### Project Structure
-
-```text
-src/
-├── commands/           # CLI command implementations
-│   ├── request/       # Default HTTP request command
-│   │   └── index.ts   # Single request execution
-│   └── load-test/     # Load testing command
-│       ├── index.ts   # Load test orchestration
-│       └── stats.ts   # Statistics collection and analysis
-├── core/              # Core business logic
-│   ├── http/          # HTTP-related functionality
-│   │   ├── client.ts  # HTTP client and request building
-│   │   ├── cookies.ts # Cookie parsing and handling
-│   │   └── index.ts   # HTTP module exports
-│   └── config/        # Configuration and constants
-│       ├── constants.ts # Content-type definitions
-│       └── index.ts    # Config module exports
-├── lib/               # Shared libraries and utilities
-│   ├── cli/           # CLI-specific utilities
-│   │   ├── parser.ts  # Command-line argument parsing
-│   │   ├── help.ts    # Help text generation
-│   │   └── index.ts   # CLI module exports
-│   ├── output/        # Output formatting utilities
-│   │   ├── formatters.ts # Response output formatting
-│   │   ├── table.ts      # Table rendering utilities
-│   │   └── index.ts      # Output module exports
-│   └── utils/         # General utilities
-│       ├── logger.ts  # Debug and error logging
-│       ├── history.ts # Command history management
-│       ├── file.ts    # File operations and validation
-│       └── index.ts   # Utils module exports
-├── types/             # TypeScript type definitions
-│   └── index.ts       # Shared type definitions
-└── index.ts           # Main entry point and orchestration
+```sh
+curly -X PATCH \
+  -d title="Only Update Title" \
+  https://jsonplaceholder.typicode.com/posts/1
 ```
 
-### Directory Overview
+##### DELETE resource
 
-#### `commands/`
+```sh
+curly -X DELETE https://jsonplaceholder.typicode.com/posts/1
+```
 
-Contains implementations for different CLI commands. Each command is self-contained and focuses on a specific functionality:
+##### GET with custom headers
 
-- **`request/`**: Handles single HTTP requests with output formatting
-- **`load-test/`**: Manages load testing scenarios with statistics collection
+```sh
+curly -H "Accept: application/json" \
+  -H "X-Custom-Header: my-value" \
+  https://jsonplaceholder.typicode.com/posts/1
+```
 
-This structure makes it easy to add new commands without affecting existing functionality.
+##### GET with headers and query parameters
 
-#### `core/`
+```sh
+curly -H "Accept: application/json" \
+  -q userId=1 \
+  https://jsonplaceholder.typicode.com/posts
+```
 
-Houses the essential business logic that powers the application:
+##### POST with headers and data
 
-- **`http/`**: All HTTP-related functionality including request building, response handling, and cookie management
-- **`config/`**: Application configuration, constants, and settings
+```sh
+curly -X POST \
+  -H "Content-Type: application/json" \
+  -H "X-Request-ID: 12345" \
+  -d title="New Post" \
+  -d body="Post body" \
+  -d userId=1 \
+  https://jsonplaceholder.typicode.com/posts
+```
 
-Core modules are designed to be reusable across different commands.
+##### GET with summary and table format
 
-#### `lib/`
+```sh
+curly -S -T https://jsonplaceholder.typicode.com/posts/1
+```
 
-Contains shared libraries and utilities organized by function:
+##### GET headers only (HEAD request)
 
-- **`cli/`**: Command-line interface utilities including argument parsing and help generation
-- **`output/`**: Response formatting, table rendering, and output management
-- **`utils/`**: General-purpose utilities like logging, file operations, and history management
+```sh
+curly -I https://jsonplaceholder.typicode.com/posts/1
+```
 
-#### `types/`
+##### GET with included response headers
 
-Centralized TypeScript type definitions used throughout the application.
+```sh
+curly -i https://jsonplaceholder.typicode.com/posts/1
+```
 
-### Naming Conventions
+##### Save response to file
 
-- **Files**: Use kebab-case for file names (`load-test.ts`, `cookie-jar.ts`)
-- **Directories**: Use kebab-case for directory names (`load-test/`, `cli/`)
-- **Functions**: Use camelCase (`executeRequest`, `buildResponse`)
-- **Types**: Use PascalCase (`FetchOptions`, `RequestResult`)
-- **Constants**: Use SCREAMING_SNAKE_CASE (`CONTENT_TYPES`, `DEFAULT_REQUESTS`)
+```sh
+curly -o ./post.json https://jsonplaceholder.typicode.com/posts/1
+```
 
-### Adding New Features
+##### GET user's posts and albums
 
-When adding new functionality to Curly, follow these guidelines:
+```sh
+# Get all posts by user 1
+curly -q userId=1 https://jsonplaceholder.typicode.com/posts
 
-1. **New Commands**: Add to `src/commands/` with a dedicated directory
-2. **Core Logic**: Add shared business logic to `src/core/`
-3. **Utilities**: Add reusable utilities to appropriate `src/lib/` subdirectories
-4. **Types**: Add shared types to `src/types/index.ts`
+# Get all albums by user 1
+curly -q userId=1 https://jsonplaceholder.typicode.com/albums
+```
 
-### Import Strategy
+##### GET photos from an album
 
-The architecture uses barrel exports (`index.ts` files) to provide clean import paths:
+```sh
+curly -q albumId=1 https://jsonplaceholder.typicode.com/photos
+```
 
-```typescript
-// Clean imports using barrel exports
-import { cli, printHelpMessage } from './lib/cli'
-import { curl, buildResponse } from './core/http'
+##### GET todos for a user
 
-// Avoid deep imports when possible
-import { logger } from './lib/utils/logger' // Only when needed
+```sh
+curly -q userId=1 https://jsonplaceholder.typicode.com/todos
+```
+
+##### POST and save response to file
+
+```sh
+curly -X POST \
+  -d title="Test Post" \
+  -d body="Test body" \
+  -d userId=1 \
+  -o ./new-post.json \
+  https://jsonplaceholder.typicode.com/posts
+```
+
+##### Debug mode to see request details
+
+```sh
+curly --debug https://jsonplaceholder.typicode.com/posts/1
+```
+
+##### Load test a specific endpoint
+
+```sh
+# Test GET endpoint
+curly -n 100 -c 10 https://jsonplaceholder.typicode.com/posts/1
+
+# Test POST endpoint with data
+curly -n 50 -c 5 -X POST \
+  -d title="Load Test" \
+  -d body="Testing" \
+  -d userId=1 \
+  https://jsonplaceholder.typicode.com/posts
 ```

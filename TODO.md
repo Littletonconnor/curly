@@ -15,9 +15,9 @@ Simple but effective load testing functionality inspired by `hey`, allowing user
 - ✅ Requests per second calculation
 - ✅ Auto-detect load test mode (removed need for `--load-test` flag)
 - ✅ Summary format matches `hey` output style (Total, Slowest, Fastest, Average, Requests/sec)
+- ✅ Response time histogram
 - ⏳ Progress indicator during execution
 - ⏳ Data transfer tracking
-- ⏳ Response time histogram
 - ⏳ Latency distribution (percentiles: 10%, 25%, 50%, 75%, 90%, 95%, 99%)
 
 ### CLI Options
@@ -47,7 +47,7 @@ Simple but effective load testing functionality inspired by `hey`, allowing user
 - ✅ Requests per second calculation
 - ✅ Summary output formatting (`printSummary()`)
 - ✅ Status code distribution output (`printStatusCodeDistribution()`)
-- ⏳ Response time histogram (`printHistogram()`)
+- ✅ Response time histogram (`printHistogram()`)
 - ⏳ Latency distribution output (`printLatencyDistribution()`)
 
 #### 3. Load Test Output
@@ -57,8 +57,8 @@ Simple but effective load testing functionality inspired by `hey`, allowing user
   - Slowest/Fastest/Average response times
   - Requests per second
   - Status code breakdown
+- ✅ Response time histogram (visual bar chart)
 - ⏳ Progress indicator during execution
-- ⏳ Response time histogram (visual bar chart)
 - ⏳ Latency distribution (percentiles: 10%, 25%, 50%, 75%, 90%, 95%, 99%)
 - ⏳ Error breakdown and sample errors display
 

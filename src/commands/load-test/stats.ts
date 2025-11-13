@@ -1,3 +1,5 @@
+import { toSeconds } from '../../lib/utils/time'
+
 export interface RequestResult {
   duration: number
   status: number
@@ -28,17 +30,21 @@ export class StatsCollector {
   getStatusCodes() {
     const breakdown: Record<number, number> = {}
     for (const result of this.results) {
-      if (result.status === 0) return
+      if (result.status === 0) continue
       breakdown[result.status] = (breakdown[result.status] || 0) + 1
     }
     return breakdown
   }
 
-  getStats() {
-    const durations = this.results
+  getDurations() {
+    return this.results
       .filter((r) => !r.error)
-      .map((r) => r.duration)
+      .map((r) => r.duration / 1000)
       .sort((a, b) => a - b)
+  }
+
+  getStats() {
+    const durations = this.getDurations()
 
     return {
       total: this.results.length,
@@ -51,6 +57,7 @@ export class StatsCollector {
       p95: this.getPercentile(durations, PERCENTILES.p95),
       p99: this.getPercentile(durations, PERCENTILES.p99),
       statusCodes: this.getStatusCodes(),
+      durations,
       errors: this.results.filter((r) => r.error).map((r) => r.error),
     }
   }
@@ -61,15 +68,48 @@ export class StatsCollector {
 
     console.log('')
     console.log('Summary:')
-    console.log('  Slowest:      ', max.toFixed(2))
-    console.log('  Fastest:      ', min.toFixed(2))
-    console.log('  Average:      ', mean.toFixed(2))
-    console.log('  Requests/sec: ', requestsPerSecond.toFixed(2))
+    console.log('  Total:        ', duration.toFixed(4), 'secs')
+    console.log('  Slowest:      ', max.toFixed(4), 'secs')
+    console.log('  Fastest:      ', min.toFixed(4), 'secs')
+    console.log('  Average:      ', mean.toFixed(4), 'secs')
+    console.log('  Requests/sec: ', requestsPerSecond.toFixed(4))
+  }
+
+  printHistogram() {
+    const bucket = '■'
+    const numBuckets = 10
+    const maxBarLength = 40
+
+    const { durations, min, max } = this.getStats()
+
+    if (durations.length === 0) return
+
+    const bucketSize = (max - min) / numBuckets
+
+    const buckets = new Array(numBuckets).fill(0)
+
+    for (const duration of durations) {
+      const bucketIndex = Math.floor((duration - min) / bucketSize)
+      const finalIndex = bucketIndex >= numBuckets ? numBuckets - 1 : bucketIndex
+      buckets[finalIndex]++
+    }
+
+    const maxCount = Math.max(...buckets)
+
+    console.log('')
+    console.log('Response time histogram:')
+    for (let i = 0; i < numBuckets; i++) {
+      const bucketStart = min + i * bucketSize
+      const count = buckets[i]
+      const barLength = maxCount > 0 ? Math.round((count / maxCount) * maxBarLength) : 0
+      const bar = bucket.repeat(barLength)
+      console.log(`  ${bucketStart.toFixed(3)} [${count}]    ${count < 10 ? ' ' : ''}|${bar}`)
+    }
   }
 
   printStatusCodeDistribution() {
     const statusCodes = this.getStatusCodes()
-    if (!statusCodes) return
+    if (!statusCodes || Object.keys(statusCodes).length === 0) return
 
     console.log('')
     console.log('')

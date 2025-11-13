@@ -44,11 +44,18 @@ The application follows a modular architecture with clear separation of concerns
 
 - **Entry Point**: `bin/curly.js` - Checks Node version requirements and calls main()
 - **Main Flow**: `src/index.ts` - Orchestrates CLI parsing, request execution, and output
-- **CLI Parsing**: `src/cli.ts` - Uses Node's native parseArgs for command-line options
-- **HTTP Logic**: `src/fetch.ts` - Handles URL building, headers, body formatting, and fetch execution
-- **Output**: `src/utils.ts` - Manages stdout formatting, file writing, and history
-- **Cookie Handling**: `src/cookies.ts` - Parses and formats cookie headers
-- **Logging**: `src/logger.ts` - Debug and error logging based on DEBUG env var
+- **CLI Parsing**: `src/lib/cli/parser.ts` - Uses Node's native parseArgs for command-line options
+- **CLI Help**: `src/lib/cli/help.ts` - Help message generation
+- **HTTP Logic**: `src/core/http/client.ts` - Handles URL building, headers, body formatting, and fetch execution
+- **Cookie Handling**: `src/core/http/cookies.ts` - Parses and formats cookie headers
+- **Output**: `src/lib/output/formatters.ts` - Manages stdout formatting and file writing
+- **Table Output**: `src/lib/output/table.ts` - Table formatting utilities
+- **Logging**: `src/lib/utils/logger.ts` - Debug and error logging based on DEBUG env var
+- **History**: `src/lib/utils/history.ts` - Command history management
+- **File Utils**: `src/lib/utils/file.ts` - File reading and validation utilities
+- **Request Command**: `src/commands/request/index.ts` - Single request execution
+- **Load Test Command**: `src/commands/load-test/index.ts` - Load testing orchestration
+- **Load Test Stats**: `src/commands/load-test/stats.ts` - Statistics collection and reporting
 
 ### Key Design Patterns
 
@@ -56,6 +63,7 @@ The application follows a modular architecture with clear separation of concerns
 2. **Content-Type Detection**: Automatically infers response type when not specified, with fallback to text
 3. **Smart Defaults**: Automatically sets Content-Type to JSON for POST requests with data
 4. **Error Handling**: Comprehensive validation of user inputs with clear error messages
+5. **Load Test Auto-Detection**: Automatically detects load test mode when `-n` or `-c` flags are present
 
 ### Build Configuration
 
@@ -71,3 +79,5 @@ The application follows a modular architecture with clear separation of concerns
 - History is automatically written to `~/curly_history.txt`
 - Debug mode is activated via `--debug` flag or `DEBUG=true` environment variable
 - The tool attempts to parse JSON responses by default for better API interaction
+- Load testing mode is auto-detected when `-n` (requests) or `-c` (concurrency) flags are present
+- Load testing uses batched Promise.all for concurrent request execution

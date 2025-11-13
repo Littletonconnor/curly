@@ -1,5 +1,6 @@
 import { curl, buildResponse, type FetchOptions } from '../../core/http/client'
 import { logger } from '../../lib/utils/logger'
+import { toSeconds } from '../../lib/utils/time'
 import { StatsCollector } from './stats'
 
 const DEFAULT_REQUESTS = '200'
@@ -36,6 +37,7 @@ export async function load(url: string, options: FetchOptions) {
   const endTime = performance.now()
   const totalDuration = (endTime - startTime) / 1000
   stats.printSummary(totalDuration)
+  stats.printHistogram()
   stats.printStatusCodeDistribution()
 
   logger().debug(`Finished load test: ${requests} requests with ${concurrency} concurrency`)

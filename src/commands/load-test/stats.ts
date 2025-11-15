@@ -9,7 +9,11 @@ export interface RequestResult {
 }
 
 export const PERCENTILES = {
+  p10: 10,
+  p25: 25,
   p50: 50,
+  p75: 75,
+  p90: 90,
   p95: 95,
   p99: 99,
 }
@@ -53,13 +57,24 @@ export class StatsCollector {
       min: durations[0],
       max: durations[durations.length - 1],
       mean: durations.reduce((a, b) => a + b, 0) / durations.length,
+      p10: this.getPercentile(durations, PERCENTILES.p10),
+      p25: this.getPercentile(durations, PERCENTILES.p25),
       p50: this.getPercentile(durations, PERCENTILES.p50),
+      p75: this.getPercentile(durations, PERCENTILES.p75),
+      p90: this.getPercentile(durations, PERCENTILES.p90),
       p95: this.getPercentile(durations, PERCENTILES.p95),
       p99: this.getPercentile(durations, PERCENTILES.p99),
       statusCodes: this.getStatusCodes(),
       durations,
       errors: this.results.filter((r) => r.error).map((r) => r.error),
     }
+  }
+
+  print(duration: number) {
+    this.printSummary(duration)
+    this.printHistogram()
+    this.printLatencyDistribution()
+    this.printStatusCodeDistribution()
   }
 
   printSummary(duration: number) {
@@ -117,5 +132,19 @@ export class StatsCollector {
     for (const [key, value] of Object.entries(statusCodes)) {
       console.log(`  [${key}] ${value} responses`)
     }
+  }
+
+  printLatencyDistribution() {
+    const { p10, p25, p50, p75, p90, p99 } = this.getStats()
+
+    console.log('')
+    console.log('')
+    console.log('Latency distribution:')
+    console.log(`  10% in ${p10.toFixed(4)} secs`)
+    console.log(`  25% in ${p25.toFixed(4)} secs`)
+    console.log(`  50% in ${p50.toFixed(4)} secs`)
+    console.log(`  75% in ${p75.toFixed(4)} secs`)
+    console.log(`  90% in ${p90.toFixed(4)} secs`)
+    console.log(`  99% in ${p99.toFixed(4)} secs`)
   }
 }

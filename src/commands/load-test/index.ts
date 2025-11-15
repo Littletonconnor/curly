@@ -35,9 +35,7 @@ export async function load(url: string, options: FetchOptions) {
 
   const endTime = performance.now()
   const totalDuration = (endTime - startTime) / 1000
-  stats.printSummary(totalDuration)
-  stats.printHistogram()
-  stats.printStatusCodeDistribution()
+  stats.print(totalDuration)
 
   logger().debug(`Finished load test: ${requests} requests with ${concurrency} concurrency`)
 }

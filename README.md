@@ -4,6 +4,60 @@
 
 A command-line tool for making HTTP requests simpler and more intuitive. Think of `curly` as a modern alternative to `curl` - a light wrapper around `fetch` in Node.js with curl-like syntax, plus built-in load testing capabilities.
 
+## Quick Demo
+
+### Curl Endpoints
+
+```sh
+curly https://api.example.com/users/1
+```
+
+```json
+{
+  "id": 1,
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+```
+
+### Load Testing
+
+```sh
+curly -n 5000 -c 50 https://api.example.com/posts
+```
+
+```
+Summary:
+  Total:         10.5208 secs
+  Slowest:       0.3903 secs
+  Fastest:       0.0964 secs
+  Average:       0.1631 secs
+  Requests/sec:  475.2479
+
+Response time histogram:
+  0.096 [ 605]  |■■■■■■■■■■■■■■
+  0.126 [1741]  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.155 [1278]  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.185 [1200]  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■
+  0.214 [  76]  |■■
+  0.243 [  22]  |■
+  0.273 [   5]  |
+  0.302 [  29]  |■
+  0.332 [   8]  |
+  0.361 [  36]  |■
+
+Latency distribution:
+  10% in 0.1238 secs
+  25% in 0.1352 secs
+  50% in 0.1647 secs
+  75% in 0.1888 secs
+  90% in 0.2010 secs
+  99% in 0.3278 secs
+
+Status code distribution:
+  [201] 5000 responses
+```
+
 ## Features
 
 - **Simple JSON Posting**: Automatically sets `Content-Type`: `application/json` if you're posting data.

@@ -1,5 +1,3 @@
-import { toSeconds } from '../../lib/utils/time'
-
 export interface RequestResult {
   duration: number
   status: number

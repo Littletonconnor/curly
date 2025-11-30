@@ -2,6 +2,16 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Learning Mode
+
+**Important:** Always use the `learning` output style when working on this project. This mode:
+- Identifies opportunities for the user to write meaningful code (5-10 lines) that shapes the solution
+- Provides educational insights about implementation choices using `★ Insight` blocks
+- Focuses on business logic, design choices, and implementation strategies where user input matters
+- Explains trade-offs and guidance rather than just implementing everything directly
+
+Sessions should be collaborative and educational, helping the user learn while building features.
+
 ## Project Overview
 
 Curly is a Node.js CLI tool that simplifies making HTTP requests, acting as a wrapper around the fetch API with curl-like syntax. The project is written in TypeScript and uses ES modules.

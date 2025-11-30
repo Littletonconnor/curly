@@ -110,15 +110,17 @@ export class StatsCollector {
     }
 
     const maxCount = Math.max(...buckets)
+    const maxCountWidth = String(maxCount).length
 
     console.log('')
     console.log('Response time histogram:')
     for (let i = 0; i < numBuckets; i++) {
       const bucketStart = min + i * bucketSize
       const count = buckets[i]
+      const paddedCount = String(count).padStart(maxCountWidth)
       const barLength = maxCount > 0 ? Math.round((count / maxCount) * maxBarLength) : 0
       const bar = bucket.repeat(barLength)
-      console.log(`  ${bucketStart.toFixed(3)} [${count}]    ${count < 10 ? ' ' : ''}|${bar}`)
+      console.log(`  ${bucketStart.toFixed(3)} [${paddedCount}]    |${bar}`)
     }
   }
 

@@ -1,6 +1,28 @@
 # TODO
 
-## Load Testing Implementation (Next Priority)
+## Bug: ANSI escape codes written to file with -o flag (Next Priority)
+
+When using `-o` to save responses to a file, ANSI color codes are being written to the file instead of clean output. The file contains escape sequences like `[38;2;248;248;240m[33m1[38;2;248;248;240m[39m` instead of just `1`.
+
+**Steps to reproduce:**
+
+```sh
+curly -o ./response.json https://jsonplaceholder.typicode.com/posts/1
+cat response.json  # Shows ANSI escape codes in file
+```
+
+**Expected behavior:** File should contain clean JSON without terminal color codes.
+
+**Root cause:** The output formatter is applying terminal colors before writing to file. Need to detect when output is going to a file vs stdout and disable colorization accordingly.
+
+**Files to investigate:**
+
+- `src/lib/output/formatters.ts` - likely where colorization happens
+- Check if `util.inspect` or similar is being used with colors enabled
+
+---
+
+## Load Testing Implementation
 
 ### Overview
 

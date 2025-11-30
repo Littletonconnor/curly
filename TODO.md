@@ -17,7 +17,7 @@ Simple but effective load testing functionality inspired by `hey`, allowing user
 - ✅ Summary format matches `hey` output style (Total, Slowest, Fastest, Average, Requests/sec)
 - ✅ Response time histogram
 - ✅ Latency distribution (percentiles: 10%, 25%, 50%, 75%, 90%, 95%, 99%)
-- ⏳ Progress indicator during execution
+- ✅ Progress indicator during execution
 - ⏳ Data transfer tracking
 
 ### CLI Options
@@ -36,8 +36,8 @@ Simple but effective load testing functionality inspired by `hey`, allowing user
 - ✅ Timing metrics collection (latency)
 - ✅ Response status code and error tracking
 - ✅ Total duration tracking for requests/sec calculation
+- ✅ Progress indicator during execution
 - ⏳ DNS and connect time tracking
-- ⏳ Progress indicator during execution
 
 #### 2. Statistics Collector (`src/commands/load-test/stats.ts`)
 
@@ -59,7 +59,7 @@ Simple but effective load testing functionality inspired by `hey`, allowing user
   - Status code breakdown
 - ✅ Response time histogram (visual bar chart)
 - ✅ Latency distribution (percentiles: 10%, 25%, 50%, 75%, 90%, 95%, 99%)
-- ⏳ Progress indicator during execution
+- ✅ Progress indicator during execution
 - ⏳ Error breakdown and sample errors display
 
 ### Example Usage

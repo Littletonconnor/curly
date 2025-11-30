@@ -71,6 +71,39 @@ After write("[████] 2/3"):
 [████] 2/3|               <- new content, same line
 ```
 
+## The Math: Building the Bar
+
+The progress bar has two parts: filled characters and empty characters.
+
+```typescript
+const barWidth = 20
+const progress = completed / total           // 0 to 1
+const filledCount = Math.round(progress * barWidth)
+```
+
+**Example:** 30 of 100 requests complete
+
+```
+progress = 30 / 100 = 0.3
+filledCount = Math.round(0.3 * 20) = 6
+
+Bar: [██████░░░░░░░░░░░░░░]
+      ^^^^^^ 6 filled
+            ^^^^^^^^^^^^^^ 14 empty (20 - 6)
+```
+
+Then loop through and pick the right character:
+
+```typescript
+for (let i = 0; i < barWidth; i++) {
+  if (i < filledCount) {
+    bar += '█'  // filled
+  } else {
+    bar += '░'  // empty
+  }
+}
+```
+
 ## TTY Detection
 
 Progress bars only make sense in interactive terminals. When output is piped or redirected, we skip the progress:

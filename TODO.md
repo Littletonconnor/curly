@@ -2,8 +2,8 @@
 
 ## Easy (1-2 hours each)
 
-### Verbose mode (`-v`)
-Show request details (method, headers, body) before showing response. Similar to existing `--debug` but user-facing and cleaner.
+### ~~Verbose mode (`-v`)~~ ✓
+~~Show request details (method, headers, body) before showing response. Similar to existing `--debug` but user-facing and cleaner.~~
 
 ### Basic auth (`-u user:pass`)
 Support basic authentication with automatic base64 encoding.

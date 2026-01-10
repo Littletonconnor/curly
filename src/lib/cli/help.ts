@@ -42,6 +42,9 @@ Options:
 
   -f, --fail                   Exit with code 22 on HTTP errors (4xx/5xx)
                                Example: curly -f https://example.com/health || echo "Failed"
+
+  --quiet                      Suppress status line (for piping output)
+                               Example: curly --quiet https://example.com | jq .
 `
   console.log(message)
 }

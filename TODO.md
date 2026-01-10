@@ -23,12 +23,9 @@ curly -k https://localhost:8443/api
 curly -f https://api.example.com/health || echo "Health check failed"
 ```
 
-### Response time display (`--time`)
-Show request duration without full debug output.
-```sh
-curly --time https://api.example.com
-# Output: 200 OK (234ms)
-```
+### ~~Response time display~~ ✓
+~~Show request duration without full debug output.~~
+*Now shown by default in status line. Use `--quiet` to suppress.*
 
 ### ~~Setup linting~~ ✓
 ~~Add eslint or oxlint for code quality.~~

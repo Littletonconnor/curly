@@ -109,9 +109,8 @@ Usage: curly [OPTIONS] <url>
 | `--output`      | `-o`  | Write response to a file                                                |
 | `--include`     | `-i`  | Include response headers in output                                      |
 | `--head`        | `-I`  | Send HEAD request (headers only)                                        |
-| `--summary`     | `-S`  | Show request summary (status, size)                                     |
-| `--table`       | `-T`  | Format output as a table                                                |
 | `--verbose`     | `-v`  | Show detailed request/response information                              |
+| `--quiet`       |       | Suppress status line (for piping output)                                |
 | `--history`     |       | View command history                                                    |
 | `--requests`    | `-n`  | Number of requests for load testing (auto-detects load test mode)       |
 | `--concurrency` | `-c`  | Concurrency level for load testing (auto-detects load test mode)        |
@@ -243,19 +242,10 @@ curly -b sessionId=old123 --cookie-jar ./new-cookies.json https://example.com/re
 curly -o ./response.json https://jsonplaceholder.typicode.com/posts/1
 ```
 
-##### Show request summary (status, size, method)
+##### Quiet mode (suppress status line for piping)
 
 ```sh
-curly -S https://jsonplaceholder.typicode.com/posts/1
-# OR
-curly --summary https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### Format output as a table (works with summary and headers)
-
-```sh
-curly -S -T https://jsonplaceholder.typicode.com/posts/1
-curly -I -T https://jsonplaceholder.typicode.com/posts/1
+curly --quiet https://jsonplaceholder.typicode.com/posts/1 | jq .title
 ```
 
 #### Load Testing
@@ -448,12 +438,6 @@ curly -X POST \
   -d body="Post body" \
   -d userId=1 \
   https://jsonplaceholder.typicode.com/posts
-```
-
-##### GET with summary and table format
-
-```sh
-curly -S -T https://jsonplaceholder.typicode.com/posts/1
 ```
 
 ##### GET headers only (HEAD request)

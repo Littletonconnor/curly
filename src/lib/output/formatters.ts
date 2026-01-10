@@ -1,29 +1,10 @@
 import { promises } from 'fs'
 import { STATUS_CODES } from 'node:http'
-import { inspect } from 'node:util'
+import { inspect, styleText } from 'node:util'
 import { parseSetCookieHeaders } from '../../core/http/cookies'
-import { buildBody, buildResponse, type FetchOptions } from '../../core/http/client'
+import { buildResponse, type FetchOptions } from '../../core/http/client'
 import { logger } from '../utils/logger'
-import { drawTable } from './table'
 import { Data } from '../../types'
-
-type PrintType = 'include' | 'head' | 'summary' | 'default' | 'output' | 'cookie-jar'
-
-export function buildPrintType(options: FetchOptions): PrintType {
-  if (options['cookie-jar']) {
-    return 'include'
-  } else if (options.head) {
-    return 'head'
-  } else if (options.summary) {
-    return 'summary'
-  } else if (options.output) {
-    return 'output'
-  } else if (options.include) {
-    return 'cookie-jar'
-  } else {
-    return 'default'
-  }
-}
 
 export async function writeToCookieJar(
   data: Awaited<ReturnType<typeof buildResponse>>,
@@ -57,21 +38,23 @@ export async function writeToOutputFile(data: Data, options: FetchOptions) {
 
 export async function stdout(data: Data, options: FetchOptions) {
   if (options.head) {
-    printHeaders(data.headers, options)
+    printHeaders(data.headers)
   } else if (options.include) {
-    printHeaders(data.headers, options)
+    printHeaders(data.headers)
     console.log()
     printResponse(data.response)
+    printStatusLine(data, options)
   } else if (options.output) {
     await writeToOutputFile(data, options)
     printResponse(data.response)
-  } else if (options.summary) {
-    printSummary(data, options)
+    printStatusLine(data, options)
   } else if (options['cookie-jar']) {
     await writeToCookieJar(data, options)
     printResponse(data.response)
+    printStatusLine(data, options)
   } else {
     printResponse(data.response)
+    printStatusLine(data, options)
   }
 }
 
@@ -79,36 +62,33 @@ function getStatusText(status: number) {
   return STATUS_CODES[status] || 'unknown status'
 }
 
+function getStatusColor(status: number): Parameters<typeof styleText>[0] {
+  if (status >= 200 && status < 300) return 'green'
+  if (status >= 300 && status < 400) return 'yellow'
+  if (status >= 400) return 'red'
+  return 'white'
+}
+
 export function printResponse(response: Data['response']) {
   console.log(inspect(response, { depth: null, maxArrayLength: null, colors: true }))
 }
 
-export function printSummary(data: Data, options: FetchOptions) {
-  const rows = [
-    { label: 'Status', value: `${data.status} ${getStatusText(data.status)}` },
-    { label: 'Duration', value: `${data.duration.toFixed(2)} ms` },
-    { label: 'Size', value: `${data.size}` },
-    { label: 'Method', value: `${options.method ?? 'GET'}` },
-    { label: 'Request Body', value: buildBody(options) ?? 'N/A' },
-  ]
+export function printStatusLine(data: Data, options: FetchOptions) {
+  if (options.quiet) return
 
-  if (options.table) {
-    drawTable(rows)
-  } else {
-    rows.forEach(({ label, value }) => console.log(`${label}=${value}`))
-  }
+  const status = `${data.status} ${getStatusText(data.status)}`
+  const duration = `${data.duration.toFixed(0)}ms`
+  const size = data.size
+
+  const color = getStatusColor(data.status)
+  const statusColored = styleText(color, status)
+  const details = styleText('gray', `${duration}  ${size}`)
+
+  console.log()
+  console.log(`${statusColored}  ${details}`)
 }
 
-export function printHeaders(headers: Headers, options: FetchOptions) {
+export function printHeaders(headers: Headers) {
   const headersObj = Object.fromEntries(headers.entries())
-  const rows = []
-  for (const [key, value] of Object.entries(headersObj)) {
-    rows.push({ label: key, value })
-  }
-
-  if (options.table) {
-    drawTable(rows)
-  } else {
-    Object.entries(headersObj).forEach(([k, v]) => console.log(`${k}=${v}`))
-  }
+  Object.entries(headersObj).forEach(([k, v]) => console.log(`${k}: ${v}`))
 }

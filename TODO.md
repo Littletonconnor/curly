@@ -11,12 +11,6 @@
 curly -u admin:secret https://api.example.com/protected
 ```
 
-### Ignore SSL certificates (`-k` / `--insecure`)
-Skip SSL certificate verification for local development with self-signed certs.
-```sh
-curly -k https://localhost:8443/api
-```
-
 ### ~~Fail on HTTP errors (`-f` / `--fail`)~~ ✓
 ~~Exit with non-zero code on 4xx/5xx responses. Useful for scripts and CI.~~
 ```sh

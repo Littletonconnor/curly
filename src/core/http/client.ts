@@ -243,6 +243,7 @@ export function buildHeaders(options: FetchOptions) {
   return {
     ...headers,
     ...buildCookieHeaders(options),
+    ...buildAuthHeader(options),
   }
 }
 
@@ -296,6 +297,26 @@ function buildCookieHeaderFromFile(cookiePaths: string[]) {
     logger().warn(`Failed to read cookie file: ${cookiePath}`)
     return undefined
   }
+}
+
+/**
+ * Builds Authorization header for basic authentication.
+ *
+ * Takes credentials in the format "user:password" and creates a
+ * Basic auth header with base64-encoded credentials.
+ */
+function buildAuthHeader(options: FetchOptions) {
+  if (!options.user) {
+    return undefined
+  }
+
+  if (!options.user.includes(':')) {
+    logger().error('Basic auth credentials must be in format user:password')
+  }
+
+  const encoded = Buffer.from(options.user).toString('base64')
+  logger().verbose('auth', `Using basic authentication for user: ${options.user.split(':')[0]}`)
+  return { Authorization: `Basic ${encoded}` }
 }
 
 export function buildBody(options: FetchOptions) {

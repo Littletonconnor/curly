@@ -118,6 +118,7 @@ Usage: curly [OPTIONS] <url>
 | `--follow`      | `-L`  | Follow HTTP redirects (disabled by default)                             |
 | `--max-redirects` |     | Maximum number of redirects to follow (default: 20, requires --follow)  |
 | `--fail`        | `-f`  | Exit with code 22 on HTTP errors (4xx/5xx)                              |
+| `--user`        | `-u`  | Basic authentication credentials (user:password)                        |
 
 ### Examples
 
@@ -347,6 +348,28 @@ curly -f https://api.example.com/health || echo "Health check failed"
 
 ```sh
 curly -f -v https://api.example.com/protected
+```
+
+#### Basic Authentication
+
+Use `-u` or `--user` to authenticate with HTTP Basic auth. Credentials are automatically base64 encoded.
+
+##### Simple basic auth
+
+```sh
+curly -u admin:secret https://api.example.com/protected
+```
+
+##### Basic auth with environment variables
+
+```sh
+curly -u "$API_USER:$API_PASS" https://api.example.com/protected
+```
+
+##### Basic auth with other options
+
+```sh
+curly -u admin:secret -H "Accept: application/json" https://api.example.com/users
 ```
 
 #### Complex Examples

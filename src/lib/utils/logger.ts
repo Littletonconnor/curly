@@ -8,6 +8,7 @@ export type VerboseLabel =
   | 'cookies'
   | 'output'
   | 'load-test'
+  | 'auth'
 
 let verboseEnabled = false
 
@@ -36,6 +37,7 @@ export function logger() {
         cookies: 'blueBright',
         output: 'whiteBright',
         'load-test': 'magentaBright',
+        auth: 'yellowBright',
       }
 
       const color = labelColors[label] as Parameters<typeof styleText>[0]

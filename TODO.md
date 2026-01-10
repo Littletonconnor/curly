@@ -5,8 +5,8 @@
 ### ~~Verbose mode (`-v`)~~ ✓
 ~~Show request details (method, headers, body) before showing response. Similar to existing `--debug` but user-facing and cleaner.~~
 
-### Basic auth (`-u user:pass`)
-Support basic authentication with automatic base64 encoding.
+### ~~Basic auth (`-u user:pass`)~~ ✓
+~~Support basic authentication with automatic base64 encoding.~~
 ```sh
 curly -u admin:secret https://api.example.com/protected
 ```

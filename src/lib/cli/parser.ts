@@ -45,6 +45,7 @@ export function cli() {
       follow: { type: 'boolean', short: 'L', default: false },
       'max-redirects': { type: 'string' },
       fail: { type: 'boolean', short: 'f', default: false },
+      user: { type: 'string', short: 'u' },
     },
     allowPositionals: true,
   })

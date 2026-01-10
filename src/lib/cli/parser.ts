@@ -45,6 +45,7 @@ export function cli() {
       debug: { type: 'boolean', default: false },
       requests: { type: 'string', short: 'n' },
       concurrency: { type: 'string', short: 'c' },
+      timeout: { type: 'string', short: 't' },
     },
     allowPositionals: true,
   })

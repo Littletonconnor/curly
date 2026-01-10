@@ -9,14 +9,31 @@ export type FetchOptions = ReturnType<typeof cli>['values']
 
 export async function curl(url: string, options: FetchOptions) {
   const fetchOptions = buildFetchOptions(options)
+  const timeoutMs = options.timeout ? parseInt(options.timeout, 10) : undefined
+
+  let controller: AbortController | undefined
+  let timeoutId: NodeJS.Timeout | undefined
+
+  if (timeoutMs) {
+    controller = new AbortController()
+    fetchOptions.signal = controller.signal
+    timeoutId = setTimeout(() => controller!.abort(), timeoutMs)
+    logger().debug(`Request timeout set to ${timeoutMs}ms`)
+  }
+
   try {
     logger().debug(`Calling fetch with options: ${JSON.stringify(fetchOptions)}`)
     const startTime = performance.now()
     const response = await fetch(buildUrl(url, options.query), fetchOptions)
     const duration = performance.now() - startTime
+    if (timeoutId) clearTimeout(timeoutId)
     logger().debug('Fetch response finished')
     return { response, duration }
   } catch (e: any) {
+    if (timeoutId) clearTimeout(timeoutId)
+    if (e.name === 'AbortError') {
+      logger().error(`Request timed out after ${timeoutMs}ms`)
+    }
     logger().error(`Fetch response failed: ${e.message}`)
     throw e
   }

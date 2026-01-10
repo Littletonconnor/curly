@@ -2,14 +2,6 @@
 
 ## Priority: Quick Wins
 
-### Timeout settings (`--timeout`)
-
-Add request timeout support using `AbortController` with fetch.
-
-```sh
-curly --timeout 5000 https://slow-api.example.com
-```
-
 ### Follow redirects (`--follow`)
 
 Add redirect following with optional max redirects. fetch API supports this natively with `redirect` option.

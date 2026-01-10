@@ -115,6 +115,7 @@ Usage: curly [OPTIONS] <url>
 | `--history`     |       | View command history                                                    |
 | `--requests`    | `-n`  | Number of requests for load testing (auto-detects load test mode)       |
 | `--concurrency` | `-c`  | Concurrency level for load testing (auto-detects load test mode)        |
+| `--timeout`     | `-t`  | Request timeout in milliseconds (aborts if exceeded)                    |
 
 ### Examples
 
@@ -293,6 +294,24 @@ curly --history
 ```
 
 - History is automatically saved to `~/curly_history.txt`
+
+#### Timeout
+
+##### Set a request timeout (in milliseconds)
+
+```sh
+curly --timeout 5000 https://api.example.com/slow-endpoint
+# OR
+curly -t 5000 https://api.example.com/slow-endpoint
+```
+
+If the request takes longer than 5 seconds, it will be aborted and an error will be shown.
+
+##### Timeout with POST request
+
+```sh
+curly -t 3000 -X POST -d title=test https://api.example.com/posts
+```
 
 #### Complex Examples
 

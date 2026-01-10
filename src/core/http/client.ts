@@ -9,6 +9,13 @@ export type FetchOptions = ReturnType<typeof cli>['values']
 
 export async function curl(url: string, options: FetchOptions) {
   const fetchOptions = buildFetchOptions(options)
+  const timeoutMs = options.timeout ? parseInt(options.timeout, 10) : undefined
+  const { signal, cleanup } = createTimeoutSignal(timeoutMs)
+
+  if (signal) {
+    fetchOptions.signal = signal
+  }
+
   try {
     logger().debug(`Calling fetch with options: ${JSON.stringify(fetchOptions)}`)
     const startTime = performance.now()
@@ -17,8 +24,28 @@ export async function curl(url: string, options: FetchOptions) {
     logger().debug('Fetch response finished')
     return { response, duration }
   } catch (e: any) {
+    if (e.name === 'AbortError') {
+      logger().error(`Request timed out after ${timeoutMs}ms`)
+    }
     logger().error(`Fetch response failed: ${e.message}`)
     throw e
+  } finally {
+    cleanup()
+  }
+}
+
+function createTimeoutSignal(timeoutMs: number | undefined) {
+  if (!timeoutMs) {
+    return { signal: undefined, cleanup: () => {} }
+  }
+
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+  logger().debug(`Request timeout set to ${timeoutMs}ms`)
+
+  return {
+    signal: controller.signal,
+    cleanup: () => clearTimeout(timeoutId),
   }
 }
 

@@ -48,6 +48,7 @@ export function cli() {
       timeout: { type: 'string', short: 't' },
       follow: { type: 'boolean', short: 'L', default: false },
       'max-redirects': { type: 'string' },
+      fail: { type: 'boolean', short: 'f', default: false },
     },
     allowPositionals: true,
   })

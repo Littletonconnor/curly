@@ -118,6 +118,7 @@ Usage: curly [OPTIONS] <url>
 | `--timeout`     | `-t`  | Request timeout in milliseconds (aborts if exceeded)                    |
 | `--follow`      | `-L`  | Follow HTTP redirects (disabled by default)                             |
 | `--max-redirects` |     | Maximum number of redirects to follow (default: 20, requires --follow)  |
+| `--fail`        | `-f`  | Exit with code 22 on HTTP errors (4xx/5xx)                              |
 
 ### Examples
 
@@ -340,6 +341,22 @@ If the redirect chain exceeds the limit, an error will be thrown. The default li
 ```sh
 curly -L -i https://example.com/redirect  # Include headers in output
 curly -L -t 5000 https://example.com/redirect  # With timeout
+```
+
+#### Fail on HTTP Errors
+
+Use `--fail` or `-f` to exit with code 22 when the server returns a 4xx or 5xx status. Useful for scripts and CI pipelines.
+
+##### Basic fail check
+
+```sh
+curly -f https://api.example.com/health || echo "Health check failed"
+```
+
+##### Fail with verbose output
+
+```sh
+curly -f -v https://api.example.com/protected
 ```
 
 #### Complex Examples

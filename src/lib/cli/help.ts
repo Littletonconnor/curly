@@ -39,6 +39,9 @@ Options:
 
   -v, --verbose                Show detailed request/response information
                                Example: curly -v https://example.com
+
+  -f, --fail                   Exit with code 22 on HTTP errors (4xx/5xx)
+                               Example: curly -f https://example.com/health || echo "Failed"
 `
   console.log(message)
 }

@@ -46,6 +46,8 @@ export function cli() {
       requests: { type: 'string', short: 'n' },
       concurrency: { type: 'string', short: 'c' },
       timeout: { type: 'string', short: 't' },
+      follow: { type: 'boolean', short: 'L', default: false },
+      'max-redirects': { type: 'string' },
     },
     allowPositionals: true,
   })

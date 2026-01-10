@@ -2,15 +2,6 @@
 
 ## Priority: Quick Wins
 
-### Follow redirects (`--follow`)
-
-Add redirect following with optional max redirects. fetch API supports this natively with `redirect` option.
-
-```sh
-curly --follow https://example.com/redirect
-curly --follow --max-redirects 5 https://example.com/redirect
-```
-
 ### Verbose mode (`-v`)
 
 Show request details (method, headers, body) before showing response. Similar to existing `--debug` but user-facing.

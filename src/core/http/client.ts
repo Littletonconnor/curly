@@ -11,6 +11,7 @@ export async function curl(url: string, options: FetchOptions) {
   const fetchOptions = buildFetchOptions(options)
   const timeoutMs = options.timeout ? parseInt(options.timeout, 10) : undefined
   const { signal, cleanup } = createTimeoutSignal(timeoutMs)
+  const maxRedirects = getMaxRedirects(options)
 
   if (signal) {
     fetchOptions.signal = signal
@@ -19,7 +20,7 @@ export async function curl(url: string, options: FetchOptions) {
   try {
     logger().debug(`Calling fetch with options: ${JSON.stringify(fetchOptions)}`)
     const startTime = performance.now()
-    const response = await fetch(buildUrl(url, options.query), fetchOptions)
+    const response = await executeFetch(buildUrl(url, options.query), fetchOptions, maxRedirects)
     const duration = performance.now() - startTime
     logger().debug('Fetch response finished')
     return { response, duration }
@@ -47,6 +48,45 @@ function createTimeoutSignal(timeoutMs: number | undefined) {
     signal: controller.signal,
     cleanup: () => clearTimeout(timeoutId),
   }
+}
+
+function getMaxRedirects(options: FetchOptions): number {
+  if (!options.follow) return 0
+  if (options['max-redirects']) return parseInt(options['max-redirects'], 10)
+  return 20
+}
+
+async function executeFetch(
+  url: string,
+  fetchOptions: RequestInit,
+  maxRedirects: number
+): Promise<Response> {
+  let currentUrl = url
+  let redirectCount = 0
+
+  while (true) {
+    const response = await fetch(currentUrl, fetchOptions)
+
+    if (!isRedirectStatus(response.status)) {
+      return response
+    }
+
+    if (redirectCount >= maxRedirects) {
+      if (maxRedirects === 0) return response
+      throw new Error(`Maximum redirects (${maxRedirects}) exceeded`)
+    }
+
+    const location = response.headers.get('Location')
+    if (!location) return response
+
+    currentUrl = new URL(location, currentUrl).href
+    redirectCount++
+    logger().debug(`Following redirect ${redirectCount} to ${currentUrl}`)
+  }
+}
+
+function isRedirectStatus(status: number): boolean {
+  return status >= 300 && status < 400
 }
 
 export async function buildResponse({
@@ -142,6 +182,7 @@ export function buildFetchOptions(options: FetchOptions): any {
     method: buildMethod(options),
     headers: buildHeaders(options),
     body: buildBody(options),
+    redirect: 'manual' as const,
   }
 }
 

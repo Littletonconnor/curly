@@ -1,80 +1,109 @@
 # TODO
 
-## Priority: Quick Wins
+## Easy (1-2 hours each)
 
 ### Verbose mode (`-v`)
+Show request details (method, headers, body) before showing response. Similar to existing `--debug` but user-facing and cleaner.
 
-Show request details (method, headers, body) before showing response. Similar to existing `--debug` but user-facing.
+### Basic auth (`-u user:pass`)
+Support basic authentication with automatic base64 encoding.
+```sh
+curly -u admin:secret https://api.example.com/protected
+```
+
+### Ignore SSL certificates (`-k` / `--insecure`)
+Skip SSL certificate verification for local development with self-signed certs.
+```sh
+curly -k https://localhost:8443/api
+```
+
+### Fail on HTTP errors (`-f` / `--fail`)
+Exit with non-zero code on 4xx/5xx responses. Useful for scripts and CI.
+```sh
+curly -f https://api.example.com/health || echo "Health check failed"
+```
+
+### Response time display (`--time`)
+Show request duration without full debug output.
+```sh
+curly --time https://api.example.com
+# Output: 200 OK (234ms)
+```
+
+### Setup linting
+Add eslint or oxlint for code quality.
 
 ---
 
-## Priority: Medium Effort
+## Medium (half day - 1 day each)
 
-### Authentication
-
-- Basic auth: `--auth user:pass` or `-u user:pass`
-- Bearer token: `--auth-type bearer -H "Authorization: Bearer token"`
-- API key header support
-
-### Request body from file
-
-Support `@file.json` syntax to read request body from file.
-
+### Request body from file (`@file.json`)
+Support reading request body from a file using `@` syntax.
 ```sh
 curly -X POST -d @payload.json https://api.example.com
 ```
 
-### Multipart file uploads
-
-Support `-F` flag for file uploads.
-
-```sh
-curly -X POST -F file@/path/to/file https://api.example.com/upload
-```
-
 ### Retry logic with backoff
-
-Automatic retry on failure with configurable attempts and backoff.
-
+Automatic retry on failure with configurable attempts and delay.
 ```sh
 curly --retry 3 --retry-delay 1000 https://flaky-api.example.com
 ```
 
+### Environment variable interpolation
+Replace `{{VAR}}` placeholders with environment variables in URLs, headers, and bodies.
+```sh
+curly -H "Authorization: Bearer {{API_KEY}}" https://api.example.com
+```
+
+### Config file support (`~/.curlyrc`)
+Load default options from a config file.
+```json
+{
+  "timeout": 5000,
+  "headers": ["User-Agent: curly/1.0"]
+}
+```
+
 ---
 
-## Priority: Nice to Have
+## Hard (2+ days each)
 
-### Load Testing Enhancements
+### Multipart file uploads (`-F`)
+Support file uploads with multipart/form-data.
+```sh
+curly -X POST -F "file=@photo.jpg" -F "name=vacation" https://api.example.com/upload
+```
 
-The core load testing is complete. Remaining enhancements:
+### Saved request aliases
+Save and reuse named requests.
+```sh
+curly --save "get-users" -X GET https://api.example.com/users
+curly --use "get-users"
+```
 
-- Data transfer tracking (bytes sent/received)
-- DNS and connect time tracking
-- Error breakdown with sample error messages
-- Worker threads for very high concurrency
+### Shell completions
+Generate completions for bash, zsh, and fish.
 
-### Output Enhancements
-
-- Syntax highlighting for JSON/HTML/XML responses
-- Custom JSON filtering (jq-like): `--jq '.data.items[]'`
-- Raw output mode (`--raw`) to skip formatting
-- Quiet mode (`-q`) to suppress non-essential output
-
-### Developer Experience
-
-- Config file support (`~/.curlyrc` for defaults)
-- Shell completions (bash, zsh, fish)
-- Request collections (save/load named requests)
-
-### SSL/TLS & Proxy
-
-- Ignore SSL certificates (`--insecure` or `-k`)
-- Client certificate support
-- Proxy support (HTTP/HTTPS/SOCKS)
+### Proxy support
+HTTP/HTTPS/SOCKS proxy support.
+```sh
+curly --proxy http://proxy.example.com:8080 https://api.example.com
+```
 
 ---
 
 ## Housekeeping
 
-- [ ] Setup eslint or oxlint
 - [ ] Publish to NPM
+
+---
+
+## Parked (Low Priority)
+
+These features have limited value or can be achieved other ways:
+
+- **Syntax highlighting** - High effort, users can pipe to `jq` or `bat`
+- **JSON filtering (`--jq`)** - Users can pipe to `jq`
+- **Load test enhancements** - Core functionality complete, diminishing returns
+- **Bearer token shorthand** - Already works with `-H "Authorization: Bearer ..."`
+- **Client certificates** - Niche use case

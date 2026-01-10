@@ -81,6 +81,26 @@ HTTP/HTTPS/SOCKS proxy support.
 curly --proxy http://proxy.example.com:8080 https://api.example.com
 ```
 
+### Interactive TUI for load testing
+Explore adding a real-time terminal UI dashboard for load testing that displays live metrics, charts, and statistics during test execution.
+
+**Inspiration:**
+- [ali](https://github.com/nakabonne/ali) - HTTP load testing with embedded terminal UI, real-time latency charts, percentiles, and zoomable graphs
+- [vegeta + jplot](https://github.com/tsenart/vegeta) - Vegeta integrates with jplot/jaggr for real-time terminal charts
+- [blessed-contrib](https://github.com/yaronn/blessed-contrib) - Node.js terminal dashboards with charts, maps, and gauges
+
+**Potential features:**
+- Live request rate and latency charts
+- Response code distribution histogram
+- P50/P95/P99 percentile tracking
+- Error rate visualization
+- Interactive controls (pause/resume, adjust rate)
+
+**Libraries to evaluate:**
+- [blessed](https://github.com/chjj/blessed) / [blessed-contrib](https://github.com/yaronn/blessed-contrib) - Terminal UI for Node.js
+- [ink](https://github.com/vadimdemedes/ink) - React for CLI apps
+- [terminal-kit](https://github.com/cronvel/terminal-kit) - Terminal utilities with drawing capabilities
+
 ---
 
 ## Housekeeping

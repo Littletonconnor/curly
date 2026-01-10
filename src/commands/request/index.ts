@@ -1,7 +1,6 @@
 import { curl, buildResponse, type FetchOptions } from '../../core/http/client'
+import { HTTP_ERROR_EXIT_CODE } from '../../core/config/constants'
 import { stdout } from '../../lib/output/formatters'
-
-const HTTP_ERROR_EXIT_CODE = 22 // Matches curl's exit code for HTTP errors
 
 export async function executeRequest(url: string, options: FetchOptions) {
   const response = await curl(url, options)

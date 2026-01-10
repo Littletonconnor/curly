@@ -95,6 +95,54 @@ curly --proxy http://proxy.example.com:8080 https://api.example.com
 
 ---
 
+## Website (curly.dev or similar)
+
+A marketing and documentation site inspired by [JSONPlaceholder](https://jsonplaceholder.typicode.com/), built with Next.js for easy deployment.
+
+### Core Features
+
+- **Landing page** - Clear value prop, installation instructions, comparison with curl
+- **Interactive playground** - Live curly command builder with real-time response preview
+- **Documentation** - Usage examples, all flags/options, common recipes
+
+### Fake API for Testing
+
+Similar to JSONPlaceholder, provide a public API that users can hit for testing:
+
+```
+GET    /api/users
+GET    /api/users/:id
+POST   /api/users
+PUT    /api/users/:id
+DELETE /api/users/:id
+
+GET    /api/posts
+GET    /api/posts/:id
+POST   /api/posts
+...etc
+```
+
+Endpoints should return realistic fake data and support:
+- Simulated latency (`?delay=1000`)
+- Forced error responses (`?status=500`)
+- Different response sizes for load testing
+
+### Interactive Playground
+
+- Command builder UI that generates curly commands
+- Execute commands from browser and display formatted responses
+- Shareable links to pre-configured requests
+- Syntax highlighted output with JSON formatting
+
+### Tech Stack
+
+- **Framework**: Next.js (App Router)
+- **Deployment**: Vercel
+- **Styling**: TBD (Tailwind CSS likely)
+- **API**: Next.js API routes with mock data
+
+---
+
 ## Parked (Low Priority)
 
 These features have limited value or can be achieved other ways:

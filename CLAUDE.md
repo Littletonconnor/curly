@@ -28,8 +28,15 @@ npm run dev         # Build and run the CLI locally
 ### Code Quality
 
 ```bash
-npm run prettier:write  # Format code with Prettier
+npm run lint           # Run oxlint to check for issues
+npm run lint:fix       # Run oxlint and auto-fix issues
+npm run prettier:write # Format code with Prettier
 npm run types          # Type check with tsc --noEmit
+```
+
+**After making changes**, always run:
+```bash
+npm run types && npm run lint
 ```
 
 ### Testing
@@ -87,7 +94,7 @@ The application follows a modular architecture with clear separation of concerns
 - The CLI supports both short and long option formats (e.g., `-X` and `--method`)
 - Cookie handling supports both file-based and inline cookie specifications
 - History is automatically written to `~/curly_history.txt`
-- Debug mode is activated via `--debug` flag or `DEBUG=true` environment variable
+- Verbose mode is activated via `--verbose` or `-v` flag for user-friendly logging
 - The tool attempts to parse JSON responses by default for better API interaction
 - Load testing mode is auto-detected when `-n` (requests) or `-c` (concurrency) flags are present
 - Load testing uses batched Promise.all for concurrent request execution

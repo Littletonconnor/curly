@@ -30,8 +30,8 @@ curly --time https://api.example.com
 # Output: 200 OK (234ms)
 ```
 
-### Setup linting
-Add eslint or oxlint for code quality.
+### ~~Setup linting~~ ✓
+~~Add eslint or oxlint for code quality.~~
 
 ---
 

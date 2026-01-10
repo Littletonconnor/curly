@@ -163,7 +163,7 @@ function formatBytes(bytes: number) {
 async function inferContentType(response: Response) {
   try {
     return await response.clone().json()
-  } catch (_: unknown) {
+  } catch {
     return response.text()
   }
 }
@@ -292,7 +292,7 @@ function buildCookieHeaderFromFile(cookiePaths: string[]) {
     const cookieHeader = applyCookieHeader(cookieContent)
     logger().verbose('cookies', `Loaded cookies: ${cookieHeader}`)
     return { Cookie: cookieHeader }
-  } catch (error) {
+  } catch {
     logger().warn(`Failed to read cookie file: ${cookiePath}`)
     return undefined
   }

@@ -8,7 +8,7 @@ export function isValidJson(str: unknown) {
   try {
     JSON.parse(str)
     return true
-  } catch (_: unknown) {
+  } catch {
     return false
   }
 }
@@ -18,7 +18,7 @@ export async function writeToOutputFile(data: any, outputPath: string) {
 
   try {
     await promises.writeFile(outputPath, buffer, 'utf8')
-  } catch (e: unknown) {
+  } catch {
     logger().warn(`Failed to write to output path ${outputPath}`)
   }
 }

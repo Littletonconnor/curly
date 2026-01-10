@@ -8,7 +8,7 @@ export function applyCookieHeader(fileData: string) {
     cookie = parseJsonCookies(fileData)
 
     return cookie
-  } catch (error) {
+  } catch {
     try {
       cookie = parseNetscapeCookies(fileData)
     } catch (error: any) {
@@ -42,24 +42,20 @@ export function applyCookieHeader(fileData: string) {
  * @throws Will throw an error if the JSON is invalid or if expected properties are missing.
  */
 function parseJsonCookies(fileData: string) {
-  try {
-    const parsedFileData = JSON.parse(fileData)
-    let cookies: string[] = []
+  const parsedFileData = JSON.parse(fileData)
+  const cookies: string[] = []
 
-    if (Array.isArray(parsedFileData)) {
-      for (const object of parsedFileData) {
-        if (object.name && object.value) {
-          cookies.push(`${object.name}=${object.value}`)
-        }
+  if (Array.isArray(parsedFileData)) {
+    for (const object of parsedFileData) {
+      if (object.name && object.value) {
+        cookies.push(`${object.name}=${object.value}`)
       }
-    } else {
-      cookies.push(`${parsedFileData.name}=${parsedFileData.value}`)
     }
-
-    return cookies.join('; ').trim()
-  } catch (error) {
-    throw error
+  } else {
+    cookies.push(`${parsedFileData.name}=${parsedFileData.value}`)
   }
+
+  return cookies.join('; ').trim()
 }
 
 /**
@@ -86,28 +82,24 @@ function parseJsonCookies(fileData: string) {
  *  .example.com	TRUE	/	FALSE	1609459200	user=john_doe
  */
 function parseNetscapeCookies(fileData: string) {
-  try {
-    const lines = fileData.split('\n')
-    const cookies: string[] = []
+  const lines = fileData.split('\n')
+  const cookies: string[] = []
 
-    for (const line of lines) {
-      const trimmed = line.trim()
-      if (!trimmed || trimmed.startsWith('#')) continue
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith('#')) continue
 
-      const parts = trimmed.split('\t')
-      if (parts.length >= 7) {
-        // only add name and value parts
-        const [, , , , , name, value] = parts
-        if (name && value) {
-          cookies.push(`${name}=${value}`)
-        }
+    const parts = trimmed.split('\t')
+    if (parts.length >= 7) {
+      // only add name and value parts
+      const [, , , , , name, value] = parts
+      if (name && value) {
+        cookies.push(`${name}=${value}`)
       }
     }
-
-    return cookies.join(';')
-  } catch (error) {
-    throw error
   }
+
+  return cookies.join(';')
 }
 
 /**

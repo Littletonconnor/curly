@@ -15,6 +15,8 @@
   "scripts": {
     "build": "tsup --config ./tsup.config.ts",
     "dev": "npm run build && ./bin/curly.js",
+    "lint": "oxlint src/",
+    "lint:fix": "oxlint src/ --fix",
     "prettier:write": "prettier --config .prettierrc 'src/**/*.ts' --write",
     "test": "npm run build && vitest run",
     "types": "tsc --noEmit"
@@ -25,6 +27,7 @@
   ],
   "devDependencies": {
     "@types/node": "^22.10.5",
+    "oxlint": "^1.38.0",
     "prettier": "^3.4.2",
     "tsup": "^8.3.5",
     "typescript": "^5.7.3",

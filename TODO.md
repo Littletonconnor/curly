@@ -2,8 +2,8 @@
 
 ## Easy (1-2 hours each)
 
-### Verbose mode (`-v`)
-Show request details (method, headers, body) before showing response. Similar to existing `--debug` but user-facing and cleaner.
+### ~~Verbose mode (`-v`)~~ ✓
+~~Show request details (method, headers, body) before showing response. Similar to existing `--debug` but user-facing and cleaner.~~
 
 ### Basic auth (`-u user:pass`)
 Support basic authentication with automatic base64 encoding.
@@ -30,8 +30,8 @@ curly --time https://api.example.com
 # Output: 200 OK (234ms)
 ```
 
-### Setup linting
-Add eslint or oxlint for code quality.
+### ~~Setup linting~~ ✓
+~~Add eslint or oxlint for code quality.~~
 
 ---
 

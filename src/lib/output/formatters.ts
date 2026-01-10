@@ -37,7 +37,7 @@ export async function writeToCookieJar(
   try {
     await promises.writeFile(cookieJarFilePath, JSON.stringify(cookieHeaders), 'utf-8')
     logger().verbose('cookies', `Saved ${Object.keys(cookieHeaders).length} cookie(s)`)
-  } catch (error: unknown) {
+  } catch {
     logger().warn(`Failed to write to output path ${cookieJarFilePath}`)
   }
 }
@@ -50,7 +50,7 @@ export async function writeToOutputFile(data: Data, options: FetchOptions) {
   try {
     await promises.writeFile(options.output!, buffer, 'utf8')
     logger().verbose('output', `Response saved successfully`)
-  } catch (e: unknown) {
+  } catch {
     logger().warn(`Failed to write to output path ${options.output}`)
   }
 }

@@ -99,7 +99,7 @@ export class StatsCollector {
 
     const bucketSize = (max - min) / numBuckets
 
-    const buckets = new Array(numBuckets).fill(0)
+    const buckets = Array.from({ length: numBuckets }, () => 0)
 
     for (const duration of durations) {
       const bucketIndex = Math.floor((duration - min) / bucketSize)

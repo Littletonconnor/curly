@@ -44,7 +44,7 @@ export async function writeToCookieJar(
 export async function writeToOutputFile(data: Data, options: FetchOptions) {
   logger().debug(`Writing response to output file`)
 
-  const buffer = inspect(data.response, { depth: null, maxArrayLength: null, colors: true })
+  const buffer = inspect(data.response, { depth: null, maxArrayLength: null, colors: false })
 
   try {
     logger().debug(`Writing response to ${options.output}`)

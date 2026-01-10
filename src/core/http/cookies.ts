@@ -121,13 +121,11 @@ export function parseSetCookieHeaders(headers: Headers) {
   const setCookieHeaders = headers.getSetCookie()
   const cookieJar: Record<string, string> = {}
 
-  logger().debug(`Parsing set-cookie headers: ${setCookieHeaders}`)
   for (const cookie of setCookieHeaders) {
     const [nameAndValue] = cookie.split(';')
     const [name, value] = nameAndValue.split('=')
     cookieJar[name] = value
   }
 
-  logger().debug(`Parsing set-cookie headers complete: ${JSON.stringify(cookieJar)}`)
   return cookieJar
 }

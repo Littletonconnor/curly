@@ -17,12 +17,25 @@ export async function curl(url: string, options: FetchOptions) {
     fetchOptions.signal = signal
   }
 
+  const finalUrl = buildUrl(url, options.query)
+  logger().verbose('request', `${fetchOptions.method} ${finalUrl}`)
+
+  if (fetchOptions.headers && Object.keys(fetchOptions.headers).length > 0) {
+    logger().verbose('request', `Headers: ${JSON.stringify(fetchOptions.headers)}`)
+  }
+
+  if (fetchOptions.body) {
+    logger().verbose('request', `Body: ${fetchOptions.body}`)
+  }
+
   try {
-    logger().debug(`Calling fetch with options: ${JSON.stringify(fetchOptions)}`)
     const startTime = performance.now()
-    const response = await executeFetch(buildUrl(url, options.query), fetchOptions, maxRedirects)
+    const response = await executeFetch(finalUrl, fetchOptions, maxRedirects)
     const duration = performance.now() - startTime
-    logger().debug('Fetch response finished')
+    logger().verbose(
+      'response',
+      `${response.status} ${response.statusText} (${duration.toFixed(0)}ms)`,
+    )
     return { response, duration }
   } catch (e: any) {
     if (e.name === 'AbortError') {
@@ -42,7 +55,7 @@ function createTimeoutSignal(timeoutMs: number | undefined) {
 
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
-  logger().debug(`Request timeout set to ${timeoutMs}ms`)
+  logger().verbose('timeout', `Request will timeout after ${timeoutMs}ms`)
 
   return {
     signal: controller.signal,
@@ -59,7 +72,7 @@ function getMaxRedirects(options: FetchOptions): number {
 async function executeFetch(
   url: string,
   fetchOptions: RequestInit,
-  maxRedirects: number
+  maxRedirects: number,
 ): Promise<Response> {
   let currentUrl = url
   let redirectCount = 0
@@ -81,7 +94,10 @@ async function executeFetch(
 
     currentUrl = new URL(location, currentUrl).href
     redirectCount++
-    logger().debug(`Following redirect ${redirectCount} to ${currentUrl}`)
+    logger().verbose(
+      'redirect',
+      `Following redirect ${redirectCount}/${maxRedirects} → ${currentUrl}`,
+    )
   }
 }
 
@@ -97,11 +113,10 @@ export async function buildResponse({
   duration: number
 }) {
   const contentType = response.headers.get('content-type') ?? ''
-  logger().debug(
-    `Attempting to resolve Content-Type of: ${contentType ? contentType : 'Not specified'}`,
-  )
-
   const size = await getResponseSize(response)
+
+  logger().verbose('response', `Content-Type: ${contentType || '(not specified)'}`)
+  logger().verbose('response', `Size: ${size}`)
 
   let data
   if (CONTENT_TYPES.json.includes(contentType)) {
@@ -113,7 +128,7 @@ export async function buildResponse({
   } else if (CONTENT_TYPES.text.includes(contentType)) {
     data = await response.text()
   } else {
-    logger().debug('Content-Type was not found, so attempting to infer it instead. ')
+    logger().verbose('response', 'Inferring content type from response body...')
     data = await inferContentType(response)
   }
 
@@ -147,17 +162,14 @@ function formatBytes(bytes: number) {
 
 async function inferContentType(response: Response) {
   try {
-    logger().debug('Attempting to resolve the response as JSON.')
     return await response.clone().json()
   } catch (_: unknown) {
-    logger().debug('Resolving as JSON did not work. Attempting to now resolve as text.')
     return response.text()
   }
 }
 
 export function buildUrl(url: string, queryParams: FetchOptions['query']) {
   if (!queryParams) {
-    logger().debug(`Calling fetch with url: ${url}`)
     return url
   }
 
@@ -172,7 +184,6 @@ export function buildUrl(url: string, queryParams: FetchOptions['query']) {
     urlWithQueryParams.searchParams.append(key, value)
   }
 
-  logger().debug(`Calling fetch with url: ${urlWithQueryParams}`)
   return urlWithQueryParams.href
 }
 
@@ -265,6 +276,7 @@ function buildCookieHeaderFromKeyValuePairs(cookieValues: string[]) {
   }
 
   const cookieString = cookieValues.join('; ')
+  logger().verbose('cookies', `Sending cookies: ${cookieString}`)
   return { Cookie: cookieString }
 }
 
@@ -275,8 +287,11 @@ function buildCookieHeaderFromFile(cookiePaths: string[]) {
 
   const cookiePath = cookiePaths[0]
   try {
+    logger().verbose('cookies', `Reading cookies from file: ${cookiePath}`)
     const cookieContent = readFileSync(cookiePath, 'utf8')
-    return { Cookie: applyCookieHeader(cookieContent) }
+    const cookieHeader = applyCookieHeader(cookieContent)
+    logger().verbose('cookies', `Loaded cookies: ${cookieHeader}`)
+    return { Cookie: cookieHeader }
   } catch (error) {
     logger().warn(`Failed to read cookie file: ${cookiePath}`)
     return undefined

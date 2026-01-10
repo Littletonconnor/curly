@@ -42,7 +42,7 @@ export function cli() {
       'data-raw': { type: 'string' },
       query: { type: 'string', short: 'q', multiple: true },
       table: { type: 'boolean', short: 'T' },
-      debug: { type: 'boolean', default: false },
+      verbose: { type: 'boolean', short: 'v', default: false },
       requests: { type: 'string', short: 'n' },
       concurrency: { type: 'string', short: 'c' },
       timeout: { type: 'string', short: 't' },

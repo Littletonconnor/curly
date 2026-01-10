@@ -10,7 +10,8 @@ export async function load(url: string, options: FetchOptions) {
   const requests = parseInt(options.requests || DEFAULT_REQUESTS)
   const concurrency = parseInt(options.concurrency || DEFAULT_CONCURRENCY)
 
-  logger().debug(`Starting load test: ${requests} requests with ${concurrency} concurrency`)
+  logger().verbose('load-test', `Starting: ${requests} requests with concurrency ${concurrency}`)
+  logger().verbose('load-test', `Target: ${url}`)
 
   const stats = new StatsCollector()
   const progress = new ProgressIndicator(requests)
@@ -42,7 +43,8 @@ export async function load(url: string, options: FetchOptions) {
   const endTime = performance.now()
   const totalDuration = (endTime - startTime) / 1000
   progress.finish()
-  stats.print(totalDuration)
 
-  logger().debug(`Finished load test: ${requests} requests with ${concurrency} concurrency`)
+  logger().verbose('load-test', `Completed in ${totalDuration.toFixed(2)}s`)
+
+  stats.print(totalDuration)
 }

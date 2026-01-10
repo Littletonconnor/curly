@@ -17,8 +17,8 @@ Skip SSL certificate verification for local development with self-signed certs.
 curly -k https://localhost:8443/api
 ```
 
-### Fail on HTTP errors (`-f` / `--fail`)
-Exit with non-zero code on 4xx/5xx responses. Useful for scripts and CI.
+### ~~Fail on HTTP errors (`-f` / `--fail`)~~ ✓
+~~Exit with non-zero code on 4xx/5xx responses. Useful for scripts and CI.~~
 ```sh
 curly -f https://api.example.com/health || echo "Health check failed"
 ```

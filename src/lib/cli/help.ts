@@ -37,8 +37,8 @@ Options:
   -i, --include                Include HTTP headers in the output
                                Example: curly -i https://example.com
 
-  --debug                      Print debug information
-                               Example: curly --debug https://example.com
+  -v, --verbose                Show detailed request/response information
+                               Example: curly -v https://example.com
 `
   console.log(message)
 }

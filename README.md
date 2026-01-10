@@ -63,7 +63,7 @@ Status code distribution:
 - **Simple JSON Posting**: Automatically sets `Content-Type`: `application/json` if you're posting data.
 - **Automatic Content-Type Parsing**: Tries to parse JSON responses by default. This makes it easier to make requests to JSON APIs or HTML documents without having to specify `Content-Type` headers.
 - **Load Testing**: Built-in load testing with automatic mode detection. Fire off multiple concurrent requests and get detailed performance statistics including response time histograms.
-- **Helper Flags** (like `--help`, `--debug`, `--include`) for easier debugging and data introspection.
+- **Helper Flags** (like `--help`, `--verbose`, `--include`) for easier debugging and data introspection.
 - **Familiar options**: Mimics curl-style flags (`-X`, `-H`, `-d`, `-I`) for easy migration from curl.
 - **Pretty Printing**: The CLI automatically pretty prints the output for you, and groups response data into easily viewable chunks.
 - **Viewing history**: Easily view history of commands you have written.
@@ -111,7 +111,7 @@ Usage: curly [OPTIONS] <url>
 | `--head`        | `-I`  | Send HEAD request (headers only)                                        |
 | `--summary`     | `-S`  | Show request summary (status, size)                                     |
 | `--table`       | `-T`  | Format output as a table                                                |
-| `--debug`       |       | Enable debug logging                                                    |
+| `--verbose`     | `-v`  | Show detailed request/response information                              |
 | `--history`     |       | View command history                                                    |
 | `--requests`    | `-n`  | Number of requests for load testing (auto-detects load test mode)       |
 | `--concurrency` | `-c`  | Concurrency level for load testing (auto-detects load test mode)        |
@@ -279,14 +279,14 @@ curly -n 50 -c 5 -X POST -d title=test -d body=content -d userId=1 https://jsonp
 curly -n 1000 -c 50 https://jsonplaceholder.typicode.com/users
 ```
 
-#### Debugging and History
+#### Verbose Output and History
 
-##### Enable debug mode (shows detailed request/response information)
+##### Enable verbose mode (shows detailed request/response information)
 
 ```sh
-curly --debug https://jsonplaceholder.typicode.com/posts/1
-# OR set DEBUG environment variable
-DEBUG=true curly https://jsonplaceholder.typicode.com/posts/1
+curly --verbose https://jsonplaceholder.typicode.com/posts/1
+# OR use the short form
+curly -v https://jsonplaceholder.typicode.com/posts/1
 ```
 
 ##### View command history
@@ -490,10 +490,10 @@ curly -X POST \
   https://jsonplaceholder.typicode.com/posts
 ```
 
-##### Debug mode to see request details
+##### Verbose mode to see request details
 
 ```sh
-curly --debug https://jsonplaceholder.typicode.com/posts/1
+curly -v https://jsonplaceholder.typicode.com/posts/1
 ```
 
 ##### Load test a specific endpoint

@@ -29,34 +29,33 @@ export async function writeToCookieJar(
   data: Awaited<ReturnType<typeof buildResponse>>,
   options: FetchOptions,
 ) {
-  logger().debug(`Found cookie-jar flag, attempting to write to a cookie-jar file`)
   const cookieHeaders = parseSetCookieHeaders(data.headers)
   const cookieJarFilePath = options['cookie-jar']!
 
+  logger().verbose('cookies', `Saving cookies to jar: ${cookieJarFilePath}`)
+
   try {
-    logger().debug(`Writing cookie-jar headers to ${cookieJarFilePath}`)
     await promises.writeFile(cookieJarFilePath, JSON.stringify(cookieHeaders), 'utf-8')
+    logger().verbose('cookies', `Saved ${Object.keys(cookieHeaders).length} cookie(s)`)
   } catch (error: unknown) {
     logger().warn(`Failed to write to output path ${cookieJarFilePath}`)
   }
 }
 
 export async function writeToOutputFile(data: Data, options: FetchOptions) {
-  logger().debug(`Writing response to output file`)
-
   const buffer = inspect(data.response, { depth: null, maxArrayLength: null, colors: false })
 
+  logger().verbose('output', `Writing response to file: ${options.output}`)
+
   try {
-    logger().debug(`Writing response to ${options.output}`)
     await promises.writeFile(options.output!, buffer, 'utf8')
+    logger().verbose('output', `Response saved successfully`)
   } catch (e: unknown) {
     logger().warn(`Failed to write to output path ${options.output}`)
   }
 }
 
 export async function stdout(data: Data, options: FetchOptions) {
-  logger().debug(`Writing response to stdout`)
-
   if (options.head) {
     printHeaders(data.headers, options)
   } else if (options.include) {

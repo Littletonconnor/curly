@@ -14,12 +14,9 @@ export function isValidJson(str: unknown) {
 }
 
 export async function writeToOutputFile(data: any, outputPath: string) {
-  logger().debug(`Writing response to output file`)
-
   const buffer = inspect(data, { depth: null, maxArrayLength: null, colors: true })
 
   try {
-    logger().debug(`Writing response to ${outputPath}`)
     await promises.writeFile(outputPath, buffer, 'utf8')
   } catch (e: unknown) {
     logger().warn(`Failed to write to output path ${outputPath}`)

@@ -2,14 +2,15 @@ import { cli, printHelpMessage } from './lib/cli'
 import { printHistoryFile, writeHistoryFile } from './lib/utils'
 import { executeRequest } from './commands/request'
 import { load } from './commands/load-test'
+import { setVerbose } from './lib/utils/logger'
 
 export async function main() {
   try {
     await writeHistoryFile()
     const { values: cliFlags, positionals } = cli()
 
-    if (cliFlags.debug) {
-      process.env.DEBUG = 'true'
+    if (cliFlags.verbose) {
+      setVerbose(true)
     }
 
     if (cliFlags.help) {

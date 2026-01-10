@@ -116,6 +116,8 @@ Usage: curly [OPTIONS] <url>
 | `--requests`    | `-n`  | Number of requests for load testing (auto-detects load test mode)       |
 | `--concurrency` | `-c`  | Concurrency level for load testing (auto-detects load test mode)        |
 | `--timeout`     | `-t`  | Request timeout in milliseconds (aborts if exceeded)                    |
+| `--follow`      | `-L`  | Follow HTTP redirects (disabled by default)                             |
+| `--max-redirects` |     | Maximum number of redirects to follow (default: 20, requires --follow)  |
 
 ### Examples
 
@@ -311,6 +313,33 @@ If the request takes longer than 5 seconds, it will be aborted and an error will
 
 ```sh
 curly -t 3000 -X POST -d title=test https://api.example.com/posts
+```
+
+#### Following Redirects
+
+By default, curly does not follow HTTP redirects (matching curl's behavior). Use `--follow` or `-L` to enable redirect following.
+
+##### Follow redirects
+
+```sh
+curly --follow https://example.com/redirect
+# OR
+curly -L https://example.com/redirect
+```
+
+##### Limit maximum redirects
+
+```sh
+curly -L --max-redirects 5 https://example.com/redirect
+```
+
+If the redirect chain exceeds the limit, an error will be thrown. The default limit when using `--follow` is 20 redirects.
+
+##### Follow redirects with other options
+
+```sh
+curly -L -i https://example.com/redirect  # Include headers in output
+curly -L -t 5000 https://example.com/redirect  # With timeout
 ```
 
 #### Complex Examples

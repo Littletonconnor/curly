@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs'
 import { cli } from '../../lib/cli/parser'
 import { CONTENT_TYPES } from '../config/constants'
-import { isValidJson } from '../../lib/utils/file'
+import { isValidJson, readBodyFromFile, getContentTypeFromExtension } from '../../lib/utils/file'
 import { applyCookieHeader } from './cookies'
 import { logger } from '../../lib/utils/logger'
 
@@ -225,6 +225,12 @@ export function buildMethod(options: FetchOptions) {
  */
 export function buildHeaders(options: FetchOptions) {
   if (!options.headers && (options.data || options['data-raw'])) {
+    // Infer Content-Type from file extension when using @file syntax
+    if (options.data?.length === 1 && options.data[0].startsWith('@')) {
+      const filePath = options.data[0].slice(1)
+      const contentType = getContentTypeFromExtension(filePath) ?? 'application/json'
+      return { 'Content-Type': contentType }
+    }
     return { 'Content-Type': 'application/json' }
   }
 
@@ -329,6 +335,12 @@ export function buildBody(options: FetchOptions) {
       logger().error(`data-raw must be valid json (e.g., --data-raw '{"name": "John Doe"}').`)
     }
   } else if (options.data) {
+    // Check if reading body from file (e.g., -d @payload.json)
+    if (options.data.length === 1 && options.data[0].startsWith('@')) {
+      const filePath = options.data[0].slice(1)
+      return readBodyFromFile(filePath)
+    }
+
     const formattedData = options.data.reduce<Record<string, string>>((obj, d) => {
       if (!d.includes('=')) {
         logger().error('data must be formatted correctly (e.g., key1=value1).')

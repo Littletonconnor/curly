@@ -63,6 +63,7 @@ Status code distribution:
 - **Simple JSON Posting**: Automatically sets `Content-Type`: `application/json` if you're posting data.
 - **Automatic Content-Type Parsing**: Tries to parse JSON responses by default. This makes it easier to make requests to JSON APIs or HTML documents without having to specify `Content-Type` headers.
 - **Load Testing**: Built-in load testing with automatic mode detection. Fire off multiple concurrent requests and get detailed performance statistics including response time histograms.
+- **Environment Variable Interpolation**: Use `{{VAR}}` syntax to inject environment variables into URLs, headers, and request bodies.
 - **Helper Flags** (like `--help`, `--verbose`, `--include`) for easier debugging and data introspection.
 - **Familiar options**: Mimics curl-style flags (`-X`, `-H`, `-d`, `-I`) for easy migration from curl.
 - **Pretty Printing**: The CLI automatically pretty prints the output for you, and groups response data into easily viewable chunks.
@@ -417,6 +418,52 @@ curly --retry 3 -t 5000 https://api.example.com/slow-endpoint
 ```
 
 **Note:** Retries are triggered on network errors (connection refused, reset, timeout) and do not retry on successful HTTP responses (even 4xx/5xx status codes).
+
+#### Environment Variable Interpolation
+
+Use `{{VAR}}` syntax to inject environment variables into URLs, headers, data, and other options. This is useful for keeping secrets out of your shell history and for dynamic configuration.
+
+##### Interpolate API keys in headers
+
+```sh
+export API_KEY="sk-12345"
+curly -H "Authorization: Bearer {{API_KEY}}" https://api.example.com/protected
+```
+
+##### Interpolate base URL
+
+```sh
+export BASE_URL="https://api.example.com"
+curly "{{BASE_URL}}/users"
+```
+
+##### Interpolate values in request body
+
+```sh
+export USER_ID="42"
+curly -X POST --data-raw '{"userId": "{{USER_ID}}"}' https://api.example.com/action
+```
+
+##### Multiple variables in one request
+
+```sh
+export HOST="api.example.com"
+export TOKEN="secret-token"
+export USER_ID="123"
+curly -H "Authorization: {{TOKEN}}" \
+  -q userId={{USER_ID}} \
+  "https://{{HOST}}/users"
+```
+
+##### Interpolate basic auth credentials
+
+```sh
+export API_USER="admin"
+export API_PASS="secret"
+curly -u "{{API_USER}}:{{API_PASS}}" https://api.example.com/protected
+```
+
+**Note:** If a referenced environment variable is not defined, curly will exit with an error message indicating which variable is missing.
 
 #### Complex Examples
 

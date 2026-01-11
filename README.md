@@ -101,7 +101,7 @@ Usage: curly [OPTIONS] <url>
 | `--help`        | `-h`  | Display help information                                                |
 | `--method`      | `-X`  | HTTP method (GET, POST, PUT, DELETE, etc.)                              |
 | `--headers`     | `-H`  | Add custom headers (can be used multiple times)                         |
-| `--data`        | `-d`  | Send data as key=value pairs (can be used multiple times)               |
+| `--data`        | `-d`  | Send data as key=value pairs or from file with @filename                |
 | `--data-raw`    |       | Send raw JSON data                                                      |
 | `--query`       | `-q`  | Add query parameters (can be used multiple times)                       |
 | `--cookie`      | `-b`  | Send cookies (file path or key=value pairs, can be used multiple times) |
@@ -190,6 +190,19 @@ curly -X POST --data-raw '{"title": "foo", "body": "bar", "userId": 1}' https://
 ```sh
 curly -X POST -d title="My Post" -d body="Post content" -d userId=1 https://jsonplaceholder.typicode.com/posts
 ```
+
+##### POST data from a file
+
+For complex payloads, store your JSON in a file and reference it with `@`:
+
+```sh
+# payload.json
+# {"title": "My Post", "body": "This came from a file!", "userId": 1}
+
+curly -X POST -d @payload.json https://jsonplaceholder.typicode.com/posts
+```
+
+Content-Type is automatically detected from the file extension (`.json` → `application/json`, `.xml` → `application/xml`, etc.).
 
 #### Query Parameters
 

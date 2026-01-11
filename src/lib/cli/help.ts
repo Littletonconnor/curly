@@ -52,6 +52,9 @@ Options:
   --retry-delay <ms>           Initial delay between retries in ms (default: 1000)
                                Uses exponential backoff (1s, 2s, 4s, ...)
                                Example: curly --retry 3 --retry-delay 500 https://example.com
+
+  -p, --profile <name>         Use a named profile from ~/.config/curly/config.json
+                               Example: curly --profile prod /users
 `
   console.log(message)
 }

@@ -48,6 +48,7 @@ export function cli() {
       user: { type: 'string', short: 'u' },
       retry: { type: 'string', default: '0' },
       'retry-delay': { type: 'string', default: '1000' },
+      profile: { type: 'string', short: 'p' },
     },
     allowPositionals: true,
   })

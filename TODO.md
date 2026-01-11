@@ -28,8 +28,8 @@ curly -f https://api.example.com/health || echo "Health check failed"
 
 ## Medium (half day - 1 day each)
 
-### Request body from file (`@file.json`)
-Support reading request body from a file using `@` syntax.
+### ~~Request body from file (`@file.json`)~~ ✓
+~~Support reading request body from a file using `@` syntax.~~
 ```sh
 curly -X POST -d @payload.json https://api.example.com
 ```

@@ -98,3 +98,9 @@ The application follows a modular architecture with clear separation of concerns
 - The tool attempts to parse JSON responses by default for better API interaction
 - Load testing mode is auto-detected when `-n` (requests) or `-c` (concurrency) flags are present
 - Load testing uses batched Promise.all for concurrent request execution
+
+## Task Tracking
+
+**After completing any feature or task**, always update `TODO.md`:
+- Mark the completed item with strikethrough (`~~item~~`) and a checkmark (`✓`)
+- This keeps the roadmap accurate and helps track progress

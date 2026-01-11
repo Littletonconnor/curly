@@ -1,6 +1,11 @@
 import { readFileSync } from 'fs'
 import { CONTENT_TYPES } from '../config/constants'
-import { isValidJson, readBodyFromFile, getContentTypeFromExtension } from '../../lib/utils/file'
+import {
+  isValidJson,
+  readBodyFromFile,
+  getContentTypeFromExtension,
+  parseFormField,
+} from '../../lib/utils/file'
 import { applyCookieHeader } from './cookies'
 import { logger } from '../../lib/utils/logger'
 import { withRetry } from '../../lib/utils/retry'
@@ -199,6 +204,22 @@ export function buildUrl(url: string, queryParams: FetchOptions['query']): strin
 }
 
 export function buildFetchOptions(options: FetchOptions): CurlyRequestInit {
+  // When using form data, we need special handling:
+  // 1. Build FormData instead of string body
+  // 2. Don't set Content-Type - fetch auto-generates it with boundary
+  if (options.form && options.form.length > 0) {
+    const headers = buildHeaders(options)
+    // Remove Content-Type if set - FormData needs to set its own with boundary
+    delete headers['Content-Type']
+
+    return {
+      method: buildMethod(options),
+      headers,
+      body: buildFormData(options.form),
+      redirect: 'manual' as const,
+    }
+  }
+
   return {
     method: buildMethod(options),
     headers: buildHeaders(options),
@@ -207,10 +228,41 @@ export function buildFetchOptions(options: FetchOptions): CurlyRequestInit {
   }
 }
 
+/**
+ * Builds a FormData object from -F form field arguments.
+ * Handles both plain text fields and file uploads.
+ */
+export function buildFormData(formFields: string[]): FormData {
+  const formData = new FormData()
+
+  for (const field of formFields) {
+    const parsed = parseFormField(field)
+
+    if (parsed.isFile) {
+      // Read file and create a Blob with appropriate MIME type
+      const fileBuffer = readFileSync(parsed.value)
+      const mimeType = getContentTypeFromExtension(parsed.value) ?? 'application/octet-stream'
+      const blob = new Blob([fileBuffer], { type: mimeType })
+
+      formData.append(parsed.name, blob, parsed.filename)
+      logger().verbose('form', `Added file field: ${parsed.name} = ${parsed.filename} (${mimeType})`)
+    } else {
+      formData.append(parsed.name, parsed.value)
+      logger().verbose('form', `Added text field: ${parsed.name} = ${parsed.value}`)
+    }
+  }
+
+  return formData
+}
+
 export function buildMethod(options: FetchOptions): string {
   if (options.method) {
     return options.method
-  } else if ((options.data && options.data.length > 0) || options['data-raw']) {
+  } else if (
+    (options.data && options.data.length > 0) ||
+    options['data-raw'] ||
+    (options.form && options.form.length > 0)
+  ) {
     return 'POST'
   } else {
     return 'GET'

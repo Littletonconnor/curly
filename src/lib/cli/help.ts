@@ -14,6 +14,10 @@ Options:
   --data-raw <data>            Raw data input
                                Example: curly --data-raw '{"name": "Connor"}' https://example.com/api
 
+  -F, --form <name=value>      Multipart form data (use @file for uploads)
+                               Example: curly -F "file=@photo.jpg" -F "name=vacation" https://example.com/upload
+                               Cannot be used with -d or --data-raw
+
   -H, --header <header>        Specify request headers
                                Example: curly -H "Content-Type: application/json" https://example.com/api
 

@@ -65,11 +65,12 @@ curly -H "Authorization: Bearer {{API_KEY}}" https://api.example.com
 
 ## Hard (2+ days each)
 
-### Multipart file uploads (`-F`)
-Support file uploads with multipart/form-data.
+### ~~Multipart file uploads (`-F`)~~ ✓
+~~Support file uploads with multipart/form-data.~~
 ```sh
 curly -X POST -F "file=@photo.jpg" -F "name=vacation" https://api.example.com/upload
 ```
+*Use `-F` for form fields and `@` prefix for file paths. MIME types auto-detected from extensions.*
 
 ### ~~Saved request aliases~~ ✓
 ~~Save and reuse named requests.~~

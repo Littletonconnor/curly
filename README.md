@@ -122,6 +122,7 @@ Usage: curly [OPTIONS] <url>
 | `--headers`     | `-H`  | Add custom headers (can be used multiple times)                         |
 | `--data`        | `-d`  | Send data as key=value pairs or from file with @filename                |
 | `--data-raw`    |       | Send raw JSON data                                                      |
+| `--form`        | `-F`  | Multipart form data (use @file for uploads)                             |
 | `--query`       | `-q`  | Add query parameters (can be used multiple times)                       |
 | `--cookie`      | `-b`  | Send cookies (file path or key=value pairs, can be used multiple times) |
 | `--cookie-jar`  |       | Save received cookies to a file                                         |
@@ -230,6 +231,40 @@ curly -X POST -d @payload.json https://jsonplaceholder.typicode.com/posts
 ```
 
 Content-Type is automatically detected from the file extension (`.json` → `application/json`, `.xml` → `application/xml`, etc.).
+
+#### Multipart File Uploads
+
+Use `-F` or `--form` to send multipart form data, which is the standard format for file uploads.
+
+##### Upload a single file
+
+```sh
+curly -F "file=@photo.jpg" https://api.example.com/upload
+```
+
+##### Upload with additional form fields
+
+```sh
+curly -F "file=@document.pdf" -F "title=My Document" -F "public=true" https://api.example.com/upload
+```
+
+##### Upload multiple files
+
+```sh
+curly -F "image=@photo.jpg" -F "thumbnail=@thumb.png" https://api.example.com/gallery
+```
+
+##### Upload with custom headers
+
+```sh
+curly -F "file=@data.csv" -H "Authorization: Bearer {{API_KEY}}" https://api.example.com/import
+```
+
+**Notes:**
+- Use `@` prefix to reference a file path (e.g., `file=@photo.jpg`)
+- Without `@`, the value is sent as a plain text field (e.g., `name=John`)
+- MIME types are automatically detected from file extensions
+- Cannot be combined with `-d` or `--data-raw`
 
 #### Query Parameters
 

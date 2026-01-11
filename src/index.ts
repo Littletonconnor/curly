@@ -83,6 +83,15 @@ export async function main(): Promise<void> {
     const mergedData = mergeInterpolatedArrays(alias?.data, cliFlags.data)
     const mergedCookies = mergeInterpolatedArrays(alias?.cookie, cliFlags.cookie)
     const mergedQuery = mergeInterpolatedArrays(alias?.query, cliFlags.query)
+    const mergedForm = mergeInterpolatedArrays(alias?.form, cliFlags.form)
+
+    // Validate: -d and -F are mutually exclusive
+    const hasData = (mergedData && mergedData.length > 0) || cliFlags['data-raw']
+    const hasForm = mergedForm && mergedForm.length > 0
+    if (hasData && hasForm) {
+      console.error('Cannot use -d/--data and -F/--form together. Choose one.')
+      process.exit(1)
+    }
 
     const options = {
       ...cliFlags,
@@ -92,6 +101,7 @@ export async function main(): Promise<void> {
       'data-raw': cliFlags['data-raw'] ? interpolate(cliFlags['data-raw']) : undefined,
       cookie: mergedCookies,
       query: mergedQuery,
+      form: mergedForm,
       user: cliFlags.user
         ? interpolate(cliFlags.user)
         : alias?.user
@@ -114,6 +124,7 @@ export async function main(): Promise<void> {
         data: cliFlags.data,
         query: cliFlags.query,
         cookie: cliFlags.cookie,
+        form: cliFlags.form,
         user: cliFlags.user,
         timeout: cliFlags.timeout,
         retry: cliFlags.retry !== '0' ? cliFlags.retry : undefined,

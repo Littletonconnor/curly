@@ -10,6 +10,7 @@ export type VerboseLabel =
   | 'load-test'
   | 'auth'
   | 'retry'
+  | 'form'
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 type StyleColor = Parameters<typeof styleText>[0]
@@ -31,6 +32,7 @@ const VERBOSE_LABEL_COLORS: Record<VerboseLabel, StyleColor> = {
   'load-test': 'magentaBright',
   auth: 'yellowBright',
   retry: 'yellowBright',
+  form: 'blueBright',
 }
 
 let verboseEnabled = false

@@ -49,8 +49,7 @@ export async function main() {
     // Interpolate environment variables in URL and options
     const url = interpolate(resolvedUrl)
 
-    // Merge profile headers with CLI headers (CLI headers add to profile headers)
-    const profileHeaders = profile?.headers ? interpolateArray(profile.headers) : []
+    const profileHeaders = interpolateArray(profile?.headers)
     const cliHeaders = interpolateArray(cliFlags.headers)
     const mergedHeaders = [...profileHeaders, ...cliHeaders]
 

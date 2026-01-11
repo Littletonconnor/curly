@@ -208,7 +208,7 @@ export function buildFetchOptions(options: FetchOptions): any {
 export function buildMethod(options: FetchOptions) {
   if (options.method) {
     return options.method
-  } else if (options.data || options['data-raw']) {
+  } else if ((options.data && options.data.length > 0) || options['data-raw']) {
     return 'POST'
   } else {
     return 'GET'
@@ -334,7 +334,7 @@ function buildAuthHeader(options: FetchOptions) {
 }
 
 export function buildBody(options: FetchOptions) {
-  if (!options.data && !options['data-raw']) return undefined
+  if ((!options.data || options.data.length === 0) && !options['data-raw']) return undefined
 
   if (options['data-raw']) {
     if (isValidJson(options['data-raw'])) {
@@ -343,7 +343,6 @@ export function buildBody(options: FetchOptions) {
       logger().error(`data-raw must be valid json (e.g., --data-raw '{"name": "John Doe"}').`)
     }
   } else if (options.data) {
-    // Check if reading body from file (e.g., -d @payload.json)
     if (options.data.length === 1 && options.data[0].startsWith('@')) {
       const filePath = options.data[0].slice(1)
       return readBodyFromFile(filePath)

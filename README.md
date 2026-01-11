@@ -142,6 +142,10 @@ Usage: curly [OPTIONS] <url>
 | `--retry-delay` |       | Initial delay between retries in milliseconds (default: 1000)           |
 | `--profile`     | `-p`  | Use a named profile from `~/.config/curly/config.json`                  |
 | `--completions` |       | Generate or install shell completions (bash, zsh, install)              |
+| `--save`        |       | Save the current request as a named alias                               |
+| `--use`         |       | Execute a saved alias (CLI flags override alias values)                 |
+| `--aliases`     |       | List all saved aliases                                                  |
+| `--delete-alias`|       | Delete a saved alias                                                    |
 
 ### Examples
 
@@ -551,6 +555,57 @@ curly --profile dev https://other-api.com/health
 | `headers` | string[] | Headers in `"Name: value"` format |
 | `retry` | number | Number of retry attempts |
 | `retryDelay` | number | Initial delay between retries in ms |
+
+#### Saved Request Aliases
+
+Save frequently used requests as named aliases and execute them with a single command. Aliases are stored in `~/.config/curly/aliases.json`.
+
+##### Save a request as an alias
+
+```sh
+curly --save "get-users" https://api.example.com/users
+```
+
+##### Save a complex request
+
+```sh
+curly --save "create-post" \
+  -X POST \
+  -H "Authorization: Bearer {{API_KEY}}" \
+  -d title="New Post" \
+  -d body="Content" \
+  https://api.example.com/posts
+```
+
+##### Execute a saved alias
+
+```sh
+curly --use "get-users"
+```
+
+##### Override alias values with CLI flags
+
+```sh
+# Use the alias but add an extra header
+curly --use "get-users" -H "X-Debug: true"
+
+# Use the alias but override the URL
+curly --use "create-post" https://api.example.com/drafts
+```
+
+##### List all saved aliases
+
+```sh
+curly --aliases
+```
+
+##### Delete an alias
+
+```sh
+curly --delete-alias "get-users"
+```
+
+**Note:** Aliases support environment variable interpolation with `{{VAR}}` syntax. Variables are resolved when the alias is executed, not when it's saved.
 
 #### Complex Examples
 

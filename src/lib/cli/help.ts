@@ -4,7 +4,7 @@ export function printHelpMessage() {
 Options:
   -h, --help                   Show help menu
 
-  -history, --history          Show hisory logs (defaults to ~./curly_history.txt)
+  --history                    Show history logs (defaults to ~/curly_history.txt)
 
   -X, --method <METHOD>        HTTP method to use (default: GET)
 
@@ -76,6 +76,19 @@ Options:
   --completions <shell>        Generate shell completions (bash, zsh)
                                Example: curly --completions bash
                                Example: curly --completions install
+
+  --save <name>                Save the request as a named alias
+                               Example: curly --save "get-users" https://api.example.com/users
+
+  --use <name>                 Execute a saved alias
+                               Example: curly --use "get-users"
+                               CLI flags override alias values
+
+  --aliases                    List all saved aliases
+                               Example: curly --aliases
+
+  --delete-alias <name>        Delete a saved alias
+                               Example: curly --delete-alias "get-users"
 `
   console.log(message)
 }

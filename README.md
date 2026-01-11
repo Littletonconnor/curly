@@ -147,6 +147,7 @@ Usage: curly [OPTIONS] <url>
 | `--use`         |       | Execute a saved alias (CLI flags override alias values)                 |
 | `--aliases`     |       | List all saved aliases                                                  |
 | `--delete-alias`|       | Delete a saved alias                                                    |
+| `--proxy`       | `-x`  | Route requests through a proxy server (HTTP/HTTPS)                      |
 
 ### Examples
 
@@ -345,6 +346,36 @@ curly -n 50 -c 5 -X POST -d title=test -d body=content -d userId=1 https://jsonp
 ```sh
 curly -n 1000 -c 50 https://jsonplaceholder.typicode.com/users
 ```
+
+#### Proxy Support
+
+Route requests through HTTP/HTTPS proxy servers. Useful for corporate environments, debugging with traffic inspection tools (mitmproxy, Charles, Fiddler), or security testing.
+
+##### Basic proxy usage
+
+```sh
+curly --proxy http://localhost:8080 https://api.example.com/users
+# OR use the short form
+curly -x http://localhost:8080 https://api.example.com/users
+```
+
+##### Proxy with verbose mode (see connection details)
+
+```sh
+curly -v --proxy http://localhost:8080 https://httpbin.org/get
+```
+
+##### Proxy with other options
+
+```sh
+curly --proxy http://proxy.corp.com:3128 \
+  -H "Authorization: Bearer {{API_KEY}}" \
+  -X POST \
+  -d title="New Post" \
+  https://api.example.com/posts
+```
+
+**Note:** See [docs/proxy.md](docs/proxy.md) for detailed documentation including testing with mitmproxy.
 
 #### Verbose Output and History
 

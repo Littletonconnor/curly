@@ -84,11 +84,12 @@ curly --use "get-users"
 ~~Generate completions for bash and zsh.~~
 *Use `curly --completions install` for automatic installation, or `curly --completions bash|zsh` to output scripts.*
 
-### Proxy support
-HTTP/HTTPS/SOCKS proxy support.
+### ~~Proxy support~~ ✓
+~~HTTP/HTTPS proxy support.~~
 ```sh
 curly --proxy http://proxy.example.com:8080 https://api.example.com
 ```
+*Use `-x` or `--proxy` to route requests through a proxy server. See `docs/proxy.md` for detailed documentation.*
 
 ### Interactive TUI for load testing
 Explore adding a real-time terminal UI dashboard for load testing that displays live metrics, charts, and statistics during test execution.

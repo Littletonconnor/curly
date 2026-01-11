@@ -37,6 +37,7 @@ export interface FetchOptions {
   aliases?: boolean
   'delete-alias'?: string
   form?: string[]
+  proxy?: string
 }
 
 // Response data structure

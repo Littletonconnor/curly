@@ -46,12 +46,18 @@ curly --retry 3 --retry-delay 1000 https://flaky-api.example.com
 curly -H "Authorization: Bearer {{API_KEY}}" https://api.example.com
 ```
 
-### Config file support (`~/.curlyrc`)
-Load default options from a config file.
+### ~~Config file support (`~/.config/curly/config.json`)~~ ✓
+~~Load default options from a config file with profile support.~~
 ```json
 {
-  "timeout": 5000,
-  "headers": ["User-Agent: curly/1.0"]
+  "default": "dev",
+  "profiles": {
+    "dev": {
+      "baseUrl": "http://localhost:3000",
+      "timeout": 5000,
+      "headers": ["X-Debug: true"]
+    }
+  }
 }
 ```
 

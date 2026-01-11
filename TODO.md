@@ -112,6 +112,7 @@ Explore adding a real-time terminal UI dashboard for load testing that displays 
 ## Housekeeping
 
 - [ ] Publish to NPM
+- [ ] Add comprehensive testing with Vitest (unit tests for parsers, HTTP client, formatters)
 
 ---
 

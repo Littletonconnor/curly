@@ -50,6 +50,10 @@ export function cli() {
       'retry-delay': { type: 'string', default: '1000' },
       profile: { type: 'string', short: 'p' },
       completions: { type: 'string' },
+      save: { type: 'string' },
+      use: { type: 'string' },
+      aliases: { type: 'boolean', default: false },
+      'delete-alias': { type: 'string' },
     },
     allowPositionals: true,
   })

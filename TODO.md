@@ -71,12 +71,13 @@ Support file uploads with multipart/form-data.
 curly -X POST -F "file=@photo.jpg" -F "name=vacation" https://api.example.com/upload
 ```
 
-### Saved request aliases
-Save and reuse named requests.
+### ~~Saved request aliases~~ ✓
+~~Save and reuse named requests.~~
 ```sh
 curly --save "get-users" -X GET https://api.example.com/users
 curly --use "get-users"
 ```
+*Use `--save` to capture requests and `--use` to execute them. Aliases stored in `~/.config/curly/aliases.json`.*
 
 ### ~~Shell completions~~ ✓
 ~~Generate completions for bash and zsh.~~

@@ -63,6 +63,7 @@ Status code distribution:
 - **Simple JSON Posting**: Automatically sets `Content-Type`: `application/json` if you're posting data.
 - **Automatic Content-Type Parsing**: Tries to parse JSON responses by default. This makes it easier to make requests to JSON APIs or HTML documents without having to specify `Content-Type` headers.
 - **Load Testing**: Built-in load testing with automatic mode detection. Fire off multiple concurrent requests and get detailed performance statistics including response time histograms.
+- **Configuration Profiles**: Define named profiles in `~/.config/curly/config.json` with base URLs, headers, timeouts, and retry settings. Switch environments with `--profile dev` or `--profile prod`.
 - **Environment Variable Interpolation**: Use `{{VAR}}` syntax to inject environment variables into URLs, headers, and request bodies.
 - **Helper Flags** (like `--help`, `--verbose`, `--include`) for easier debugging and data introspection.
 - **Familiar options**: Mimics curl-style flags (`-X`, `-H`, `-d`, `-I`) for easy migration from curl.
@@ -122,6 +123,7 @@ Usage: curly [OPTIONS] <url>
 | `--user`        | `-u`  | Basic authentication credentials (user:password)                        |
 | `--retry`       |       | Retry failed requests with exponential backoff (default: 0)             |
 | `--retry-delay` |       | Initial delay between retries in milliseconds (default: 1000)           |
+| `--profile`     | `-p`  | Use a named profile from `~/.config/curly/config.json`                  |
 
 ### Examples
 
@@ -303,7 +305,7 @@ curly -v https://jsonplaceholder.typicode.com/posts/1
 curly --history
 ```
 
-- History is automatically saved to `~/curly_history.txt`
+- History is automatically saved to `~/.config/curly/history`
 
 #### Timeout
 
@@ -464,6 +466,73 @@ curly -u "{{API_USER}}:{{API_PASS}}" https://api.example.com/protected
 ```
 
 **Note:** If a referenced environment variable is not defined, curly will exit with an error message indicating which variable is missing.
+
+#### Configuration Profiles
+
+Define named profiles in `~/.config/curly/config.json` to avoid repeating common options. Profiles can include base URLs, headers, timeouts, and retry settings.
+
+##### Create a config file
+
+```json
+{
+  "default": "dev",
+  "profiles": {
+    "dev": {
+      "baseUrl": "http://localhost:3000",
+      "timeout": 5000,
+      "headers": ["X-Debug: true"]
+    },
+    "prod": {
+      "baseUrl": "https://api.example.com",
+      "timeout": 10000,
+      "headers": ["Authorization: Bearer {{API_KEY}}"],
+      "retry": 3,
+      "retryDelay": 2000
+    }
+  }
+}
+```
+
+##### Use the default profile
+
+```sh
+# Uses "dev" profile (set as default)
+curly /users
+# → GET http://localhost:3000/users
+```
+
+##### Use a specific profile
+
+```sh
+curly --profile prod /users
+# → GET https://api.example.com/users with Authorization header
+```
+
+##### Override profile settings with CLI flags
+
+```sh
+# CLI flags override profile values
+curly --profile prod --timeout 30000 /users
+
+# CLI headers merge with profile headers
+curly --profile prod -H "X-Request-Id: 123" /users
+```
+
+##### Use full URLs to bypass baseUrl
+
+```sh
+# Full URLs ignore the profile's baseUrl
+curly --profile dev https://other-api.com/health
+```
+
+**Profile properties:**
+| Property | Type | Description |
+|----------|------|-------------|
+| `baseUrl` | string | Prepended to paths starting with `/` |
+| `timeout` | number | Request timeout in milliseconds |
+| `headers` | string[] | Headers in `"Name: value"` format |
+| `retry` | number | Number of retry attempts |
+| `retryDelay` | number | Initial delay between retries in ms |
 
 #### Complex Examples
 

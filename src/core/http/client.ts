@@ -4,6 +4,7 @@ import { CONTENT_TYPES } from '../config/constants'
 import { isValidJson, readBodyFromFile, getContentTypeFromExtension } from '../../lib/utils/file'
 import { applyCookieHeader } from './cookies'
 import { logger } from '../../lib/utils/logger'
+import { withRetry } from '../../lib/utils/retry'
 
 export type FetchOptions = ReturnType<typeof cli>['values']
 
@@ -28,15 +29,22 @@ export async function curl(url: string, options: FetchOptions) {
     logger().verbose('request', `Body: ${fetchOptions.body}`)
   }
 
+  const retryOptions = {
+    maxRetries: options.retry ? parseInt(options.retry, 10) : 0,
+    baseDelay: options['retry-delay'] ? parseInt(options['retry-delay'], 10) : 1000,
+  }
+
   try {
-    const startTime = performance.now()
-    const response = await executeFetch(finalUrl, fetchOptions, maxRedirects)
-    const duration = performance.now() - startTime
-    logger().verbose(
-      'response',
-      `${response.status} ${response.statusText} (${duration.toFixed(0)}ms)`,
-    )
-    return { response, duration }
+    return await withRetry(async () => {
+      const startTime = performance.now()
+      const response = await executeFetch(finalUrl, fetchOptions, maxRedirects)
+      const duration = performance.now() - startTime
+      logger().verbose(
+        'response',
+        `${response.status} ${response.statusText} (${duration.toFixed(0)}ms)`,
+      )
+      return { response, duration }
+    }, retryOptions)
   } catch (e: any) {
     if (e.name === 'AbortError') {
       logger().error(`Request timed out after ${timeoutMs}ms`)

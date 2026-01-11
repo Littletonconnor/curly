@@ -92,95 +92,19 @@ If you're developing `curly` and want to test your changes without publishing:
 
 ## Shell Completions
 
-Curly supports tab completions for **bash** and **zsh**. Completions help you discover options, auto-complete flags, HTTP methods, and profile names.
+Curly supports tab completions for **bash** and **zsh**.
 
-### Quick Install (Recommended)
-
-The easiest way to install completions is using the built-in installer:
+### Install
 
 ```sh
 curly --completions install
 ```
-
-This will:
-1. Detect your shell (bash or zsh)
-2. Create completion scripts in `~/.config/curly/completions/`
-3. Add the necessary source line to your shell config (`.bashrc` or `.zshrc`)
 
 Then restart your shell or run:
 
 ```sh
 source ~/.bashrc   # for bash
 source ~/.zshrc    # for zsh
-```
-
-### Manual Installation
-
-If you prefer manual installation or need more control:
-
-#### Bash
-
-**Option 1: Source directly in .bashrc**
-
-```sh
-echo 'source <(curly --completions bash)' >> ~/.bashrc
-source ~/.bashrc
-```
-
-**Option 2: Save to a file**
-
-```sh
-mkdir -p ~/.config/curly/completions
-curly --completions bash > ~/.config/curly/completions/curly.bash
-echo '[ -f ~/.config/curly/completions/curly.bash ] && source ~/.config/curly/completions/curly.bash' >> ~/.bashrc
-source ~/.bashrc
-```
-
-#### Zsh
-
-**Option 1: Source directly in .zshrc**
-
-```sh
-echo 'source <(curly --completions zsh)' >> ~/.zshrc
-source ~/.zshrc
-```
-
-**Option 2: Add to fpath**
-
-```sh
-mkdir -p ~/.config/curly/completions
-curly --completions zsh > ~/.config/curly/completions/_curly
-echo 'fpath=(~/.config/curly/completions $fpath)' >> ~/.zshrc
-echo 'autoload -Uz compinit && compinit' >> ~/.zshrc
-source ~/.zshrc
-```
-
-### What Gets Completed
-
-Once installed, pressing `<Tab>` will complete:
-
-| Context | Completions |
-|---------|-------------|
-| `-X` or `--method` | GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS |
-| `-p` or `--profile` | Profile names from `~/.config/curly/config.json` |
-| `-H` or `--headers` | Common header names (Content-Type, Authorization, etc.) |
-| `-o`, `-b`, `-d` | File paths |
-| Any flag starting with `-` | All available options |
-
-### Troubleshooting
-
-**Completions not working after install?**
-
-1. Make sure you restarted your shell or sourced the config file
-2. Check that the completion file exists: `ls ~/.config/curly/completions/`
-3. For zsh, ensure `compinit` is being called after the fpath is set
-
-**Updating completions**
-
-After upgrading curly, re-run the install command to get any new options:
-
-```sh
-curly --completions install
 ```
 
 ## Usage

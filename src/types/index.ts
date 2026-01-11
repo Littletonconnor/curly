@@ -1,3 +1,5 @@
-import { buildResponse } from '../core/http/client'
+// Re-export all types from the main types file
+export * from '../types'
 
-export type Data = Awaited<ReturnType<typeof buildResponse>>
+// Data is an alias for ResponseData for backwards compatibility
+export { ResponseData as Data } from '../types'

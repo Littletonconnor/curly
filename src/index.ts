@@ -3,7 +3,6 @@ import {
   printHistoryFile,
   writeHistoryFile,
   interpolate,
-  interpolateArray,
   loadConfig,
   getProfile,
   resolveUrl,
@@ -11,13 +10,14 @@ import {
   getAlias,
   deleteAlias,
   listAliases,
+  mergeInterpolatedArrays,
 } from './lib/utils'
 import { executeRequest } from './commands/request'
 import { load } from './commands/load-test'
 import { handleCompletions } from './commands/completions'
 import { setVerbose } from './lib/utils/logger'
 
-export async function main() {
+export async function main(): Promise<void> {
   try {
     await writeHistoryFile()
     const { values: cliFlags, positionals } = cli()
@@ -78,25 +78,11 @@ export async function main() {
     const resolvedUrl = resolveUrl(rawUrl, profile?.baseUrl)
     const url = interpolate(resolvedUrl)
 
-    // Merge headers: profile < alias < CLI (later sources override)
-    const profileHeaders = interpolateArray(profile?.headers)
-    const aliasHeaders = interpolateArray(alias?.headers)
-    const cliHeaders = interpolateArray(cliFlags.headers)
-    const mergedHeaders = [...profileHeaders, ...aliasHeaders, ...cliHeaders]
-
-    // Merge data arrays: alias + CLI
-    const aliasData = interpolateArray(alias?.data)
-    const cliData = interpolateArray(cliFlags.data)
-    const mergedData = [...aliasData, ...cliData]
-
-    // Merge other array fields
-    const aliasCookies = interpolateArray(alias?.cookie)
-    const cliCookies = interpolateArray(cliFlags.cookie)
-    const mergedCookies = [...aliasCookies, ...cliCookies]
-
-    const aliasQuery = interpolateArray(alias?.query)
-    const cliQuery = interpolateArray(cliFlags.query)
-    const mergedQuery = [...aliasQuery, ...cliQuery]
+    // Merge arrays: profile < alias < CLI (later sources override)
+    const mergedHeaders = mergeInterpolatedArrays(profile?.headers, alias?.headers, cliFlags.headers)
+    const mergedData = mergeInterpolatedArrays(alias?.data, cliFlags.data)
+    const mergedCookies = mergeInterpolatedArrays(alias?.cookie, cliFlags.cookie)
+    const mergedQuery = mergeInterpolatedArrays(alias?.query, cliFlags.query)
 
     const options = {
       ...cliFlags,
@@ -106,7 +92,11 @@ export async function main() {
       'data-raw': cliFlags['data-raw'] ? interpolate(cliFlags['data-raw']) : undefined,
       cookie: mergedCookies,
       query: mergedQuery,
-      user: cliFlags.user ? interpolate(cliFlags.user) : (alias?.user ? interpolate(alias.user) : undefined),
+      user: cliFlags.user
+        ? interpolate(cliFlags.user)
+        : alias?.user
+          ? interpolate(alias.user)
+          : undefined,
       timeout: cliFlags.timeout ?? alias?.timeout ?? profile?.timeout?.toString(),
       retry: cliFlags.retry !== '0' ? cliFlags.retry : (alias?.retry ?? profile?.retry?.toString() ?? '0'),
       'retry-delay':

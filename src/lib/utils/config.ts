@@ -2,6 +2,7 @@ import { promises as fs } from 'fs'
 import os from 'os'
 import path from 'path'
 import { logger } from './logger'
+import { isNodeError, getErrorMessage } from '../../types'
 
 export interface Profile {
   baseUrl?: string
@@ -24,12 +25,12 @@ export async function loadConfig(): Promise<Config | null> {
     const config = JSON.parse(content) as Config
     logger().debug(`Loaded config from ${CONFIG_PATH}`)
     return config
-  } catch (e: any) {
-    if (e.code === 'ENOENT') {
+  } catch (error: unknown) {
+    if (isNodeError(error) && error.code === 'ENOENT') {
       logger().debug('No config file found')
       return null
     }
-    logger().error(`Error loading config: ${e.message}`)
+    logger().error(`Error loading config: ${getErrorMessage(error)}`)
     return null
   }
 }

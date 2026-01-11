@@ -1,8 +1,9 @@
 import { logger } from '../../lib/utils/logger'
+import { getErrorMessage } from '../../types'
 
 // TODO: this currently only support name, value
 // and not other options like expiration dates, etc.
-export function applyCookieHeader(fileData: string) {
+export function applyCookieHeader(fileData: string): string {
   let cookie = ''
   try {
     cookie = parseJsonCookies(fileData)
@@ -11,8 +12,8 @@ export function applyCookieHeader(fileData: string) {
   } catch {
     try {
       cookie = parseNetscapeCookies(fileData)
-    } catch (error: any) {
-      logger().error('Failed parsing cookies as both JSON and Netscape: ', error)
+    } catch (error: unknown) {
+      logger().error(`Failed parsing cookies as both JSON and Netscape: ${getErrorMessage(error)}`)
     }
   }
 

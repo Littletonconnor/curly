@@ -2,6 +2,8 @@ import { promises as fs } from 'fs'
 import os from 'os'
 import path from 'path'
 import { logger } from './logger'
+import { ensureConfigDir } from './fs'
+import { isNodeError, getErrorMessage } from '../../types'
 
 export interface SavedAlias {
   url: string
@@ -26,19 +28,14 @@ export async function loadAliases(): Promise<AliasesStore> {
     const aliases = JSON.parse(content) as AliasesStore
     logger().debug(`Loaded aliases from ${ALIASES_PATH}`)
     return aliases
-  } catch (e: any) {
-    if (e.code === 'ENOENT') {
+  } catch (error: unknown) {
+    if (isNodeError(error) && error.code === 'ENOENT') {
       logger().debug('No aliases file found')
       return {}
     }
-    logger().error(`Error loading aliases: ${e.message}`)
+    logger().error(`Error loading aliases: ${getErrorMessage(error)}`)
     return {}
   }
-}
-
-async function ensureConfigDir(): Promise<void> {
-  const configDir = path.dirname(ALIASES_PATH)
-  await fs.mkdir(configDir, { recursive: true })
 }
 
 async function writeAliases(aliases: AliasesStore): Promise<void> {

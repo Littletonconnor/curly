@@ -58,8 +58,8 @@ describe('interpolateArray', () => {
     process.env = originalEnv
   })
 
-  it('returns undefined for undefined input', () => {
-    expect(interpolateArray(undefined)).toBeUndefined()
+  it('returns empty array for undefined input', () => {
+    expect(interpolateArray(undefined)).toEqual([])
   })
 
   it('interpolates all elements in array', () => {

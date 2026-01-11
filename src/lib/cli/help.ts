@@ -4,7 +4,7 @@ export function printHelpMessage() {
 Options:
   -h, --help                   Show help menu
 
-  -history, --history          Show hisory logs (defaults to ~./curly_history.txt)
+  --history                    Show history logs (defaults to ~/curly_history.txt)
 
   -X, --method <METHOD>        HTTP method to use (default: GET)
 

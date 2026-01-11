@@ -1,18 +1,26 @@
 import { logger } from './logger'
+import { isError, isNodeError, getErrorMessage } from '../../types'
 
 export interface RetryOptions {
   maxRetries: number
   baseDelay: number
-  shouldRetry?: (error: any) => boolean
+  shouldRetry?: (error: unknown) => boolean
 }
 
-const defaultShouldRetry = (error: any): boolean => {
-  return (
-    error.name === 'AbortError' ||
-    error.code === 'ECONNRESET' ||
-    error.code === 'ECONNREFUSED' ||
-    error.code === 'ETIMEDOUT'
-  )
+const defaultShouldRetry = (error: unknown): boolean => {
+  if (!isError(error)) return false
+
+  if (error.name === 'AbortError') return true
+
+  if (isNodeError(error)) {
+    return (
+      error.code === 'ECONNRESET' ||
+      error.code === 'ECONNREFUSED' ||
+      error.code === 'ETIMEDOUT'
+    )
+  }
+
+  return false
 }
 
 function sleep(ms: number): Promise<void> {
@@ -21,7 +29,7 @@ function sleep(ms: number): Promise<void> {
 
 export async function withRetry<T>(
   operation: () => Promise<T>,
-  options: RetryOptions
+  options: RetryOptions,
 ): Promise<T> {
   const { maxRetries, baseDelay, shouldRetry = defaultShouldRetry } = options
 
@@ -29,7 +37,7 @@ export async function withRetry<T>(
     return operation()
   }
 
-  let lastError: Error | null = null
+  let lastError: unknown = null
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -39,12 +47,12 @@ export async function withRetry<T>(
         await sleep(delay)
       }
       return await operation()
-    } catch (error: any) {
+    } catch (error: unknown) {
       lastError = error
       if (!shouldRetry(error) || attempt >= maxRetries) {
         throw error
       }
-      logger().verbose('retry', `Request failed: ${error.message}`)
+      logger().verbose('retry', `Request failed: ${getErrorMessage(error)}`)
     }
   }
 

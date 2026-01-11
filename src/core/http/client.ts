@@ -1,16 +1,27 @@
 import { readFileSync } from 'fs'
-import { cli } from '../../lib/cli/parser'
 import { CONTENT_TYPES } from '../config/constants'
 import { isValidJson, readBodyFromFile, getContentTypeFromExtension } from '../../lib/utils/file'
 import { applyCookieHeader } from './cookies'
 import { logger } from '../../lib/utils/logger'
 import { withRetry } from '../../lib/utils/retry'
+import { parseIntOption, formatBytes } from '../../lib/utils/parse'
+import {
+  type FetchOptions,
+  type CurlyRequestInit,
+  type ResponseData,
+  isError,
+  getErrorMessage,
+} from '../../types'
 
-export type FetchOptions = ReturnType<typeof cli>['values']
+// Re-export FetchOptions for backwards compatibility
+export type { FetchOptions } from '../../types'
 
-export async function curl(url: string, options: FetchOptions) {
+export async function curl(
+  url: string,
+  options: FetchOptions,
+): Promise<{ response: Response; duration: number }> {
   const fetchOptions = buildFetchOptions(options)
-  const timeoutMs = options.timeout ? parseInt(options.timeout, 10) : undefined
+  const timeoutMs = parseIntOption(options.timeout, 0) || undefined
   const { signal, cleanup } = createTimeoutSignal(timeoutMs)
   const maxRedirects = getMaxRedirects(options)
 
@@ -30,8 +41,8 @@ export async function curl(url: string, options: FetchOptions) {
   }
 
   const retryOptions = {
-    maxRetries: options.retry ? parseInt(options.retry, 10) : 0,
-    baseDelay: options['retry-delay'] ? parseInt(options['retry-delay'], 10) : 1000,
+    maxRetries: parseIntOption(options.retry, 0),
+    baseDelay: parseIntOption(options['retry-delay'], 1000),
   }
 
   try {
@@ -45,18 +56,23 @@ export async function curl(url: string, options: FetchOptions) {
       )
       return { response, duration }
     }, retryOptions)
-  } catch (e: any) {
-    if (e.name === 'AbortError') {
+  } catch (error: unknown) {
+    if (isError(error) && error.name === 'AbortError') {
       logger().error(`Request timed out after ${timeoutMs}ms`)
     }
-    logger().error(`Fetch response failed: ${e.message}`)
-    throw e
+    logger().error(`Fetch response failed: ${getErrorMessage(error)}`)
+    throw error
   } finally {
     cleanup()
   }
 }
 
-function createTimeoutSignal(timeoutMs: number | undefined) {
+interface TimeoutSignalResult {
+  signal: AbortSignal | undefined
+  cleanup: () => void
+}
+
+function createTimeoutSignal(timeoutMs: number | undefined): TimeoutSignalResult {
   if (!timeoutMs) {
     return { signal: undefined, cleanup: () => {} }
   }
@@ -73,13 +89,12 @@ function createTimeoutSignal(timeoutMs: number | undefined) {
 
 function getMaxRedirects(options: FetchOptions): number {
   if (!options.follow) return 0
-  if (options['max-redirects']) return parseInt(options['max-redirects'], 10)
-  return 20
+  return parseIntOption(options['max-redirects'], 20)
 }
 
 async function executeFetch(
   url: string,
-  fetchOptions: RequestInit,
+  fetchOptions: CurlyRequestInit,
   maxRedirects: number,
 ): Promise<Response> {
   let currentUrl = url
@@ -119,14 +134,14 @@ export async function buildResponse({
 }: {
   response: Response
   duration: number
-}) {
+}): Promise<ResponseData> {
   const contentType = response.headers.get('content-type') ?? ''
   const size = await getResponseSize(response)
 
   logger().verbose('response', `Content-Type: ${contentType || '(not specified)'}`)
   logger().verbose('response', `Size: ${size}`)
 
-  let data
+  let data: unknown
   if (CONTENT_TYPES.json.includes(contentType)) {
     data = await response.json()
   } else if (CONTENT_TYPES.arrayBuffer.includes(contentType)) {
@@ -149,26 +164,14 @@ export async function buildResponse({
   }
 }
 
-async function getResponseSize(response: Response) {
+async function getResponseSize(response: Response): Promise<string> {
   const clonedResponse = response.clone()
   const text = await clonedResponse.text()
   const bytes = Buffer.byteLength(text)
   return formatBytes(bytes)
 }
 
-function formatBytes(bytes: number) {
-  if (bytes < 1024) {
-    return `${bytes} B`
-  } else if (bytes < 1024 * 1024) {
-    return `${(bytes / 1024).toFixed(2)} KB`
-  } else if (bytes < 1024 * 1024 * 1024) {
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`
-  } else {
-    return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`
-  }
-}
-
-async function inferContentType(response: Response) {
+async function inferContentType(response: Response): Promise<unknown> {
   try {
     return await response.clone().json()
   } catch {
@@ -176,7 +179,7 @@ async function inferContentType(response: Response) {
   }
 }
 
-export function buildUrl(url: string, queryParams: FetchOptions['query']) {
+export function buildUrl(url: string, queryParams: FetchOptions['query']): string {
   if (!queryParams) {
     return url
   }
@@ -195,8 +198,7 @@ export function buildUrl(url: string, queryParams: FetchOptions['query']) {
   return urlWithQueryParams.href
 }
 
-// TODO: Fix this type issue
-export function buildFetchOptions(options: FetchOptions): any {
+export function buildFetchOptions(options: FetchOptions): CurlyRequestInit {
   return {
     method: buildMethod(options),
     headers: buildHeaders(options),
@@ -205,7 +207,7 @@ export function buildFetchOptions(options: FetchOptions): any {
   }
 }
 
-export function buildMethod(options: FetchOptions) {
+export function buildMethod(options: FetchOptions): string {
   if (options.method) {
     return options.method
   } else if ((options.data && options.data.length > 0) || options['data-raw']) {
@@ -231,7 +233,7 @@ export function buildMethod(options: FetchOptions) {
  * curly --data-raw '{"userId": "1"}' -X -H 'Content-type: application/json' -H 'Cookie: VALUE1;VALUE2' -H 'foo:bar' POST https://jsonplaceholder.typicode.com/todos
  * headers created: {'Content-Type': 'application/json', 'foo': 'bar', 'cookie': 'VALUE1;VALUE2'}
  */
-export function buildHeaders(options: FetchOptions) {
+export function buildHeaders(options: FetchOptions): Record<string, string> {
   if (!options.headers && (options.data || options['data-raw'])) {
     if (options.data?.length === 1 && options.data[0].startsWith('@')) {
       const filePath = options.data[0].slice(1)
@@ -241,17 +243,20 @@ export function buildHeaders(options: FetchOptions) {
     return { 'Content-Type': 'application/json' }
   }
 
-  const headers = options?.headers?.reduce((obj, h) => {
-    if (!h.includes(':')) {
-      logger().error('Headers are improperly formatted.')
-    } else if (h.toLowerCase().includes('cookie')) {
-      const [name, value] = h.split(/:(.+)/).map((part) => part.trim())
-      return { ...obj, [name]: value }
-    }
+  const headers: Record<string, string> = options?.headers?.reduce(
+    (obj: Record<string, string>, h: string) => {
+      if (!h.includes(':')) {
+        logger().error('Headers are improperly formatted.')
+      } else if (h.toLowerCase().includes('cookie')) {
+        const [name, value] = h.split(/:(.+)/).map((part) => part.trim())
+        return { ...obj, [name]: value }
+      }
 
-    const [key, value] = h.split(':')
-    return { ...obj, [key.trim()]: value.trim() }
-  }, {})
+      const [key, value] = h.split(':')
+      return { ...obj, [key.trim()]: value.trim() }
+    },
+    {},
+  ) ?? {}
 
   return {
     ...headers,
@@ -268,7 +273,7 @@ export function buildHeaders(options: FetchOptions) {
  * - We allow multiple key=value pairs that we concatenate automatically
  * - File input requires exactly one cookie argument
  */
-export function buildCookieHeaders(options: FetchOptions) {
+export function buildCookieHeaders(options: FetchOptions): Record<string, string> | undefined {
   if (!options.cookie || options.cookie.length === 0) {
     return undefined
   }
@@ -282,7 +287,7 @@ export function buildCookieHeaders(options: FetchOptions) {
   }
 }
 
-function buildCookieHeaderFromKeyValuePairs(cookieValues: string[]) {
+function buildCookieHeaderFromKeyValuePairs(cookieValues: string[]): { Cookie: string } {
   const invalidCookies = cookieValues.filter((cookie) => !cookie.includes('='))
 
   if (invalidCookies.length > 0) {
@@ -294,7 +299,7 @@ function buildCookieHeaderFromKeyValuePairs(cookieValues: string[]) {
   return { Cookie: cookieString }
 }
 
-function buildCookieHeaderFromFile(cookiePaths: string[]) {
+function buildCookieHeaderFromFile(cookiePaths: string[]): { Cookie: string } | undefined {
   if (cookiePaths.length !== 1) {
     logger().error('When reading cookies from a file, provide exactly one file path')
   }
@@ -312,7 +317,7 @@ function buildCookieHeaderFromFile(cookiePaths: string[]) {
   }
 }
 
-function buildAuthHeader(options: FetchOptions) {
+function buildAuthHeader(options: FetchOptions): { Authorization: string } | undefined {
   if (!options.user) {
     return undefined
   }
@@ -326,7 +331,7 @@ function buildAuthHeader(options: FetchOptions) {
   return { Authorization: `Basic ${encoded}` }
 }
 
-export function buildBody(options: FetchOptions) {
+export function buildBody(options: FetchOptions): string | undefined {
   if ((!options.data || options.data.length === 0) && !options['data-raw']) return undefined
 
   if (options['data-raw']) {

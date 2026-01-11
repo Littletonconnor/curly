@@ -2,14 +2,15 @@ import { promises } from 'fs'
 import { STATUS_CODES } from 'node:http'
 import { inspect, styleText } from 'node:util'
 import { parseSetCookieHeaders } from '../../core/http/cookies'
-import { buildResponse, type FetchOptions } from '../../core/http/client'
+import { type FetchOptions } from '../../core/http/client'
 import { logger } from '../utils/logger'
-import { Data } from '../../types'
+import { writeOutputToFile } from '../utils/fs'
+import { type ResponseData, type StatusColor } from '../../types'
 
 export async function writeToCookieJar(
-  data: Awaited<ReturnType<typeof buildResponse>>,
+  data: ResponseData,
   options: FetchOptions,
-) {
+): Promise<void> {
   const cookieHeaders = parseSetCookieHeaders(data.headers)
   const cookieJarFilePath = options['cookie-jar']!
 
@@ -23,20 +24,13 @@ export async function writeToCookieJar(
   }
 }
 
-export async function writeToOutputFile(data: Data, options: FetchOptions) {
-  const buffer = inspect(data.response, { depth: null, maxArrayLength: null, colors: false })
-
+export async function writeToOutputFile(data: ResponseData, options: FetchOptions): Promise<void> {
   logger().verbose('output', `Writing response to file: ${options.output}`)
-
-  try {
-    await promises.writeFile(options.output!, buffer, 'utf8')
-    logger().verbose('output', `Response saved successfully`)
-  } catch {
-    logger().warn(`Failed to write to output path ${options.output}`)
-  }
+  await writeOutputToFile(data.response, options.output!, { colors: false })
+  logger().verbose('output', `Response saved successfully`)
 }
 
-export async function stdout(data: Data, options: FetchOptions) {
+export async function stdout(data: ResponseData, options: FetchOptions): Promise<void> {
   if (options.head) {
     printHeaders(data.headers)
   } else if (options.include) {
@@ -58,22 +52,22 @@ export async function stdout(data: Data, options: FetchOptions) {
   }
 }
 
-function getStatusText(status: number) {
+function getStatusText(status: number): string {
   return STATUS_CODES[status] || 'unknown status'
 }
 
-function getStatusColor(status: number): Parameters<typeof styleText>[0] {
+function getStatusColor(status: number): StatusColor {
   if (status >= 200 && status < 300) return 'green'
   if (status >= 300 && status < 400) return 'yellow'
   if (status >= 400) return 'red'
   return 'white'
 }
 
-export function printResponse(response: Data['response']) {
+export function printResponse(response: ResponseData['response']): void {
   console.log(inspect(response, { depth: null, maxArrayLength: null, colors: true }))
 }
 
-export function printStatusLine(data: Data, options: FetchOptions) {
+export function printStatusLine(data: ResponseData, options: FetchOptions): void {
   if (options.quiet) return
 
   const status = `${data.status} ${getStatusText(data.status)}`
@@ -88,7 +82,7 @@ export function printStatusLine(data: Data, options: FetchOptions) {
   console.log(`${statusColored}  ${details}`)
 }
 
-export function printHeaders(headers: Headers) {
+export function printHeaders(headers: Headers): void {
   const headersObj = Object.fromEntries(headers.entries())
   Object.entries(headersObj).forEach(([k, v]) => console.log(`${k}: ${v}`))
 }

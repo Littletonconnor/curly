@@ -40,8 +40,8 @@ curly -X POST -d @payload.json https://api.example.com
 curly --retry 3 --retry-delay 1000 https://flaky-api.example.com
 ```
 
-### Environment variable interpolation
-Replace `{{VAR}}` placeholders with environment variables in URLs, headers, and bodies.
+### ~~Environment variable interpolation~~ ✓
+~~Replace `{{VAR}}` placeholders with environment variables in URLs, headers, and bodies.~~
 ```sh
 curly -H "Authorization: Bearer {{API_KEY}}" https://api.example.com
 ```

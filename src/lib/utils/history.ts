@@ -4,26 +4,35 @@ import os from 'os'
 import path from 'path'
 import { logger } from './logger'
 
+const CONFIG_DIR = path.join(os.homedir(), '.config', 'curly')
+const HISTORY_PATH = path.join(CONFIG_DIR, 'history')
+
+async function ensureConfigDir() {
+  try {
+    await promises.mkdir(CONFIG_DIR, { recursive: true })
+  } catch {
+    // Directory likely already exists
+  }
+}
+
 // TODO: build some removal system in here.
 // Example: We get to 1000 lines of history so we start to remove old entries.
 export async function writeHistoryFile() {
-  const filePath = path.join(os.homedir(), 'curly_history.txt')
+  await ensureConfigDir()
   const args = process.argv.slice(2)
   const command = `curly ${args.join(' ')}\n`
 
   try {
-    await promises.appendFile(filePath, command, 'utf8')
+    await promises.appendFile(HISTORY_PATH, command, 'utf8')
   } catch (e) {
     logger().error(`There was an error writing to the history file ${e}`)
   }
 }
 
 export async function printHistoryFile() {
-  const filePath = path.join(os.homedir(), 'curly_history.txt')
-
   try {
     console.log(styleText('yellowBright', '\n📄 ---- [CURLY] HISTORY ----'))
-    const fileContentBlog = await promises.readFile(filePath, { encoding: 'utf8' })
+    const fileContentBlog = await promises.readFile(HISTORY_PATH, { encoding: 'utf8' })
     const content = fileContentBlog.split('\n')
     for (const line of content) {
       console.log(line)

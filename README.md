@@ -119,6 +119,8 @@ Usage: curly [OPTIONS] <url>
 | `--max-redirects` |     | Maximum number of redirects to follow (default: 20, requires --follow)  |
 | `--fail`        | `-f`  | Exit with code 22 on HTTP errors (4xx/5xx)                              |
 | `--user`        | `-u`  | Basic authentication credentials (user:password)                        |
+| `--retry`       |       | Retry failed requests with exponential backoff (default: 0)             |
+| `--retry-delay` |       | Initial delay between retries in milliseconds (default: 1000)           |
 
 ### Examples
 
@@ -384,6 +386,37 @@ curly -u "$API_USER:$API_PASS" https://api.example.com/protected
 ```sh
 curly -u admin:secret -H "Accept: application/json" https://api.example.com/users
 ```
+
+#### Retry on Failure
+
+Use `--retry` to automatically retry failed requests with exponential backoff. This is useful for flaky APIs or transient network issues.
+
+##### Basic retry (3 attempts)
+
+```sh
+curly --retry 3 https://api.example.com/unstable-endpoint
+```
+
+##### Retry with custom initial delay
+
+```sh
+# Start with 500ms delay, then 1s, 2s... (exponential backoff)
+curly --retry 3 --retry-delay 500 https://api.example.com/unstable-endpoint
+```
+
+##### Retry with verbose output (see retry attempts)
+
+```sh
+curly --retry 3 -v https://api.example.com/unstable-endpoint
+```
+
+##### Retry with timeout
+
+```sh
+curly --retry 3 -t 5000 https://api.example.com/slow-endpoint
+```
+
+**Note:** Retries are triggered on network errors (connection refused, reset, timeout) and do not retry on successful HTTP responses (even 4xx/5xx status codes).
 
 #### Complex Examples
 

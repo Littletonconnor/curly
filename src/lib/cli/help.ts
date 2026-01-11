@@ -55,6 +55,10 @@ Options:
 
   -p, --profile <name>         Use a named profile from ~/.config/curly/config.json
                                Example: curly --profile prod /users
+
+  --completions <shell>        Generate shell completions (bash, zsh)
+                               Example: curly --completions bash
+                               Example: curly --completions install
 `
   console.log(message)
 }

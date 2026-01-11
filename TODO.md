@@ -78,8 +78,9 @@ curly --save "get-users" -X GET https://api.example.com/users
 curly --use "get-users"
 ```
 
-### Shell completions
-Generate completions for bash, zsh, and fish.
+### ~~Shell completions~~ ✓
+~~Generate completions for bash and zsh.~~
+*Use `curly --completions install` for automatic installation, or `curly --completions bash|zsh` to output scripts.*
 
 ### Proxy support
 HTTP/HTTPS/SOCKS proxy support.

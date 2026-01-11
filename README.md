@@ -90,6 +90,23 @@ If you're developing `curly` and want to test your changes without publishing:
 - Create a symlink in your global `npm` bin folder: `npm link`
 - Confirm the CLI is now accessible: `which curly`
 
+## Shell Completions
+
+Curly supports tab completions for **bash** and **zsh**.
+
+### Install
+
+```sh
+curly --completions install
+```
+
+Then restart your shell or run:
+
+```sh
+source ~/.bashrc   # for bash
+source ~/.zshrc    # for zsh
+```
+
 ## Usage
 
 ```sh
@@ -124,6 +141,7 @@ Usage: curly [OPTIONS] <url>
 | `--retry`       |       | Retry failed requests with exponential backoff (default: 0)             |
 | `--retry-delay` |       | Initial delay between retries in milliseconds (default: 1000)           |
 | `--profile`     | `-p`  | Use a named profile from `~/.config/curly/config.json`                  |
+| `--completions` |       | Generate or install shell completions (bash, zsh, install)              |
 
 ### Examples
 

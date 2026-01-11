@@ -10,6 +10,7 @@ import {
 } from './lib/utils'
 import { executeRequest } from './commands/request'
 import { load } from './commands/load-test'
+import { handleCompletions } from './commands/completions'
 import { setVerbose } from './lib/utils/logger'
 
 export async function main() {
@@ -28,6 +29,11 @@ export async function main() {
 
     if (cliFlags.history) {
       await printHistoryFile()
+      process.exit(0)
+    }
+
+    if (cliFlags.completions !== undefined) {
+      handleCompletions(cliFlags.completions)
       process.exit(0)
     }
 

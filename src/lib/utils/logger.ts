@@ -23,10 +23,6 @@ export function isVerbose() {
 
 export function logger() {
   return {
-    /**
-     * User-friendly verbose logging with labeled output.
-     * Only shows when --verbose flag is used.
-     */
     verbose(label: VerboseLabel, message: string) {
       if (!verboseEnabled) return
 
@@ -48,10 +44,6 @@ export function logger() {
       console.log(`${formattedLabel} ${formattedMessage}`)
     },
 
-    /**
-     * Internal debug logging for development.
-     * Only shows when DEBUG=true environment variable is set.
-     */
     debug(...args: string[]) {
       if (process.env.DEBUG !== 'true') return
 

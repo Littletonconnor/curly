@@ -10,9 +10,7 @@ const HISTORY_PATH = path.join(CONFIG_DIR, 'history')
 async function ensureConfigDir() {
   try {
     await promises.mkdir(CONFIG_DIR, { recursive: true })
-  } catch {
-    // Directory likely already exists
-  }
+  } catch {}
 }
 
 // TODO: build some removal system in here.

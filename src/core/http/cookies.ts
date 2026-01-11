@@ -36,10 +36,6 @@ export function applyCookieHeader(fileData: string) {
  *      "sessionId": "abc123",
  *      "user": "john_doe"
  *    }
- *
- * @param fileData - The raw string content of the JSON cookie file.
- * @returns A semicolon-separated string of cookies suitable for the `Cookie` header.
- * @throws Will throw an error if the JSON is invalid or if expected properties are missing.
  */
 function parseJsonCookies(fileData: string) {
   const parsedFileData = JSON.parse(fileData)
@@ -68,10 +64,6 @@ function parseJsonCookies(fileData: string) {
  *
  * Lines starting with `#` are considered comments and are ignored.
  *
- * @param fileData - The raw string content of the Netscape cookie file.
- * @returns A semicolon-separated string of cookies suitable for the `Cookie` header.
- * @throws Will throw an error if the parsing fails due to unexpected formats.
- *
  * @example
  *  Sample Netscape Cookie File (`cookies.txt`)
  *  # Netscape HTTP Cookie File
@@ -91,7 +83,6 @@ function parseNetscapeCookies(fileData: string) {
 
     const parts = trimmed.split('\t')
     if (parts.length >= 7) {
-      // only add name and value parts
       const [, , , , , name, value] = parts
       if (name && value) {
         cookies.push(`${name}=${value}`)
@@ -102,13 +93,6 @@ function parseNetscapeCookies(fileData: string) {
   return cookies.join(';')
 }
 
-/**
- * Writes the extracted Set-Cookie headers to a specified cookie jar file.
- *
- * Currently, supports JSON format. Future updates may include support for the Netscape cookie format.
- *
- * @param headers - The headers returned from the response.
- */
 export function parseSetCookieHeaders(headers: Headers) {
   const setCookieHeaders = headers.getSetCookie()
   const cookieJar: Record<string, string> = {}

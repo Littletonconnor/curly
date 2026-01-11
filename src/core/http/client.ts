@@ -215,7 +215,7 @@ export function buildMethod(options: FetchOptions) {
   }
 }
 
-/*
+/**
  * Builds up fetch headers object.
  *
  * If a POST / PUT request is made without any headers, our heuristic is to treat the content-type as application/json.
@@ -233,7 +233,6 @@ export function buildMethod(options: FetchOptions) {
  */
 export function buildHeaders(options: FetchOptions) {
   if (!options.headers && (options.data || options['data-raw'])) {
-    // Infer Content-Type from file extension when using @file syntax
     if (options.data?.length === 1 && options.data[0].startsWith('@')) {
       const filePath = options.data[0].slice(1)
       const contentType = getContentTypeFromExtension(filePath) ?? 'application/json'
@@ -313,12 +312,6 @@ function buildCookieHeaderFromFile(cookiePaths: string[]) {
   }
 }
 
-/**
- * Builds Authorization header for basic authentication.
- *
- * Takes credentials in the format "user:password" and creates a
- * Basic auth header with base64-encoded credentials.
- */
 function buildAuthHeader(options: FetchOptions) {
   if (!options.user) {
     return undefined

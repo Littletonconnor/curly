@@ -47,7 +47,6 @@ export function getProfile(config: Config | null, profileName?: string): Profile
   const profile = config.profiles[name]
   if (!profile) {
     if (profileName) {
-      // Only warn if user explicitly requested a profile that doesn't exist
       logger().warn(`Profile "${profileName}" not found in config`)
     }
     return null
@@ -62,14 +61,11 @@ export function resolveUrl(url: string, baseUrl?: string): string {
     return url
   }
 
-  // If URL is already absolute (starts with http:// or https://), don't prepend baseUrl
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url
   }
 
-  // If URL starts with /, prepend baseUrl
   if (url.startsWith('/')) {
-    // Remove trailing slash from baseUrl if present
     const base = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl
     return `${base}${url}`
   }

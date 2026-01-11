@@ -37,16 +37,12 @@ export async function main() {
       process.exit(0)
     }
 
-    // Load config and get profile
     const config = await loadConfig()
     const profile = getProfile(config, cliFlags.profile)
 
     const rawUrl = positionals[positionals.length - 1]
 
-    // Resolve URL with profile's baseUrl if applicable
     const resolvedUrl = resolveUrl(rawUrl, profile?.baseUrl)
-
-    // Interpolate environment variables in URL and options
     const url = interpolate(resolvedUrl)
 
     const profileHeaders = interpolateArray(profile?.headers)
@@ -61,7 +57,6 @@ export async function main() {
       cookie: interpolateArray(cliFlags.cookie),
       query: interpolateArray(cliFlags.query),
       user: cliFlags.user ? interpolate(cliFlags.user) : undefined,
-      // Profile values as defaults, CLI flags override
       timeout: cliFlags.timeout ?? profile?.timeout?.toString(),
       retry: cliFlags.retry !== '0' ? cliFlags.retry : (profile?.retry?.toString() ?? '0'),
       'retry-delay':

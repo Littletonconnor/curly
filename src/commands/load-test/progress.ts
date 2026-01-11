@@ -29,9 +29,6 @@ export class ProgressIndicator {
     this.isInteractive = process.stderr.isTTY ?? false
   }
 
-  /**
-   * Update progress after a batch of requests completes
-   */
   update(batchSuccesses: number, batchErrors: number): void {
     this.state.completed += batchSuccesses + batchErrors
     this.state.successCount += batchSuccesses
@@ -42,9 +39,6 @@ export class ProgressIndicator {
     }
   }
 
-  /**
-   * Clear the progress line when done
-   */
   finish(): void {
     if (this.isInteractive) {
       process.stderr.clearLine(0)
@@ -52,10 +46,6 @@ export class ProgressIndicator {
     }
   }
 
-  /**
-   * Render the progress indicator to stderr
-   *   [████████░░░░░░░░] 50/100
-   */
   private render(): void {
     let progressStr = ''
     const maxBucketLength = 20

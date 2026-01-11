@@ -30,9 +30,8 @@ Options:
                                Can be in the form of a string, or a file.
                                Example: curly -b "NAME1=VALUE1;" https://example.com
 
-  -c, --cookie-jar             Specify to which file you want curl to write all cookies after a completed operation.
-                               Example: curly -c saved_cookies.txt https://example.com
-
+  --cookie-jar                 Specify to which file you want curl to write all cookies after a completed operation.
+                               Example: curly --cookie-jar saved_cookies.txt https://example.com
 
   -i, --include                Include HTTP headers in the output
                                Example: curly -i https://example.com
@@ -43,8 +42,26 @@ Options:
   -f, --fail                   Exit with code 22 on HTTP errors (4xx/5xx)
                                Example: curly -f https://example.com/health || echo "Failed"
 
+  -u, --user <user:pass>       Basic authentication credentials
+                               Example: curly -u admin:secret https://example.com/protected
+
   --quiet                      Suppress status line (for piping output)
                                Example: curly --quiet https://example.com | jq .
+
+  -t, --timeout <ms>           Request timeout in milliseconds
+                               Example: curly -t 5000 https://example.com
+
+  -L, --follow                 Follow HTTP redirects (disabled by default)
+                               Example: curly -L https://example.com/redirect
+
+  --max-redirects <num>        Maximum number of redirects to follow (default: 20)
+                               Example: curly -L --max-redirects 5 https://example.com
+
+  -n, --requests <num>         Number of requests for load testing
+                               Example: curly -n 100 https://example.com
+
+  -c, --concurrency <num>      Concurrency level for load testing
+                               Example: curly -n 100 -c 10 https://example.com
 
   --retry <num>                Retry failed requests (default: 0)
                                Example: curly --retry 3 https://flaky-api.example.com

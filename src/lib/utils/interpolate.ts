@@ -16,10 +16,6 @@ export function interpolate(input: string): string {
   })
 }
 
-/**
- * Interpolates an array of strings, applying environment variable
- * substitution to each element.
- */
 export function interpolateArray(inputs: string[] | undefined): string[] {
   if (!inputs) return []
   return inputs.map(interpolate)

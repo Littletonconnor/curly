@@ -1,4 +1,5 @@
 import { readFileSync } from 'fs'
+import { ProxyAgent } from 'undici'
 import { CONTENT_TYPES } from '../config/constants'
 import {
   isValidJson,
@@ -50,10 +51,12 @@ export async function curl(
     baseDelay: parseIntOption(options['retry-delay'], 1000),
   }
 
+  const proxyAgent = createProxyAgent(options.proxy)
+
   try {
     return await withRetry(async () => {
       const startTime = performance.now()
-      const response = await executeFetch(finalUrl, fetchOptions, maxRedirects)
+      const response = await executeFetch(finalUrl, fetchOptions, maxRedirects, proxyAgent)
       const duration = performance.now() - startTime
       logger().verbose(
         'response',
@@ -97,16 +100,31 @@ function getMaxRedirects(options: FetchOptions): number {
   return parseIntOption(options['max-redirects'], 20)
 }
 
+function createProxyAgent(proxyUrl: string | undefined): ProxyAgent | undefined {
+  if (!proxyUrl) {
+    return undefined
+  }
+
+  logger().verbose('proxy', `Using proxy: ${proxyUrl}`)
+  return new ProxyAgent(proxyUrl)
+}
+
 async function executeFetch(
   url: string,
   fetchOptions: CurlyRequestInit,
   maxRedirects: number,
+  proxyAgent?: ProxyAgent,
 ): Promise<Response> {
   let currentUrl = url
   let redirectCount = 0
 
   while (true) {
-    const response = await fetch(currentUrl, fetchOptions)
+    // Use type assertion to support undici's dispatcher option
+    // Node's fetch accepts dispatcher but TypeScript's RequestInit doesn't include it
+    const requestOptions = proxyAgent
+      ? { ...fetchOptions, dispatcher: proxyAgent }
+      : fetchOptions
+    const response = await fetch(currentUrl, requestOptions as RequestInit)
 
     if (!isRedirectStatus(response.status)) {
       return response

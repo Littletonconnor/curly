@@ -93,6 +93,11 @@ Options:
 
   --delete-alias <name>        Delete a saved alias
                                Example: curly --delete-alias "get-users"
+
+  -x, --proxy <url>            Route requests through a proxy server
+                               Supports HTTP and HTTPS proxies
+                               Example: curly --proxy http://localhost:8080 https://example.com
+                               Example: curly -x http://proxy.corp.com:3128 https://api.example.com
 `
   console.log(message)
 }

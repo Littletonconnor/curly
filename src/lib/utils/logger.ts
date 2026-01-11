@@ -11,6 +11,7 @@ export type VerboseLabel =
   | 'auth'
   | 'retry'
   | 'form'
+  | 'proxy'
 
 type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 type StyleColor = Parameters<typeof styleText>[0]
@@ -33,6 +34,7 @@ const VERBOSE_LABEL_COLORS: Record<VerboseLabel, StyleColor> = {
   auth: 'yellowBright',
   retry: 'yellowBright',
   form: 'blueBright',
+  proxy: 'magentaBright',
 }
 
 let verboseEnabled = false

@@ -36,6 +36,7 @@ export interface FetchOptions {
   use?: string
   aliases?: boolean
   'delete-alias'?: string
+  form?: string[]
 }
 
 // Response data structure
@@ -83,7 +84,7 @@ export function getErrorMessage(error: unknown): string {
 export interface CurlyRequestInit extends RequestInit {
   method: string
   headers: Record<string, string>
-  body?: string
+  body?: string | FormData
   redirect: 'manual'
   signal?: AbortSignal
 }

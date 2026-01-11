@@ -12,6 +12,7 @@ export interface SavedAlias {
   data?: string[]
   query?: string[]
   cookie?: string[]
+  form?: string[]
   user?: string
   timeout?: string
   retry?: string

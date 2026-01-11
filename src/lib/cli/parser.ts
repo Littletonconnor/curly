@@ -54,6 +54,7 @@ export function cli() {
       use: { type: 'string' },
       aliases: { type: 'boolean', default: false },
       'delete-alias': { type: 'string' },
+      form: { type: 'string', short: 'F', multiple: true },
     },
     allowPositionals: true,
   })

@@ -45,6 +45,13 @@ Options:
 
   --quiet                      Suppress status line (for piping output)
                                Example: curly --quiet https://example.com | jq .
+
+  --retry <num>                Retry failed requests (default: 0)
+                               Example: curly --retry 3 https://flaky-api.example.com
+
+  --retry-delay <ms>           Initial delay between retries in ms (default: 1000)
+                               Uses exponential backoff (1s, 2s, 4s, ...)
+                               Example: curly --retry 3 --retry-delay 500 https://example.com
 `
   console.log(message)
 }

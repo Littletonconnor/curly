@@ -34,8 +34,8 @@ curly -f https://api.example.com/health || echo "Health check failed"
 curly -X POST -d @payload.json https://api.example.com
 ```
 
-### Retry logic with backoff
-Automatic retry on failure with configurable attempts and delay.
+### ~~Retry logic with backoff~~ ✓
+~~Automatic retry on failure with configurable attempts and delay.~~
 ```sh
 curly --retry 3 --retry-delay 1000 https://flaky-api.example.com
 ```

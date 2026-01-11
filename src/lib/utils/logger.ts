@@ -9,6 +9,7 @@ export type VerboseLabel =
   | 'output'
   | 'load-test'
   | 'auth'
+  | 'retry'
 
 let verboseEnabled = false
 
@@ -38,6 +39,7 @@ export function logger() {
         output: 'whiteBright',
         'load-test': 'magentaBright',
         auth: 'yellowBright',
+        retry: 'yellowBright',
       }
 
       const color = labelColors[label] as Parameters<typeof styleText>[0]

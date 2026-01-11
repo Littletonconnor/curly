@@ -46,6 +46,8 @@ export function cli() {
       'max-redirects': { type: 'string' },
       fail: { type: 'boolean', short: 'f', default: false },
       user: { type: 'string', short: 'u' },
+      retry: { type: 'string', default: '0' },
+      'retry-delay': { type: 'string', default: '1000' },
     },
     allowPositionals: true,
   })

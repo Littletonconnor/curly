@@ -1,5 +1,5 @@
-import { CodeBlock } from '@/components/CodeBlock'
-import { Playground } from '@/components/Playground'
+import { CodeBlock } from '../components/CodeBlock'
+import { Playground } from '../components/Playground'
 
 export default function Home() {
   return (
@@ -75,9 +75,7 @@ export default function Home() {
       <section className="px-6 py-16 border-b border-[var(--border)]">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-2">Basic Requests</h2>
-          <p className="text-[var(--muted)] mb-8">
-            Simple, intuitive syntax for all HTTP methods.
-          </p>
+          <p className="text-[var(--muted)] mb-8">Simple, intuitive syntax for all HTTP methods.</p>
           <div className="space-y-6">
             <div>
               <h3 className="text-lg font-semibold mb-2">GET request</h3>
@@ -144,7 +142,9 @@ curly -X DELETE https://curly.dev/api/posts/1`}
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">Raw JSON data</h3>
-              <CodeBlock code={`curly -X POST --data-raw '{"title": "My Post", "body": "Content"}' https://curly.dev/api/posts`} />
+              <CodeBlock
+                code={`curly -X POST --data-raw '{"title": "My Post", "body": "Content"}' https://curly.dev/api/posts`}
+              />
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">Data from file</h3>
@@ -224,7 +224,8 @@ curly -X DELETE https://curly.dev/api/posts/1`}
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-2">Environment Variables</h2>
           <p className="text-[var(--muted)] mb-8">
-            Keep secrets out of your shell history with <code className="text-[var(--accent)]">{'{{VAR}}'}</code> syntax.
+            Keep secrets out of your shell history with{' '}
+            <code className="text-[var(--accent)]">{'{{VAR}}'}</code> syntax.
           </p>
           <div className="space-y-6">
             <div>
@@ -237,7 +238,9 @@ curly -X DELETE https://curly.dev/api/posts/1`}
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">In request body</h3>
-              <CodeBlock code={`curly -X POST --data-raw '{"userId": "{{USER_ID}}"}' https://api.example.com/action`} />
+              <CodeBlock
+                code={`curly -X POST --data-raw '{"userId": "{{USER_ID}}"}' https://api.example.com/action`}
+              />
             </div>
             <div>
               <h3 className="text-lg font-semibold mb-2">In basic auth</h3>
@@ -252,7 +255,9 @@ curly -X DELETE https://curly.dev/api/posts/1`}
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-2">Configuration Profiles</h2>
           <p className="text-[var(--muted)] mb-8">
-            Define named profiles in <code className="text-[var(--accent)]">~/.config/curly/config.json</code> to avoid repeating common options.
+            Define named profiles in{' '}
+            <code className="text-[var(--accent)]">~/.config/curly/config.json</code> to avoid
+            repeating common options.
           </p>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
@@ -405,7 +410,8 @@ Status code distribution:
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-2">Proxy Support</h2>
           <p className="text-[var(--muted)] mb-8">
-            Route requests through HTTP/HTTPS proxies. Useful for debugging with tools like mitmproxy, Charles, or Fiddler.
+            Route requests through HTTP/HTTPS proxies. Useful for debugging with tools like
+            mitmproxy, Charles, or Fiddler.
           </p>
           <div className="space-y-6">
             <div>
@@ -471,9 +477,7 @@ curly --cookie-jar ./cookies.json https://example.com/login`}
       <section className="px-6 py-16 border-b border-[var(--border)]">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl font-bold mb-2">curl vs curly</h2>
-          <p className="text-[var(--muted)] mb-8">
-            Same power, simpler syntax.
-          </p>
+          <p className="text-[var(--muted)] mb-8">Same power, simpler syntax.</p>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
               <h3 className="text-lg font-semibold mb-2 text-[var(--muted)]">curl</h3>

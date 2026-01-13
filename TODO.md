@@ -3,25 +3,32 @@
 ## Easy (1-2 hours each)
 
 ### ~~Verbose mode (`-v`)~~ ✓
+
 ~~Show request details (method, headers, body) before showing response. Similar to existing `--debug` but user-facing and cleaner.~~
 
 ### ~~Basic auth (`-u user:pass`)~~ ✓
+
 ~~Support basic authentication with automatic base64 encoding.~~
+
 ```sh
 curly -u admin:secret https://api.example.com/protected
 ```
 
 ### ~~Fail on HTTP errors (`-f` / `--fail`)~~ ✓
+
 ~~Exit with non-zero code on 4xx/5xx responses. Useful for scripts and CI.~~
+
 ```sh
 curly -f https://api.example.com/health || echo "Health check failed"
 ```
 
 ### ~~Response time display~~ ✓
+
 ~~Show request duration without full debug output.~~
-*Now shown by default in status line. Use `--quiet` to suppress.*
+_Now shown by default in status line. Use `--quiet` to suppress._
 
 ### ~~Setup linting~~ ✓
+
 ~~Add eslint or oxlint for code quality.~~
 
 ---
@@ -29,25 +36,33 @@ curly -f https://api.example.com/health || echo "Health check failed"
 ## Medium (half day - 1 day each)
 
 ### ~~Request body from file (`@file.json`)~~ ✓
+
 ~~Support reading request body from a file using `@` syntax.~~
+
 ```sh
 curly -X POST -d @payload.json https://api.example.com
 ```
 
 ### ~~Retry logic with backoff~~ ✓
+
 ~~Automatic retry on failure with configurable attempts and delay.~~
+
 ```sh
 curly --retry 3 --retry-delay 1000 https://flaky-api.example.com
 ```
 
 ### ~~Environment variable interpolation~~ ✓
+
 ~~Replace `{{VAR}}` placeholders with environment variables in URLs, headers, and bodies.~~
+
 ```sh
 curly -H "Authorization: Bearer {{API_KEY}}" https://api.example.com
 ```
 
 ### ~~Config file support (`~/.config/curly/config.json`)~~ ✓
+
 ~~Load default options from a config file with profile support.~~
+
 ```json
 {
   "default": "dev",
@@ -66,40 +81,53 @@ curly -H "Authorization: Bearer {{API_KEY}}" https://api.example.com
 ## Hard (2+ days each)
 
 ### ~~Multipart file uploads (`-F`)~~ ✓
+
 ~~Support file uploads with multipart/form-data.~~
+
 ```sh
 curly -X POST -F "file=@photo.jpg" -F "name=vacation" https://api.example.com/upload
 ```
-*Use `-F` for form fields and `@` prefix for file paths. MIME types auto-detected from extensions.*
+
+_Use `-F` for form fields and `@` prefix for file paths. MIME types auto-detected from extensions._
 
 ### ~~Saved request aliases~~ ✓
+
 ~~Save and reuse named requests.~~
+
 ```sh
 curly --save "get-users" -X GET https://api.example.com/users
 curly --use "get-users"
 ```
-*Use `--save` to capture requests and `--use` to execute them. Aliases stored in `~/.config/curly/aliases.json`.*
+
+_Use `--save` to capture requests and `--use` to execute them. Aliases stored in `~/.config/curly/aliases.json`._
 
 ### ~~Shell completions~~ ✓
+
 ~~Generate completions for bash and zsh.~~
-*Use `curly --completions install` for automatic installation, or `curly --completions bash|zsh` to output scripts.*
+_Use `curly --completions install` for automatic installation, or `curly --completions bash|zsh` to output scripts._
 
 ### ~~Proxy support~~ ✓
+
 ~~HTTP/HTTPS proxy support.~~
+
 ```sh
 curly --proxy http://proxy.example.com:8080 https://api.example.com
 ```
-*Use `-x` or `--proxy` to route requests through a proxy server. See `docs/proxy.md` for detailed documentation.*
+
+_Use `-x` or `--proxy` to route requests through a proxy server. See `docs/proxy.md` for detailed documentation._
 
 ### Interactive TUI for load testing
+
 Explore adding a real-time terminal UI dashboard for load testing that displays live metrics, charts, and statistics during test execution.
 
 **Inspiration:**
+
 - [ali](https://github.com/nakabonne/ali) - HTTP load testing with embedded terminal UI, real-time latency charts, percentiles, and zoomable graphs
 - [vegeta + jplot](https://github.com/tsenart/vegeta) - Vegeta integrates with jplot/jaggr for real-time terminal charts
 - [blessed-contrib](https://github.com/yaronn/blessed-contrib) - Node.js terminal dashboards with charts, maps, and gauges
 
 **Potential features:**
+
 - Live request rate and latency charts
 - Response code distribution histogram
 - P50/P95/P99 percentile tracking
@@ -107,6 +135,7 @@ Explore adding a real-time terminal UI dashboard for load testing that displays 
 - Interactive controls (pause/resume, adjust rate)
 
 **Libraries to evaluate:**
+
 - [blessed](https://github.com/chjj/blessed) / [blessed-contrib](https://github.com/yaronn/blessed-contrib) - Terminal UI for Node.js
 - [ink](https://github.com/vadimdemedes/ink) - React for CLI apps
 - [terminal-kit](https://github.com/cronvel/terminal-kit) - Terminal utilities with drawing capabilities
@@ -148,6 +177,7 @@ POST   /api/posts
 ```
 
 Endpoints should return realistic fake data and support:
+
 - Simulated latency (`?delay=1000`)
 - Forced error responses (`?status=500`)
 - Different response sizes for load testing
@@ -172,8 +202,7 @@ Endpoints should return realistic fake data and support:
 
 These features have limited value or can be achieved other ways:
 
-- **Syntax highlighting** - High effort, users can pipe to `jq` or `bat`
-- **JSON filtering (`--jq`)** - Users can pipe to `jq`
-- **Load test enhancements** - Core functionality complete, diminishing returns
-- **Bearer token shorthand** - Already works with `-H "Authorization: Bearer ..."`
-- **Client certificates** - Niche use case
+- **Types**: Fix all the typescript issues in the codebase
+- **Comments**: Cleanup all the redundant comments in the codebase. There are a lot
+- **Website**: The website is mostly complete, so we can mark that as complete, however the code snippets on the website have a lot of bugs and say things like token>. The format is all messed up. Also I want a more simplified landing page that just showcases all the features. I don't want the API examples for example.
+- **Future directions** help me understand current functionality, and potential future directions

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { todos } from '@/lib/data'
+import { todos } from '../../../lib/data'
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)

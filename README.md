@@ -131,6 +131,7 @@ Usage: curly [OPTIONS] <url>
 | `--head`        | `-I`  | Send HEAD request (headers only)                                        |
 | `--verbose`     | `-v`  | Show detailed request/response information                              |
 | `--quiet`       |       | Suppress status line (for piping output)                                |
+| `--write-out`   | `-w`  | Extract specific info from response (http_code, time_total, size_download) |
 | `--history`     |       | View command history                                                    |
 | `--requests`    | `-n`  | Number of requests for load testing (auto-detects load test mode)       |
 | `--concurrency` | `-c`  | Concurrency level for load testing (auto-detects load test mode)        |
@@ -324,6 +325,42 @@ curly -o ./response.json https://jsonplaceholder.typicode.com/posts/1
 ```sh
 curly --quiet https://jsonplaceholder.typicode.com/posts/1 | jq .title
 ```
+
+#### Write-Out (Status Code Extraction)
+
+Use `-w` or `--write-out` to extract specific response information. This is useful for scripting and health checks.
+
+##### Get just the HTTP status code
+
+```sh
+curly -w http_code https://api.example.com/health
+# Output: 200
+```
+
+##### Use curl-style format variables
+
+```sh
+curly -w "%{http_code}" https://api.example.com/health
+# Output: 200
+```
+
+##### Health check script example
+
+```sh
+# Instead of: curl -sS -o /dev/null -w "%{http_code}" URL
+# Use:
+if [ "$(curly -w http_code https://api.example.com/health)" = "200" ]; then
+  echo "Service is healthy"
+fi
+```
+
+##### Available variables
+
+| Variable | Description |
+|----------|-------------|
+| `http_code` | HTTP status code (e.g., 200, 404, 500) |
+| `time_total` | Total request time in seconds |
+| `size_download` | Response body size |
 
 #### Load Testing
 

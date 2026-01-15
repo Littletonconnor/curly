@@ -31,6 +31,12 @@ export async function writeToOutputFile(data: ResponseData, options: FetchOption
 }
 
 export async function stdout(data: ResponseData, options: FetchOptions): Promise<void> {
+  // Handle write-out format (like curl's -w option)
+  if (options['write-out']) {
+    printWriteOut(data, options['write-out'])
+    return
+  }
+
   if (options.head) {
     printHeaders(data.headers)
   } else if (options.include) {
@@ -85,4 +91,18 @@ export function printStatusLine(data: ResponseData, options: FetchOptions): void
 export function printHeaders(headers: Headers): void {
   const headersObj = Object.fromEntries(headers.entries())
   Object.entries(headersObj).forEach(([k, v]) => console.log(`${k}: ${v}`))
+}
+
+function printWriteOut(data: ResponseData, format: string): void {
+  // Support curl-style format variables
+  const output = format
+    .replace(/%\{http_code\}/g, String(data.status))
+    .replace(/%\{time_total\}/g, (data.duration / 1000).toFixed(6))
+    .replace(/%\{size_download\}/g, data.size)
+    // Also support simple variable names without %{} for convenience
+    .replace(/^http_code$/, String(data.status))
+    .replace(/^time_total$/, (data.duration / 1000).toFixed(6))
+    .replace(/^size_download$/, data.size)
+
+  process.stdout.write(output)
 }

@@ -56,6 +56,7 @@ export function cli() {
       'delete-alias': { type: 'string' },
       form: { type: 'string', short: 'F', multiple: true },
       proxy: { type: 'string', short: 'x' },
+      'write-out': { type: 'string', short: 'w' },
     },
     allowPositionals: true,
   })

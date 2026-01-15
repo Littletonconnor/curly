@@ -53,8 +53,8 @@ Options:
                                Example: curly --quiet https://example.com | jq .
 
   -w, --write-out <format>     Extract specific info from response (like curl -w)
-                               Supported variables: http_code, time_total, size_download
-                               Example: curly -w http_code https://example.com
+                               Supported variables: http_code (or status_code), time_total, size_download
+                               Example: curly -w status_code https://example.com
                                Example: curly -w "%{http_code}" https://example.com
 
   -t, --timeout <ms>           Request timeout in milliseconds

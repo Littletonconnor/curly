@@ -106,5 +106,5 @@ function printWriteOut(data: ResponseData, format: string): void {
     .replace(/^time_total$/, (data.duration / 1000).toFixed(6))
     .replace(/^size_download$/, data.size)
 
-  process.stdout.write(output)
+  console.log(output)
 }

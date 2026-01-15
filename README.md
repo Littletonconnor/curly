@@ -131,7 +131,7 @@ Usage: curly [OPTIONS] <url>
 | `--head`        | `-I`  | Send HEAD request (headers only)                                        |
 | `--verbose`     | `-v`  | Show detailed request/response information                              |
 | `--quiet`       |       | Suppress status line (for piping output)                                |
-| `--write-out`   | `-w`  | Extract specific info from response (http_code, time_total, size_download) |
+| `--write-out`   | `-w`  | Extract specific info from response (status_code, time_total, size_download) |
 | `--history`     |       | View command history                                                    |
 | `--requests`    | `-n`  | Number of requests for load testing (auto-detects load test mode)       |
 | `--concurrency` | `-c`  | Concurrency level for load testing (auto-detects load test mode)        |
@@ -358,7 +358,7 @@ fi
 
 | Variable | Description |
 |----------|-------------|
-| `http_code` | HTTP status code (e.g., 200, 404, 500) |
+| `http_code` or `status_code` | HTTP status code (e.g., 200, 404, 500) |
 | `time_total` | Total request time in seconds |
 | `size_download` | Response body size |
 

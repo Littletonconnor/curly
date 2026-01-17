@@ -1,0 +1,5 @@
+{
+  "session_id": "abc123xyz",
+  "user_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+  "preferences": "theme=dark;lang=en"
+}

@@ -1,0 +1,13 @@
+{
+  "user": {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "age": 30
+  },
+  "preferences": {
+    "theme": "dark",
+    "notifications": true,
+    "language": "en"
+  },
+  "tags": ["developer", "admin", "beta-tester"]
+}

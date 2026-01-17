@@ -41,7 +41,6 @@ const examples: Example[] = [
   },
 ]
 
-// Simulated responses for each example
 const responses: Record<string, { status: string; time: string; body: string }> = {
   'GET User': {
     status: '200 OK',
@@ -139,10 +138,7 @@ export function Playground() {
   const handleRun = async () => {
     setIsLoading(true)
     setResponse(null)
-
-    // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 300 + Math.random() * 200))
-
     setResponse(responses[selectedExample.label])
     setIsLoading(false)
   }
@@ -164,10 +160,10 @@ export function Playground() {
               setSelectedExample(example)
               setResponse(null)
             }}
-            className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+            className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
               selectedExample.label === example.label
-                ? 'bg-[var(--accent)] text-black font-medium'
-                : 'bg-[var(--border)] hover:bg-[var(--muted)] text-[var(--foreground)]'
+                ? 'bg-emerald-500 font-medium text-black'
+                : 'bg-neutral-800 text-neutral-300 hover:bg-neutral-700'
             }`}
           >
             {example.label}
@@ -176,52 +172,52 @@ export function Playground() {
       </div>
 
       {/* Command display */}
-      <div className="code-block">
-        <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border)]">
-          <span className="text-sm text-[var(--muted)]">{selectedExample.description}</span>
+      <div className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900">
+        <div className="flex items-center justify-between border-b border-neutral-800 px-4 py-2">
+          <span className="text-sm text-neutral-400">{selectedExample.description}</span>
           <div className="flex gap-2">
             <button
               onClick={handleCopy}
-              className="px-3 py-1 text-sm bg-[var(--border)] hover:bg-[var(--muted)] rounded transition-colors"
+              className="rounded-md bg-neutral-800 px-3 py-1 text-sm text-neutral-300 transition-colors hover:bg-neutral-700"
             >
               {copied ? 'Copied!' : 'Copy'}
             </button>
             <button
               onClick={handleRun}
               disabled={isLoading}
-              className="px-4 py-1 text-sm bg-[var(--accent)] hover:bg-[var(--accent-dim)] text-black font-medium rounded transition-colors disabled:opacity-50"
+              className="rounded-md bg-emerald-500 px-4 py-1 text-sm font-medium text-black transition-colors hover:bg-emerald-400 disabled:opacity-50"
             >
               {isLoading ? 'Running...' : 'Run'}
             </button>
           </div>
         </div>
-        <pre className="p-4 font-mono text-sm">
-          <span className="text-[var(--muted)]">$ </span>
-          {selectedExample.command}
+        <pre className="overflow-x-auto p-4 font-mono text-sm">
+          <span className="text-neutral-500">$ </span>
+          <span className="text-neutral-200">{selectedExample.command}</span>
         </pre>
       </div>
 
       {/* Response display */}
       {(response || isLoading) && (
-        <div className="code-block">
-          <div className="flex items-center gap-4 px-4 py-2 border-b border-[var(--border)]">
-            <span className="text-sm font-medium">Response</span>
+        <div className="overflow-hidden rounded-lg border border-neutral-800 bg-neutral-900">
+          <div className="flex items-center gap-4 border-b border-neutral-800 px-4 py-2">
+            <span className="text-sm font-medium text-neutral-200">Response</span>
             {response && (
               <>
                 <span
-                  className={`text-sm ${
-                    response.status.startsWith('2') ? 'text-green-500' : 'text-yellow-500'
+                  className={`text-sm font-medium ${
+                    response.status.startsWith('2') ? 'text-emerald-400' : 'text-amber-400'
                   }`}
                 >
                   {response.status}
                 </span>
-                <span className="text-sm text-[var(--muted)]">{response.time}</span>
+                <span className="text-sm text-neutral-500">{response.time}</span>
               </>
             )}
           </div>
-          <pre className="p-4 font-mono text-sm">
+          <pre className="overflow-x-auto p-4 font-mono text-sm text-neutral-300">
             {isLoading ? (
-              <span className="text-[var(--muted)]">Loading...</span>
+              <span className="text-neutral-500">Loading...</span>
             ) : (
               response?.body
             )}

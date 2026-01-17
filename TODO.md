@@ -204,5 +204,5 @@ These features have limited value or can be achieved other ways:
 
 - **Types**: Fix all the typescript issues in the codebase
 - **Comments**: Cleanup all the redundant comments in the codebase. There are a lot
-- **Website**: The website is mostly complete, so we can mark that as complete, however the code snippets on the website have a lot of bugs and say things like token>. The format is all messed up. Also I want a more simplified landing page that just showcases all the features. I don't want the API examples for example.
+- ~~**Website**: The website is mostly complete, so we can mark that as complete, however the code snippets on the website have a lot of bugs and say things like token>. The format is all messed up. Also I want a more simplified landing page that just showcases all the features. I don't want the API examples for example.~~ ✓
 - **Future directions** help me understand current functionality, and potential future directions

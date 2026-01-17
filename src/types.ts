@@ -2,10 +2,8 @@
  * Shared type definitions for curly CLI
  */
 
-// HTTP Methods supported by curly
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS'
 
-// CLI option types - explicitly defined for type safety
 export interface FetchOptions {
   help?: boolean
   history?: boolean
@@ -41,7 +39,6 @@ export interface FetchOptions {
   'write-out'?: string
 }
 
-// Response data structure
 export interface ResponseData {
   response: unknown
   duration: number
@@ -50,7 +47,6 @@ export interface ResponseData {
   size: string
 }
 
-// Load test request result
 export interface RequestResult {
   duration: number
   status: number
@@ -59,22 +55,18 @@ export interface RequestResult {
   error?: string
 }
 
-// Node.js error with code property (for ENOENT, ECONNRESET, etc.)
 export interface NodeError extends Error {
   code?: string
 }
 
-// Type guard for NodeError
 export function isNodeError(error: unknown): error is NodeError {
   return error instanceof Error && 'code' in error
 }
 
-// Type guard for Error with message
 export function isError(error: unknown): error is Error {
   return error instanceof Error
 }
 
-// Get error message safely from unknown error
 export function getErrorMessage(error: unknown): string {
   if (isError(error)) {
     return error.message
@@ -82,7 +74,6 @@ export function getErrorMessage(error: unknown): string {
   return String(error)
 }
 
-// Fetch options for the native fetch API
 export interface CurlyRequestInit extends RequestInit {
   method: string
   headers: Record<string, string>
@@ -91,5 +82,4 @@ export interface CurlyRequestInit extends RequestInit {
   signal?: AbortSignal
 }
 
-// Status color type
 export type StatusColor = 'green' | 'yellow' | 'red' | 'white'

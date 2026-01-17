@@ -1,0 +1,11 @@
+This is a sample file for upload testing.
+
+It contains multiple lines of text that can be used
+to verify file upload functionality in curly.
+
+Features tested:
+- Multipart form data (-F flag)
+- File content preservation
+- MIME type detection
+
+End of sample file.

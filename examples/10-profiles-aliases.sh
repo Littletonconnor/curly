@@ -5,15 +5,59 @@
 # Demonstrates: -p/--profile, --save, --use, --aliases, --delete-alias
 # =============================================================================
 
-# Note: These examples may modify ~/.config/curly/ configuration files
+set -e
 
 echo "=============================================="
 echo "  CURLY EXAMPLES: Profiles and Aliases"
 echo "=============================================="
 echo ""
 
+# -----------------------------------------------------------------------------
+# Setup: Backup existing config files
+# -----------------------------------------------------------------------------
+
+CONFIG_DIR="$HOME/.config/curly"
+CONFIG_FILE="$CONFIG_DIR/config.json"
+ALIASES_FILE="$CONFIG_DIR/aliases.json"
+CONFIG_BACKUP="$CONFIG_DIR/config.json.example-backup"
+ALIASES_BACKUP="$CONFIG_DIR/aliases.json.example-backup"
+
 # Create config directory if needed
-mkdir -p ~/.config/curly
+mkdir -p "$CONFIG_DIR"
+
+# Backup existing files
+if [ -f "$CONFIG_FILE" ]; then
+    cp "$CONFIG_FILE" "$CONFIG_BACKUP"
+    echo "Backed up existing config.json"
+fi
+if [ -f "$ALIASES_FILE" ]; then
+    cp "$ALIASES_FILE" "$ALIASES_BACKUP"
+    echo "Backed up existing aliases.json"
+fi
+
+# Cleanup function to restore backups
+cleanup() {
+    echo ""
+    echo "Restoring original configuration..."
+    if [ -f "$CONFIG_BACKUP" ]; then
+        mv "$CONFIG_BACKUP" "$CONFIG_FILE"
+        echo "  Restored config.json"
+    else
+        rm -f "$CONFIG_FILE"
+    fi
+    if [ -f "$ALIASES_BACKUP" ]; then
+        mv "$ALIASES_BACKUP" "$ALIASES_FILE"
+        echo "  Restored aliases.json"
+    else
+        rm -f "$ALIASES_FILE"
+    fi
+    echo "Done!"
+}
+
+# Restore on exit (normal or error)
+trap cleanup EXIT
+
+echo ""
 
 # -----------------------------------------------------------------------------
 # Profiles
@@ -24,22 +68,17 @@ echo "--------"
 echo ""
 echo "Profiles are defined in ~/.config/curly/config.json"
 echo ""
-echo "Example config.json:"
+echo "Example config.json structure:"
 echo '{'
 echo '  "profiles": {'
 echo '    "dev": {'
 echo '      "baseUrl": "http://localhost:3000",'
 echo '      "timeout": 5000,'
-echo '      "headers": {'
-echo '        "X-Environment": "development"'
-echo '      }'
+echo '      "headers": { "X-Environment": "development" }'
 echo '    },'
 echo '    "prod": {'
 echo '      "baseUrl": "https://api.example.com",'
 echo '      "timeout": 30000,'
-echo '      "headers": {'
-echo '        "X-Environment": "production"'
-echo '      },'
 echo '      "retry": 3,'
 echo '      "retryDelay": 1000'
 echo '    }'
@@ -47,8 +86,8 @@ echo '  }'
 echo '}'
 echo ""
 
-# Create a sample config for demo
-cat > ~/.config/curly/config.json << 'EOF'
+# Create demo config (will be restored on exit)
+cat > "$CONFIG_FILE" << 'EOF'
 {
   "profiles": {
     "httpbin": {
@@ -68,7 +107,7 @@ cat > ~/.config/curly/config.json << 'EOF'
   }
 }
 EOF
-echo "Created sample config at ~/.config/curly/config.json"
+echo "(Using temporary demo config for examples)"
 echo ""
 
 echo "1. Using a profile"
@@ -97,28 +136,31 @@ echo ""
 # Aliases (Request Templates)
 # -----------------------------------------------------------------------------
 
+# Clear aliases file for clean demo
+echo "{}" > "$ALIASES_FILE"
+
 echo "ALIASES"
 echo "-------"
 echo ""
 
 echo "4. Save a request as an alias"
-echo "   Command: curly https://httpbin.org/get -H \"X-Custom: header\" --save get-with-header"
+echo "   Command: curly https://httpbin.org/get -H \"X-Custom: header\" --save my-get"
 echo "   ---"
-curly https://httpbin.org/get -H "X-Custom: header" --save get-with-header
+curly https://httpbin.org/get -H "X-Custom: header" --save my-get
 echo ""
 echo ""
 
 echo "5. Save a POST request alias"
-echo "   Command: curly https://httpbin.org/post -d name=test -d value=123 --save post-data"
+echo "   Command: curly https://httpbin.org/post -d name=test -d value=123 --save my-post"
 echo "   ---"
-curly https://httpbin.org/post -d name=test -d value=123 --save post-data
+curly https://httpbin.org/post -d name=test -d value=123 --save my-post
 echo ""
 echo ""
 
 echo "6. Save an authenticated request"
-echo "   Command: curly https://httpbin.org/basic-auth/user/pass -u user:pass --save auth-request"
+echo "   Command: curly https://httpbin.org/basic-auth/user/pass -u user:pass --save my-auth"
 echo "   ---"
-curly https://httpbin.org/basic-auth/user/pass -u user:pass --save auth-request
+curly https://httpbin.org/basic-auth/user/pass -u user:pass --save my-auth
 echo ""
 echo ""
 
@@ -130,37 +172,37 @@ echo ""
 echo ""
 
 echo "8. Use a saved alias"
-echo "   Command: curly --use get-with-header"
+echo "   Command: curly --use my-get"
 echo "   ---"
-curly --use get-with-header
+curly --use my-get
 echo ""
 echo ""
 
 echo "9. Use alias and override with additional flags"
-echo "   Command: curly --use get-with-header -H \"X-Extra: override\""
+echo "   Command: curly --use my-get -H \"X-Extra: override\""
 echo "   ---"
-curly --use get-with-header -H "X-Extra: override"
+curly --use my-get -H "X-Extra: override"
 echo ""
 echo ""
 
 echo "10. Use the POST alias"
-echo "    Command: curly --use post-data"
+echo "    Command: curly --use my-post"
 echo "    ---"
-curly --use post-data
+curly --use my-post
 echo ""
 echo ""
 
 echo "11. Use alias with different data"
-echo "    Command: curly --use post-data -d name=different -d value=456"
+echo "    Command: curly --use my-post -d name=different -d value=456"
 echo "    ---"
-curly --use post-data -d name=different -d value=456
+curly --use my-post -d name=different -d value=456
 echo ""
 echo ""
 
 echo "12. Delete an alias"
-echo "    Command: curly --delete-alias auth-request"
+echo "    Command: curly --delete-alias my-auth"
 echo "    ---"
-curly --delete-alias auth-request
+curly --delete-alias my-auth
 echo ""
 echo ""
 
@@ -168,14 +210,6 @@ echo "13. Verify alias was deleted"
 echo "    Command: curly --aliases"
 echo "    ---"
 curly --aliases
-echo ""
-echo ""
-
-# Clean up demo aliases
-echo "14. Cleaning up demo aliases"
-curly --delete-alias get-with-header 2>/dev/null || true
-curly --delete-alias post-data 2>/dev/null || true
-echo "    Demo aliases cleaned up"
 echo ""
 echo ""
 
@@ -187,7 +221,7 @@ echo "VERBOSE MODE"
 echo "------------"
 echo ""
 
-echo "15. Verbose mode shows detailed request/response info"
+echo "14. Verbose mode shows detailed request/response info"
 echo "    Command: curly https://httpbin.org/get -v"
 echo "    ---"
 curly https://httpbin.org/get -v
@@ -202,7 +236,7 @@ echo "HISTORY"
 echo "-------"
 echo ""
 
-echo "16. View command history"
+echo "15. View command history"
 echo "    Command: curly --history"
 echo "    Note: Shows recent commands from ~/curly_history.txt"
 echo "    ---"
@@ -232,3 +266,5 @@ echo "  Other:"
 echo "    -v, --verbose        Show detailed request/response info"
 echo "    --history            View command history"
 echo ""
+
+# Cleanup happens automatically via trap

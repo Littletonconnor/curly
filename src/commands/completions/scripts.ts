@@ -41,6 +41,16 @@ const OPTIONS = [
   '--profile',
   '-p',
   '--completions',
+  '--save',
+  '--use',
+  '--aliases',
+  '--delete-alias',
+  '--form',
+  '-F',
+  '--proxy',
+  '-x',
+  '--write-out',
+  '-w',
 ]
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
@@ -75,9 +85,24 @@ _curly_completions() {
             COMPREPLY=( $(compgen -W "\${methods}" -- "\${cur}") )
             return 0
             ;;
-        -o|--output|-b|--cookie|--cookie-jar|-d|--data)
+        -o|--output|-b|--cookie|--cookie-jar|-d|--data|-F|--form)
             # File completion
             COMPREPLY=( $(compgen -f -- "\${cur}") )
+            return 0
+            ;;
+        --use|--delete-alias)
+            # Try to complete alias names from config
+            local aliases_file="\${HOME}/.config/curly/aliases.json"
+            if [[ -f "\${aliases_file}" ]]; then
+                local aliases=$(grep -o '"[^"]*":' "\${aliases_file}" | tr -d '":' | tr '\\n' ' ')
+                COMPREPLY=( $(compgen -W "\${aliases}" -- "\${cur}") )
+            fi
+            return 0
+            ;;
+        -w|--write-out)
+            # Write-out format variables
+            local vars="http_code status_code time_total size_download"
+            COMPREPLY=( $(compgen -W "\${vars}" -- "\${cur}") )
             return 0
             ;;
         -p|--profile)
@@ -178,6 +203,13 @@ _curly() {
         '--retry-delay[Retry delay in ms]:milliseconds:' \\
         '(-p --profile)'{-p,--profile}'[Config profile]:profile:(\${profiles})' \\
         '--completions[Generate shell completions]:shell:(bash zsh install)' \\
+        '--save[Save request as alias]:name:' \\
+        '--use[Execute a saved alias]:alias:' \\
+        '--aliases[List all saved aliases]' \\
+        '--delete-alias[Delete a saved alias]:alias:' \\
+        '*'{-F,--form}'[Multipart form data]:data:_files' \\
+        '(-x --proxy)'{-x,--proxy}'[Proxy server URL]:url:' \\
+        '(-w --write-out)'{-w,--write-out}'[Output format]:format:(http_code status_code time_total size_download)' \\
         '*:URL:_urls'
 }
 

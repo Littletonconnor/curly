@@ -15,10 +15,8 @@ function getShellConfigPath(shell: Shell): string {
   const home = os.homedir()
   switch (shell) {
     case 'bash':
-      // Check for common bash config files
       const bashrc = path.join(home, '.bashrc')
       const bashProfile = path.join(home, '.bash_profile')
-      // Prefer .bashrc on Linux, .bash_profile on macOS
       if (process.platform === 'darwin') {
         return existsSync(bashProfile) ? bashProfile : bashrc
       }
@@ -71,15 +69,12 @@ function installCompletions(shell: Shell): InstallResult {
   const script = shell === 'bash' ? getBashScript() : getZshScript()
 
   try {
-    // Create completion directory if it doesn't exist
     if (!existsSync(completionDir)) {
       mkdirSync(completionDir, { recursive: true })
     }
 
-    // Write completion script
     writeFileSync(completionFile, script, { mode: 0o644 })
 
-    // Check if already installed
     if (isAlreadyInstalled(shell)) {
       return {
         success: true,
@@ -88,7 +83,6 @@ function installCompletions(shell: Shell): InstallResult {
       }
     }
 
-    // Add source line to shell config
     const sourceLine = getSourceLine(shell)
     appendFileSync(configPath, sourceLine)
 

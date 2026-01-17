@@ -31,7 +31,6 @@ export async function writeToOutputFile(data: ResponseData, options: FetchOption
 }
 
 export async function stdout(data: ResponseData, options: FetchOptions): Promise<void> {
-  // Handle write-out format (like curl's -w option)
   if (options['write-out']) {
     printWriteOut(data, options['write-out'])
     return
@@ -94,13 +93,11 @@ export function printHeaders(headers: Headers): void {
 }
 
 function printWriteOut(data: ResponseData, format: string): void {
-  // Support curl-style format variables
   const output = format
     .replace(/%\{http_code\}/g, String(data.status))
     .replace(/%\{status_code\}/g, String(data.status))
     .replace(/%\{time_total\}/g, (data.duration / 1000).toFixed(6))
     .replace(/%\{size_download\}/g, data.size)
-    // Also support simple variable names without %{} for convenience
     .replace(/^http_code$/, String(data.status))
     .replace(/^status_code$/, String(data.status))
     .replace(/^time_total$/, (data.duration / 1000).toFixed(6))

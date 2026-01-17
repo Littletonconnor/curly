@@ -63,13 +63,11 @@ export function readBodyFromFile(filePath: string): string {
 export function getContentTypeFromExtension(filePath: string): string | undefined {
   const ext = filePath.split('.').pop()?.toLowerCase()
   const contentTypes: Record<string, string> = {
-    // Text formats
     json: 'application/json',
     xml: 'application/xml',
     txt: 'text/plain',
     html: 'text/html',
     csv: 'text/csv',
-    // Images
     jpg: 'image/jpeg',
     jpeg: 'image/jpeg',
     png: 'image/png',
@@ -77,21 +75,17 @@ export function getContentTypeFromExtension(filePath: string): string | undefine
     webp: 'image/webp',
     svg: 'image/svg+xml',
     ico: 'image/x-icon',
-    // Documents
     pdf: 'application/pdf',
     doc: 'application/msword',
     docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     xls: 'application/vnd.ms-excel',
     xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    // Archives
     zip: 'application/zip',
     gz: 'application/gzip',
     tar: 'application/x-tar',
-    // Audio/Video
     mp3: 'audio/mpeg',
     mp4: 'video/mp4',
     webm: 'video/webm',
-    // Other
     js: 'application/javascript',
     css: 'text/css',
     wasm: 'application/wasm',

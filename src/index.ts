@@ -60,7 +60,6 @@ export async function main(): Promise<void> {
     const config = await loadConfig()
     const profile = getProfile(config, cliFlags.profile)
 
-    // Load alias if --use is specified
     const alias = cliFlags.use ? await getAlias(cliFlags.use) : null
     if (cliFlags.use && !alias) {
       console.error(`Alias "${cliFlags.use}" not found`)
@@ -68,7 +67,6 @@ export async function main(): Promise<void> {
       process.exit(1)
     }
 
-    // URL: CLI positional > alias > error
     const rawUrl = positionals[positionals.length - 1] || alias?.url
     if (!rawUrl) {
       console.error('No URL provided')
@@ -78,14 +76,12 @@ export async function main(): Promise<void> {
     const resolvedUrl = resolveUrl(rawUrl, profile?.baseUrl)
     const url = interpolate(resolvedUrl)
 
-    // Merge arrays: profile < alias < CLI (later sources override)
     const mergedHeaders = mergeInterpolatedArrays(profile?.headers, alias?.headers, cliFlags.headers)
     const mergedData = mergeInterpolatedArrays(alias?.data, cliFlags.data)
     const mergedCookies = mergeInterpolatedArrays(alias?.cookie, cliFlags.cookie)
     const mergedQuery = mergeInterpolatedArrays(alias?.query, cliFlags.query)
     const mergedForm = mergeInterpolatedArrays(alias?.form, cliFlags.form)
 
-    // Validate: -d and -F are mutually exclusive
     const hasData = (mergedData && mergedData.length > 0) || cliFlags['data-raw']
     const hasForm = mergedForm && mergedForm.length > 0
     if (hasData && hasForm) {
@@ -115,7 +111,6 @@ export async function main(): Promise<void> {
           : (alias?.retryDelay ?? profile?.retryDelay?.toString() ?? '1000'),
     }
 
-    // Handle --save: capture the request as an alias
     if (cliFlags.save) {
       await saveAlias(cliFlags.save, {
         url: rawUrl,

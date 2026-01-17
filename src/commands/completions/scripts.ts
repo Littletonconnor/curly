@@ -1,8 +1,4 @@
-// Shell completion scripts for bash and zsh
-
-// All CLI options for completions
 const OPTIONS = [
-  // Boolean flags
   '--help',
   '-h',
   '--history',
@@ -17,7 +13,6 @@ const OPTIONS = [
   '-L',
   '--fail',
   '-f',
-  // String options
   '--method',
   '-X',
   '--headers',

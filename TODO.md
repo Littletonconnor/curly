@@ -145,23 +145,23 @@ Explore adding a real-time terminal UI dashboard for load testing that displays 
 ## Housekeeping
 
 - [ ] Publish to NPM
-- [ ] Add comprehensive testing with Vitest (unit tests for parsers, HTTP client, formatters)
+- ~~[ ] Add comprehensive testing with Vitest (unit tests for parsers, HTTP client, formatters)~~ ✓
 
 ---
 
-## Website (curly.dev or similar)
+## ~~Website (curly.dev or similar)~~ ✓
 
-A marketing and documentation site inspired by [JSONPlaceholder](https://jsonplaceholder.typicode.com/), built with Next.js for easy deployment.
+~~A marketing and documentation site inspired by [JSONPlaceholder](https://jsonplaceholder.typicode.com/), built with Next.js for easy deployment.~~
 
-### Core Features
+### ~~Core Features~~
 
-- **Landing page** - Clear value prop, installation instructions, comparison with curl
-- **Interactive playground** - Live curly command builder with real-time response preview
-- **Documentation** - Usage examples, all flags/options, common recipes
+~~- **Landing page** - Clear value prop, installation instructions, comparison with curl~~
+~~- **Interactive playground** - Live curly command builder with real-time response preview~~
+~~- **Documentation** - Usage examples, all flags/options, common recipes~~
 
-### Fake API for Testing
+### ~~Fake API for Testing~~
 
-Similar to JSONPlaceholder, provide a public API that users can hit for testing:
+~~Similar to JSONPlaceholder, provide a public API that users can hit for testing:~~
 
 ```
 GET    /api/users
@@ -176,25 +176,25 @@ POST   /api/posts
 ...etc
 ```
 
-Endpoints should return realistic fake data and support:
+~~Endpoints should return realistic fake data and support:~~
 
-- Simulated latency (`?delay=1000`)
-- Forced error responses (`?status=500`)
-- Different response sizes for load testing
+~~- Simulated latency (`?delay=1000`)~~
+~~- Forced error responses (`?status=500`)~~
+~~- Different response sizes for load testing~~
 
-### Interactive Playground
+### ~~Interactive Playground~~
 
-- Command builder UI that generates curly commands
-- Execute commands from browser and display formatted responses
-- Shareable links to pre-configured requests
-- Syntax highlighted output with JSON formatting
+~~- Command builder UI that generates curly commands~~
+~~- Execute commands from browser and display formatted responses~~
+~~- Shareable links to pre-configured requests~~
+~~- Syntax highlighted output with JSON formatting~~
 
-### Tech Stack
+### ~~Tech Stack~~
 
-- **Framework**: Next.js (App Router)
-- **Deployment**: Vercel
-- **Styling**: TBD (Tailwind CSS likely)
-- **API**: Next.js API routes with mock data
+~~- **Framework**: Next.js (App Router)~~
+~~- **Deployment**: Vercel~~
+~~- **Styling**: TBD (Tailwind CSS likely)~~
+~~- **API**: Next.js API routes with mock data~~
 
 ---
 

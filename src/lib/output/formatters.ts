@@ -33,10 +33,7 @@ export async function writeToOutputFile(data: ResponseData, options: FetchOption
 export async function stdout(data: ResponseData, options: FetchOptions): Promise<void> {
   if (options['write-out']) {
     printWriteOut(data, options['write-out'])
-    return
-  }
-
-  if (options.head) {
+  } else if (options.head) {
     printHeaders(data.headers)
   } else if (options.include) {
     printHeaders(data.headers)

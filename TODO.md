@@ -1,120 +1,68 @@
 # TODO
 
-## Easy (1-2 hours each)
+## Bugs
 
-### ~~Verbose mode (`-v`)~~ ✓
+### HEAD requests broken: `-X HEAD` crashes, `-I` wastes bandwidth
 
-~~Show request details (method, headers, body) before showing response. Similar to existing `--debug` but user-facing and cleaner.~~
+**Problems:**
+1. `-X HEAD` throws `SyntaxError: Unexpected end of JSON input` because `buildResponse` tries to parse an empty body
+2. `-I` sends a GET request instead of HEAD (unlike curl), wasting bandwidth by fetching a body it discards
 
-### ~~Basic auth (`-u user:pass`)~~ ✓
+**Current behavior:**
+- `-I` → GET request → fetches full body → parses it → only prints headers (wasteful)
+- `-X HEAD` → HEAD request → no body → `buildResponse` fails on `response.json()`
 
-~~Support basic authentication with automatic base64 encoding.~~
+**Fix:** Make both `-I` and `-X HEAD` send actual HEAD requests and skip body parsing.
 
-```sh
-curly -u admin:secret https://api.example.com/protected
-```
+1. **Update `buildMethod`** to return 'HEAD' when `options.head` is true:
 
-### ~~Fail on HTTP errors (`-f` / `--fail`)~~ ✓
-
-~~Exit with non-zero code on 4xx/5xx responses. Useful for scripts and CI.~~
-
-```sh
-curly -f https://api.example.com/health || echo "Health check failed"
-```
-
-### ~~Response time display~~ ✓
-
-~~Show request duration without full debug output.~~
-_Now shown by default in status line. Use `--quiet` to suppress._
-
-### ~~Setup linting~~ ✓
-
-~~Add eslint or oxlint for code quality.~~
-
----
-
-## Medium (half day - 1 day each)
-
-### ~~Request body from file (`@file.json`)~~ ✓
-
-~~Support reading request body from a file using `@` syntax.~~
-
-```sh
-curly -X POST -d @payload.json https://api.example.com
-```
-
-### ~~Retry logic with backoff~~ ✓
-
-~~Automatic retry on failure with configurable attempts and delay.~~
-
-```sh
-curly --retry 3 --retry-delay 1000 https://flaky-api.example.com
-```
-
-### ~~Environment variable interpolation~~ ✓
-
-~~Replace `{{VAR}}` placeholders with environment variables in URLs, headers, and bodies.~~
-
-```sh
-curly -H "Authorization: Bearer {{API_KEY}}" https://api.example.com
-```
-
-### ~~Config file support (`~/.config/curly/config.json`)~~ ✓
-
-~~Load default options from a config file with profile support.~~
-
-```json
-{
-  "default": "dev",
-  "profiles": {
-    "dev": {
-      "baseUrl": "http://localhost:3000",
-      "timeout": 5000,
-      "headers": ["X-Debug: true"]
-    }
+```ts
+// In src/core/http/client.ts
+export function buildMethod(options: FetchOptions): string {
+  if (options.head) {
+    return 'HEAD'
   }
+  if (options.method) {
+    return options.method
+  }
+  // ... rest unchanged
 }
 ```
+
+2. **Skip body parsing for HEAD requests** in `executeRequest`:
+
+```ts
+// In src/commands/request/index.ts
+export async function executeRequest(url: string, options: FetchOptions) {
+  const { response, duration } = await curl(url, options)
+  const method = buildMethod(options)
+
+  // HEAD requests have no body - skip body parsing
+  if (method === 'HEAD') {
+    const data: ResponseData = {
+      response: null,
+      duration,
+      headers: response.headers,
+      status: response.status,
+      size: '0 B',
+    }
+    await stdout(data, options)
+    return
+  }
+
+  const data = await buildResponse({ response, duration })
+  await stdout(data, options)
+  // ...
+}
+```
+
+**After fix:**
+- `-I` → HEAD request → no body fetched → headers displayed (matches curl)
+- `-X HEAD` → HEAD request → no body fetched → works correctly
 
 ---
 
 ## Hard (2+ days each)
-
-### ~~Multipart file uploads (`-F`)~~ ✓
-
-~~Support file uploads with multipart/form-data.~~
-
-```sh
-curly -X POST -F "file=@photo.jpg" -F "name=vacation" https://api.example.com/upload
-```
-
-_Use `-F` for form fields and `@` prefix for file paths. MIME types auto-detected from extensions._
-
-### ~~Saved request aliases~~ ✓
-
-~~Save and reuse named requests.~~
-
-```sh
-curly --save "get-users" -X GET https://api.example.com/users
-curly --use "get-users"
-```
-
-_Use `--save` to capture requests and `--use` to execute them. Aliases stored in `~/.config/curly/aliases.json`._
-
-### ~~Shell completions~~ ✓
-
-~~Generate completions for bash and zsh.~~
-_Use `curly --completions install` for automatic installation, or `curly --completions bash|zsh` to output scripts._
-
-### ~~Proxy support~~ ✓
-
-~~HTTP/HTTPS proxy support.~~
-
-```sh
-curly --proxy http://proxy.example.com:8080 https://api.example.com
-```
-
-_Use `-x` or `--proxy` to route requests through a proxy server. See `docs/proxy.md` for detailed documentation._
 
 ### Interactive TUI for load testing
 
@@ -143,8 +91,6 @@ Explore adding a real-time terminal UI dashboard for load testing that displays 
 ---
 
 ## Housekeeping
-
-- ~~[ ] Add comprehensive testing with Vitest (unit tests for parsers, HTTP client, formatters)~~ ✓
 
 ### Publish to NPM
 
@@ -232,60 +178,9 @@ Consider adding `.github/workflows/publish.yml` to auto-publish on new tags/rele
 
 ---
 
-## ~~Website (curly.dev or similar)~~ ✓
-
-~~A marketing and documentation site inspired by [JSONPlaceholder](https://jsonplaceholder.typicode.com/), built with Next.js for easy deployment.~~
-
-### ~~Core Features~~
-
-~~- **Landing page** - Clear value prop, installation instructions, comparison with curl~~
-~~- **Interactive playground** - Live curly command builder with real-time response preview~~
-~~- **Documentation** - Usage examples, all flags/options, common recipes~~
-
-### ~~Fake API for Testing~~
-
-~~Similar to JSONPlaceholder, provide a public API that users can hit for testing:~~
-
-```
-GET    /api/users
-GET    /api/users/:id
-POST   /api/users
-PUT    /api/users/:id
-DELETE /api/users/:id
-
-GET    /api/posts
-GET    /api/posts/:id
-POST   /api/posts
-...etc
-```
-
-~~Endpoints should return realistic fake data and support:~~
-
-~~- Simulated latency (`?delay=1000`)~~
-~~- Forced error responses (`?status=500`)~~
-~~- Different response sizes for load testing~~
-
-### ~~Interactive Playground~~
-
-~~- Command builder UI that generates curly commands~~
-~~- Execute commands from browser and display formatted responses~~
-~~- Shareable links to pre-configured requests~~
-~~- Syntax highlighted output with JSON formatting~~
-
-### ~~Tech Stack~~
-
-~~- **Framework**: Next.js (App Router)~~
-~~- **Deployment**: Vercel~~
-~~- **Styling**: TBD (Tailwind CSS likely)~~
-~~- **API**: Next.js API routes with mock data~~
-
----
-
 ## Parked (Low Priority)
 
 These features have limited value or can be achieved other ways:
 
 - **Types**: Fix all the typescript issues in the codebase
-- ~~**Comments**: Cleanup all the redundant comments in the codebase. There are a lot~~ ✓
-- ~~**Website**: The website is mostly complete, so we can mark that as complete, however the code snippets on the website have a lot of bugs and say things like token>. The format is all messed up. Also I want a more simplified landing page that just showcases all the features. I don't want the API examples for example.~~ ✓
 - **Future directions** help me understand current functionality, and potential future directions

@@ -4,6 +4,94 @@
 
 ~~### HEAD requests broken: `-X HEAD` crashes, `-I` wastes bandwidth~~ ✓
 
+### `--data-raw` incorrectly requires JSON input
+
+**Command:**
+```sh
+curly https://httpbin.org/post -X POST --data-raw '<user><name>John</name></user>' -H "Content-Type: application/xml"
+```
+
+**Error:**
+```
+data-raw must be valid json (e.g., --data-raw '{"name": "John Doe"}').
+```
+
+**Expected:** The `--data-raw` flag should send data as-is without any validation, matching curl's behavior. The `Content-Type` header should control how the server interprets the data, not the tool's validation.
+
+**Location:** `src/core/http/client.ts:410-413`
+
+---
+
+### Multiple `-H` headers: only the last header is sent
+
+**Command:**
+```sh
+curly https://httpbin.org/headers -H "X-Request-ID: 12345" -H "X-Client-Version: 1.0.0"
+```
+
+**Expected:** Both `X-Request-ID` and `X-Client-Version` headers should appear in the request.
+
+**Actual:** Only `X-Client-Version` (the last header) is sent. Previous headers are dropped.
+
+---
+
+### Cookies from JSON file produces `undefined: undefined`
+
+**Command:**
+```sh
+curly https://httpbin.org/cookies -b /path/to/cookies.json
+```
+
+**Expected:** Cookies from the JSON file should be parsed and sent correctly.
+
+**Actual:** Response shows `{ cookies: { undefined: 'undefined' } }` instead of the actual cookie values.
+
+**Example file:** `examples/sample-data/cookies.json`
+
+---
+
+### `-o` with `-i` doesn't save file to disk
+
+**Command:**
+```sh
+curly https://httpbin.org/get -i -o output.txt
+```
+
+**Expected:** Response with headers should be saved to `output.txt`.
+
+**Actual:** File is not created. The output is shown in terminal but not written to the file.
+
+---
+
+### Write-out `\n` escape sequences not interpreted
+
+**Command:**
+```sh
+curly https://httpbin.org/ip -w '\nStatus: %{http_code}'
+```
+
+**Expected:** Output should show a newline followed by "Status: 200".
+
+**Actual:** Output shows literal `\nStatus: 200` without interpreting the escape sequence.
+
+---
+
+### Profiles feature crashes with TypeError
+
+**Command:**
+```sh
+curly /get -p httpbin
+```
+
+**Error:**
+```
+TypeError: source is not iterable
+    at mergeInterpolatedArrays (file:///..../dist/index.js:530:26)
+    at main (file:///..../dist/index.js:1654:27)
+```
+
+**Location:** `src/index.ts` - `mergeInterpolatedArrays` function
+
 ---
 
 ## Hard (2+ days each)

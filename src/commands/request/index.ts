@@ -8,23 +8,11 @@ export async function executeRequest(url: string, options: FetchOptions) {
   const method = buildMethod(options)
 
   // HEAD requests have no body - skip body parsing
-  if (method === 'HEAD') {
-    const data: ResponseData = {
-      response: null,
-      duration,
-      headers: response.headers,
-      status: response.status,
-      size: '0 B',
-    }
-    await stdout(data, options)
+  const data: ResponseData =
+    method === 'HEAD'
+      ? { response: null, duration, headers: response.headers, status: response.status, size: '0 B' }
+      : await buildResponse({ response, duration })
 
-    if (options.fail && data.status >= 400) {
-      process.exit(HTTP_ERROR_EXIT_CODE)
-    }
-    return
-  }
-
-  const data = await buildResponse({ response, duration })
   await stdout(data, options)
 
   if (options.fail && data.status >= 400) {

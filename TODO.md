@@ -4,21 +4,7 @@
 
 ~~### HEAD requests broken: `-X HEAD` crashes, `-I` wastes bandwidth~~ ✓
 
-### `--data-raw` incorrectly requires JSON input
-
-**Command:**
-```sh
-curly https://httpbin.org/post -X POST --data-raw '<user><name>John</name></user>' -H "Content-Type: application/xml"
-```
-
-**Error:**
-```
-data-raw must be valid json (e.g., --data-raw '{"name": "John Doe"}').
-```
-
-**Expected:** The `--data-raw` flag should send data as-is without any validation, matching curl's behavior. The `Content-Type` header should control how the server interprets the data, not the tool's validation.
-
-**Location:** `src/core/http/client.ts:410-413`
+~~### `--data-raw` incorrectly requires JSON input~~ ✓
 
 ---
 

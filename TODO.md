@@ -2,63 +2,7 @@
 
 ## Bugs
 
-### HEAD requests broken: `-X HEAD` crashes, `-I` wastes bandwidth
-
-**Problems:**
-1. `-X HEAD` throws `SyntaxError: Unexpected end of JSON input` because `buildResponse` tries to parse an empty body
-2. `-I` sends a GET request instead of HEAD (unlike curl), wasting bandwidth by fetching a body it discards
-
-**Current behavior:**
-- `-I` → GET request → fetches full body → parses it → only prints headers (wasteful)
-- `-X HEAD` → HEAD request → no body → `buildResponse` fails on `response.json()`
-
-**Fix:** Make both `-I` and `-X HEAD` send actual HEAD requests and skip body parsing.
-
-1. **Update `buildMethod`** to return 'HEAD' when `options.head` is true:
-
-```ts
-// In src/core/http/client.ts
-export function buildMethod(options: FetchOptions): string {
-  if (options.head) {
-    return 'HEAD'
-  }
-  if (options.method) {
-    return options.method
-  }
-  // ... rest unchanged
-}
-```
-
-2. **Skip body parsing for HEAD requests** in `executeRequest`:
-
-```ts
-// In src/commands/request/index.ts
-export async function executeRequest(url: string, options: FetchOptions) {
-  const { response, duration } = await curl(url, options)
-  const method = buildMethod(options)
-
-  // HEAD requests have no body - skip body parsing
-  if (method === 'HEAD') {
-    const data: ResponseData = {
-      response: null,
-      duration,
-      headers: response.headers,
-      status: response.status,
-      size: '0 B',
-    }
-    await stdout(data, options)
-    return
-  }
-
-  const data = await buildResponse({ response, duration })
-  await stdout(data, options)
-  // ...
-}
-```
-
-**After fix:**
-- `-I` → HEAD request → no body fetched → headers displayed (matches curl)
-- `-X HEAD` → HEAD request → no body fetched → works correctly
+~~### HEAD requests broken: `-X HEAD` crashes, `-I` wastes bandwidth~~ ✓
 
 ---
 

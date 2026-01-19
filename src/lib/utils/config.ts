@@ -4,6 +4,19 @@ import path from 'path'
 import { logger } from './logger'
 import { isNodeError, getErrorMessage } from '../../types'
 
+/** Headers can be specified as array ["Key: Value"] or object {"Key": "Value"} */
+type HeadersInput = string[] | Record<string, string>
+
+/** Raw profile as stored in config file (supports both header formats) */
+interface RawProfile {
+  baseUrl?: string
+  timeout?: number
+  headers?: HeadersInput
+  retry?: number
+  retryDelay?: number
+}
+
+/** Normalized profile with headers as string array */
 export interface Profile {
   baseUrl?: string
   timeout?: number
@@ -12,9 +25,23 @@ export interface Profile {
   retryDelay?: number
 }
 
+/**
+ * Convert headers from object format {"Key": "Value"} to array format ["Key: Value"]
+ */
+function normalizeHeaders(headers: HeadersInput | undefined): string[] | undefined {
+  if (!headers) {
+    return undefined
+  }
+  if (Array.isArray(headers)) {
+    return headers
+  }
+  // Convert object to array of "Key: Value" strings
+  return Object.entries(headers).map(([key, value]) => `${key}: ${value}`)
+}
+
 export interface Config {
   default?: string
-  profiles?: Record<string, Profile>
+  profiles?: Record<string, RawProfile>
 }
 
 const CONFIG_PATH = path.join(os.homedir(), '.config', 'curly', 'config.json')
@@ -45,8 +72,8 @@ export function getProfile(config: Config | null, profileName?: string): Profile
     return null
   }
 
-  const profile = config.profiles[name]
-  if (!profile) {
+  const rawProfile = config.profiles[name]
+  if (!rawProfile) {
     if (profileName) {
       logger().warn(`Profile "${profileName}" not found in config`)
     }
@@ -54,7 +81,12 @@ export function getProfile(config: Config | null, profileName?: string): Profile
   }
 
   logger().debug(`Using profile: ${name}`)
-  return profile
+
+  // Normalize headers from object to array format
+  return {
+    ...rawProfile,
+    headers: normalizeHeaders(rawProfile.headers),
+  }
 }
 
 export function resolveUrl(url: string, baseUrl?: string): string {

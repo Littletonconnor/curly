@@ -74,7 +74,7 @@ echo '  "profiles": {'
 echo '    "dev": {'
 echo '      "baseUrl": "http://localhost:3000",'
 echo '      "timeout": 5000,'
-echo '      "headers": ["X-Environment: development"]'
+echo '      "headers": { "X-Environment": "development" }'
 echo '    },'
 echo '    "prod": {'
 echo '      "baseUrl": "https://api.example.com",'
@@ -93,12 +93,16 @@ cat > "$CONFIG_FILE" << 'EOF'
     "httpbin": {
       "baseUrl": "https://httpbin.org",
       "timeout": 10000,
-      "headers": ["X-Profile: httpbin-demo"]
+      "headers": {
+        "X-Profile": "httpbin-demo"
+      }
     },
     "jsonapi": {
       "baseUrl": "https://jsonplaceholder.typicode.com",
       "timeout": 5000,
-      "headers": ["Accept: application/json"]
+      "headers": {
+        "Accept": "application/json"
+      }
     }
   }
 }

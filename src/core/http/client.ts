@@ -274,7 +274,9 @@ export function buildFormData(formFields: string[]): FormData {
 }
 
 export function buildMethod(options: FetchOptions): string {
-  if (options.method) {
+  if (options.head) {
+    return 'HEAD'
+  } else if (options.method) {
     return options.method
   } else if (
     (options.data && options.data.length > 0) ||

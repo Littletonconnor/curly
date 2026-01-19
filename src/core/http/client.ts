@@ -2,7 +2,6 @@ import { readFileSync } from 'fs'
 import { ProxyAgent } from 'undici'
 import { CONTENT_TYPES } from '../config/constants'
 import {
-  isValidJson,
   readBodyFromFile,
   getContentTypeFromExtension,
   parseFormField,
@@ -407,11 +406,7 @@ export function buildBody(options: FetchOptions): string | undefined {
   if ((!options.data || options.data.length === 0) && !options['data-raw']) return undefined
 
   if (options['data-raw']) {
-    if (isValidJson(options['data-raw'])) {
-      return options['data-raw']
-    } else {
-      logger().error(`data-raw must be valid json (e.g., --data-raw '{"name": "John Doe"}').`)
-    }
+    return options['data-raw']
   } else if (options.data) {
     if (options.data.length === 1 && options.data[0].startsWith('@')) {
       const filePath = options.data[0].slice(1)

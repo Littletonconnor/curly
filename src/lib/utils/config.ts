@@ -4,10 +4,8 @@ import path from 'path'
 import { logger } from './logger'
 import { isNodeError, getErrorMessage } from '../../types'
 
-/** Headers can be specified as array ["Key: Value"] or object {"Key": "Value"} */
 type HeadersInput = string[] | Record<string, string>
 
-/** Raw profile as stored in config file (supports both header formats) */
 interface RawProfile {
   baseUrl?: string
   timeout?: number
@@ -16,7 +14,6 @@ interface RawProfile {
   retryDelay?: number
 }
 
-/** Normalized profile with headers as string array */
 export interface Profile {
   baseUrl?: string
   timeout?: number
@@ -25,9 +22,6 @@ export interface Profile {
   retryDelay?: number
 }
 
-/**
- * Convert headers from object format {"Key": "Value"} to array format ["Key: Value"]
- */
 function normalizeHeaders(headers: HeadersInput | undefined): string[] | undefined {
   if (!headers) {
     return undefined
@@ -35,7 +29,6 @@ function normalizeHeaders(headers: HeadersInput | undefined): string[] | undefin
   if (Array.isArray(headers)) {
     return headers
   }
-  // Convert object to array of "Key: Value" strings
   return Object.entries(headers).map(([key, value]) => `${key}: ${value}`)
 }
 
@@ -82,7 +75,6 @@ export function getProfile(config: Config | null, profileName?: string): Profile
 
   logger().debug(`Using profile: ${name}`)
 
-  // Normalize headers from object to array format
   return {
     ...rawProfile,
     headers: normalizeHeaders(rawProfile.headers),

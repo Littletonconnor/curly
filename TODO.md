@@ -8,31 +8,11 @@
 
 ---
 
-### Multiple `-H` headers: only the last header is sent
-
-**Command:**
-```sh
-curly https://httpbin.org/headers -H "X-Request-ID: 12345" -H "X-Client-Version: 1.0.0"
-```
-
-**Expected:** Both `X-Request-ID` and `X-Client-Version` headers should appear in the request.
-
-**Actual:** Only `X-Client-Version` (the last header) is sent. Previous headers are dropped.
+~~### Multiple `-H` headers: only the last header is sent~~ ✓
 
 ---
 
-### Cookies from JSON file produces `undefined: undefined`
-
-**Command:**
-```sh
-curly https://httpbin.org/cookies -b /path/to/cookies.json
-```
-
-**Expected:** Cookies from the JSON file should be parsed and sent correctly.
-
-**Actual:** Response shows `{ cookies: { undefined: 'undefined' } }` instead of the actual cookie values.
-
-**Example file:** `examples/sample-data/cookies.json`
+~~### Cookies from JSON file produces `undefined: undefined`~~ ✓
 
 ---
 

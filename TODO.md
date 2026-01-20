@@ -1,57 +1,6 @@
 # TODO
 
-## Bugs
-
-~~### HEAD requests broken: `-X HEAD` crashes, `-I` wastes bandwidth~~ ✓
-
-~~### `--data-raw` incorrectly requires JSON input~~ ✓
-
----
-
-~~### Multiple `-H` headers: only the last header is sent~~ ✓
-
----
-
-~~### Cookies from JSON file produces `undefined: undefined`~~ ✓
-
----
-
-~~### `-o` with `-i` doesn't save file to disk~~ ✓
-
----
-
-~~### Write-out `\n` escape sequences not interpreted~~ ✓
-
-**Command:**
-```sh
-curly https://httpbin.org/ip -w '\nStatus: %{http_code}'
-```
-
-**Expected:** Output should show a newline followed by "Status: 200".
-
-**Actual:** Output shows literal `\nStatus: 200` without interpreting the escape sequence.
-
----
-
-~~### Profiles feature crashes with TypeError~~ ✓
-
-**Command:**
-```sh
-curly /get -p httpbin
-```
-
-**Error:**
-```
-TypeError: source is not iterable
-    at mergeInterpolatedArrays (file:///..../dist/index.js:530:26)
-    at main (file:///..../dist/index.js:1654:27)
-```
-
-**Location:** `src/index.ts` - `mergeInterpolatedArrays` function
-
----
-
-## Hard (2+ days each)
+## Features
 
 ### Interactive TUI for load testing
 
@@ -164,12 +113,3 @@ open https://www.npmjs.com/package/@cwl/curly
 #### Optional: Automate with GitHub Actions
 
 Consider adding `.github/workflows/publish.yml` to auto-publish on new tags/releases.
-
----
-
-## Parked (Low Priority)
-
-These features have limited value or can be achieved other ways:
-
-- **Types**: Fix all the typescript issues in the codebase
-- **Future directions** help me understand current functionality, and potential future directions

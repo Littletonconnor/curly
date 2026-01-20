@@ -138,7 +138,7 @@ export function Dashboard({
           <Chart title="Request Rate (req/s)" data={state.rpsHistory} height={5} />
         </Box>
         <Box flexDirection="column" flexGrow={1}>
-          <Chart title="Latency (ms)" data={state.latencyHistory} height={5} />
+          <Chart title="Max Latency (ms)" data={state.latencyHistory} height={5} />
         </Box>
       </Box>
 

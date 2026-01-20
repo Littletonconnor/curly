@@ -88,12 +88,11 @@ export class TuiController extends EventEmitter {
         this.state.rpsHistory.shift()
       }
 
-      // Calculate recent average latency for the chart
+      // Calculate max latency in this interval for the chart (shows long tail spikes)
       const recentDurations = this.state.durations.slice(-Math.ceil(rps * elapsed))
-      const avgLatency =
-        recentDurations.length > 0 ? recentDurations.reduce((a, b) => a + b, 0) / recentDurations.length : 0
+      const maxLatency = recentDurations.length > 0 ? Math.max(...recentDurations) : 0
 
-      this.state.latencyHistory.push(avgLatency)
+      this.state.latencyHistory.push(maxLatency)
       if (this.state.latencyHistory.length > 120) {
         this.state.latencyHistory.shift()
       }

@@ -174,6 +174,37 @@ export class TuiController extends EventEmitter {
   }
 
   /**
+   * Repeat the load test (when completed)
+   */
+  repeat(): void {
+    if (this.state.status !== 'completed') return
+
+    // Reset all state for a new run
+    this.state.status = 'running'
+    this.state.durations = []
+    this.state.statusCodes = {}
+    this.state.latencyHistory = []
+    this.state.rpsHistory = []
+    this.state.successCount = 0
+    this.state.errorCount = 0
+    this.state.completed = 0
+    this.state.startTime = performance.now()
+    this.state.lastRpsTime = performance.now()
+    this.state.requestsSinceLastRps = 0
+    this.abortController = new AbortController()
+
+    // Restart the history update interval
+    if (!this.updateInterval) {
+      this.updateInterval = setInterval(() => {
+        this.updateHistory()
+      }, 500)
+    }
+
+    this.emit('repeat')
+    this.emit('update', this.state)
+  }
+
+  /**
    * Get current state
    */
   getState(): TuiState {
@@ -260,6 +291,7 @@ function TuiApp({ controller, initialState }: { controller: TuiController; initi
   const handleQuit = useCallback(() => controller.stop(), [controller])
   const handleAdjustConcurrency = useCallback((delta: number) => controller.adjustConcurrency(delta), [controller])
   const handleResetStats = useCallback(() => controller.resetStats(), [controller])
+  const handleRepeat = useCallback(() => controller.repeat(), [controller])
 
   return (
     <Dashboard
@@ -269,6 +301,7 @@ function TuiApp({ controller, initialState }: { controller: TuiController; initi
       onQuit={handleQuit}
       onAdjustConcurrency={handleAdjustConcurrency}
       onResetStats={handleResetStats}
+      onRepeat={handleRepeat}
     />
   )
 }

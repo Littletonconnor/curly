@@ -24,34 +24,62 @@ export async function writeToCookieJar(
   }
 }
 
-export async function writeToOutputFile(data: ResponseData, options: FetchOptions): Promise<void> {
-  logger().verbose('output', `Writing response to file: ${options.output}`)
-  await writeOutputToFile(data.response, options.output!, { colors: false })
-  logger().verbose('output', `Response saved successfully`)
-}
-
 export async function stdout(data: ResponseData, options: FetchOptions): Promise<void> {
+  if (options['cookie-jar']) {
+    await writeToCookieJar(data, options)
+  }
+
+  const includeHeaders = options.include || options.head
+  const includeBody = !options.head
+
+  if (options.output) {
+    await writeContentToFile(data, options.output, { includeHeaders, includeBody })
+  } else {
+    printContent(data, { includeHeaders, includeBody })
+  }
+
   if (options['write-out']) {
     printWriteOut(data, options['write-out'])
-  } else if (options.head) {
-    printHeaders(data.headers)
-  } else if (options.include) {
-    printHeaders(data.headers)
-    console.log()
-    printResponse(data.response)
-    printStatusLine(data, options)
-  } else if (options.output) {
-    await writeToOutputFile(data, options)
-    printResponse(data.response)
-    printStatusLine(data, options)
-  } else if (options['cookie-jar']) {
-    await writeToCookieJar(data, options)
-    printResponse(data.response)
-    printStatusLine(data, options)
-  } else {
-    printResponse(data.response)
-    printStatusLine(data, options)
   }
+
+  printStatusLine(data, options)
+}
+
+function printContent(
+  data: ResponseData,
+  opts: { includeHeaders: boolean; includeBody: boolean },
+): void {
+  if (opts.includeHeaders) {
+    printHeaders(data.headers)
+    if (opts.includeBody) console.log()
+  }
+  if (opts.includeBody) {
+    printResponse(data.response)
+  }
+}
+
+async function writeContentToFile(
+  data: ResponseData,
+  filePath: string,
+  opts: { includeHeaders: boolean; includeBody: boolean },
+): Promise<void> {
+  logger().verbose('output', `Writing response to file: ${filePath}`)
+
+  const parts: string[] = []
+
+  if (opts.includeHeaders) {
+    const headerLines = [...data.headers.entries()].map(([k, v]) => `${k}: ${v}`).join('\n')
+    parts.push(headerLines)
+  }
+
+  if (opts.includeBody) {
+    const bodyStr = typeof data.response === 'string' ? data.response : JSON.stringify(data.response, null, 2)
+    parts.push(bodyStr)
+  }
+
+  const content = parts.join('\n\n')
+  await writeOutputToFile(content, filePath, { colors: false })
+  logger().verbose('output', 'Response saved successfully')
 }
 
 function getStatusText(status: number): string {

@@ -37,6 +37,8 @@ export interface FetchOptions {
   form?: string[]
   proxy?: string
   'write-out'?: string
+  tui?: boolean
+  'tui-compact'?: boolean
 }
 
 export interface ResponseData {

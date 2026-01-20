@@ -4,6 +4,7 @@ import { parseIntOption } from '../../lib/utils/parse'
 import { getErrorMessage } from '../../types'
 import { ProgressIndicator } from './progress'
 import { StatsCollector, type RequestResult } from './stats'
+import { TuiController, shouldEnableTui, isTTY, isCompactMode } from './tui'
 
 const DEFAULT_REQUESTS = 200
 const DEFAULT_CONCURRENCY = 50
@@ -17,7 +18,25 @@ function createErrorResult(error: unknown): RequestResult {
   }
 }
 
-export async function load(url: string, options: FetchOptions): Promise<void> {
+export interface LoadOptions extends FetchOptions {
+  profileTui?: boolean
+  profileName?: string
+}
+
+export async function load(url: string, options: LoadOptions): Promise<void> {
+  const useTui = shouldEnableTui(options, options.profileTui) && isTTY()
+
+  if (useTui) {
+    await loadWithTui(url, options)
+  } else {
+    await loadWithProgress(url, options)
+  }
+}
+
+/**
+ * Standard load test with simple progress bar (existing behavior)
+ */
+async function loadWithProgress(url: string, options: FetchOptions): Promise<void> {
   const requests = parseIntOption(options.requests, DEFAULT_REQUESTS)
   const concurrency = parseIntOption(options.concurrency, DEFAULT_CONCURRENCY)
 
@@ -52,5 +71,93 @@ export async function load(url: string, options: FetchOptions): Promise<void> {
 
   logger().verbose('load-test', `Completed in ${totalDuration.toFixed(2)}s`)
 
+  stats.print(totalDuration)
+}
+
+/**
+ * Load test with interactive TUI dashboard
+ */
+async function loadWithTui(url: string, options: LoadOptions): Promise<void> {
+  const totalRequests = parseIntOption(options.requests, DEFAULT_REQUESTS)
+  let concurrency = parseIntOption(options.concurrency, DEFAULT_CONCURRENCY)
+
+  const controller = new TuiController({
+    url,
+    totalRequests,
+    concurrency,
+    compact: isCompactMode(options['tui-compact']),
+    profileName: options.profileName,
+  })
+
+  // Listen for concurrency changes from keyboard
+  controller.on('concurrency', (newConcurrency: number) => {
+    concurrency = newConcurrency
+  })
+
+  // Start the TUI
+  controller.start()
+
+  const stats = new StatsCollector()
+  let completed = 0
+
+  try {
+    while (controller.shouldContinue() && completed < totalRequests) {
+      // Check if paused and wait for resume
+      const shouldProceed = await controller.waitForResume()
+      if (!shouldProceed) break
+
+      const state = controller.getState()
+      if (state.status === 'stopped') break
+
+      const remaining = totalRequests - completed
+      const batchSize = Math.min(concurrency, remaining)
+
+      const batch = Array(batchSize)
+        .fill(null)
+        .map(() =>
+          curl(url, options, controller.getAbortSignal())
+            .then(buildResponse)
+            .then((result) => {
+              controller.recordResult({
+                duration: result.duration,
+                status: result.status,
+              })
+              return result
+            })
+            .catch((error: unknown) => {
+              // Don't count aborted requests as errors
+              if (error instanceof Error && error.name === 'AbortError') {
+                return null
+              }
+              const result = createErrorResult(error)
+              controller.recordResult({
+                duration: result.duration,
+                status: result.status,
+                error: result.error,
+              })
+              return result
+            }),
+        )
+
+      const batchResults = await Promise.all(batch)
+      const validResults = batchResults.filter((r): r is RequestResult => r !== null)
+      stats.addResults(validResults)
+      completed += validResults.length
+    }
+
+    const state = controller.getState()
+    if (state.status !== 'stopped') {
+      controller.complete()
+    }
+
+    // Wait a moment for user to see the final state
+    await new Promise((resolve) => setTimeout(resolve, 500))
+  } finally {
+    controller.unmount()
+  }
+
+  // Print final summary (same as non-TUI mode)
+  const finalState = controller.getState()
+  const totalDuration = (performance.now() - finalState.startTime) / 1000
   stats.print(totalDuration)
 }

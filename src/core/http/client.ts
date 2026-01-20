@@ -26,17 +26,21 @@ export type { FetchOptions } from '../../types'
  *
  * @param url - The URL to request
  * @param options - Configuration options including method, headers, body, timeout, etc.
+ * @param externalSignal - Optional external abort signal (e.g., from TUI pause)
  * @returns The raw Response object and request duration in milliseconds
  */
 export async function curl(
   url: string,
   options: FetchOptions,
+  externalSignal?: AbortSignal,
 ): Promise<{ response: Response; duration: number }> {
   const fetchOptions = buildFetchOptions(options)
   const timeoutMs = parseIntOption(options.timeout, 0) || undefined
-  const { signal, cleanup } = createTimeoutSignal(timeoutMs)
+  const { signal: timeoutSignal, cleanup } = createTimeoutSignal(timeoutMs)
   const maxRedirects = getMaxRedirects(options)
 
+  // Combine timeout signal with external signal if both exist
+  const signal = combineSignals(timeoutSignal, externalSignal)
   if (signal) {
     fetchOptions.signal = signal
   }
@@ -99,6 +103,33 @@ function createTimeoutSignal(timeoutMs: number | undefined): TimeoutSignalResult
     signal: controller.signal,
     cleanup: () => clearTimeout(timeoutId),
   }
+}
+
+function combineSignals(
+  timeoutSignal: AbortSignal | undefined,
+  externalSignal: AbortSignal | undefined,
+): AbortSignal | undefined {
+  if (!timeoutSignal && !externalSignal) return undefined
+  if (!timeoutSignal) return externalSignal
+  if (!externalSignal) return timeoutSignal
+
+  // Combine both signals using AbortSignal.any if available (Node 20+)
+  if ('any' in AbortSignal) {
+    return AbortSignal.any([timeoutSignal, externalSignal])
+  }
+
+  // Fallback: create a new controller that aborts when either signal aborts
+  const controller = new AbortController()
+  const abort = () => controller.abort()
+
+  timeoutSignal.addEventListener('abort', abort)
+  externalSignal.addEventListener('abort', abort)
+
+  if (timeoutSignal.aborted || externalSignal.aborted) {
+    controller.abort()
+  }
+
+  return controller.signal
 }
 
 function getMaxRedirects(options: FetchOptions): number {

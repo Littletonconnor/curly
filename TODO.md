@@ -8,16 +8,7 @@
 
 ---
 
-### Multiple `-H` headers: only the last header is sent
-
-**Command:**
-```sh
-curly https://httpbin.org/headers -H "X-Request-ID: 12345" -H "X-Client-Version: 1.0.0"
-```
-
-**Expected:** Both `X-Request-ID` and `X-Client-Version` headers should appear in the request.
-
-**Actual:** Only `X-Client-Version` (the last header) is sent. Previous headers are dropped.
+~~### Multiple `-H` headers: only the last header is sent~~ ✓
 
 ---
 

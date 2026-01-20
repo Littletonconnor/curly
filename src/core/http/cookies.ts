@@ -1,8 +1,14 @@
 import { logger } from '../../lib/utils/logger'
 import { getErrorMessage } from '../../types'
 
-// TODO: this currently only support name, value
-// and not other options like expiration dates, etc.
+/**
+ * Parses cookie file data and returns a formatted cookie header string.
+ * Supports both JSON format (array of {name, value} objects or key-value object)
+ * and Netscape cookie file format.
+ *
+ * @param fileData - Raw contents of the cookie file
+ * @returns Formatted cookie string for the Cookie header (e.g., "name1=value1; name2=value2")
+ */
 export function applyCookieHeader(fileData: string): string {
   let cookie = ''
   try {
@@ -96,6 +102,13 @@ function parseNetscapeCookies(fileData: string) {
   return cookies.join(';')
 }
 
+/**
+ * Parses Set-Cookie headers from a response into a key-value object.
+ * Used for saving cookies to a cookie jar file.
+ *
+ * @param headers - The response Headers object
+ * @returns Object mapping cookie names to their values
+ */
 export function parseSetCookieHeaders(headers: Headers) {
   const setCookieHeaders = headers.getSetCookie()
   const cookieJar: Record<string, string> = {}

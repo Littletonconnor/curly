@@ -18,9 +18,16 @@ import {
   getErrorMessage,
 } from '../../types'
 
-// Re-export FetchOptions for backwards compatibility
 export type { FetchOptions } from '../../types'
 
+/**
+ * Executes an HTTP request using the Fetch API with support for timeouts,
+ * retries, redirects, proxies, and verbose logging.
+ *
+ * @param url - The URL to request
+ * @param options - Configuration options including method, headers, body, timeout, etc.
+ * @returns The raw Response object and request duration in milliseconds
+ */
 export async function curl(
   url: string,
   options: FetchOptions,
@@ -118,8 +125,6 @@ async function executeFetch(
   let redirectCount = 0
 
   while (true) {
-    // Use type assertion to support undici's dispatcher option
-    // Node's fetch accepts dispatcher but TypeScript's RequestInit doesn't include it
     const requestOptions = proxyAgent
       ? { ...fetchOptions, dispatcher: proxyAgent }
       : fetchOptions
@@ -150,6 +155,14 @@ function isRedirectStatus(status: number): boolean {
   return status >= 300 && status < 400
 }
 
+/**
+ * Parses a Response object and extracts the body based on Content-Type.
+ * Automatically handles JSON, text, form data, and binary responses.
+ *
+ * @param response - The raw Response object from fetch
+ * @param duration - Request duration in milliseconds
+ * @returns Parsed response data including body, headers, status, and size
+ */
 export async function buildResponse({
   response,
   duration,
@@ -221,12 +234,8 @@ export function buildUrl(url: string, queryParams: FetchOptions['query']): strin
 }
 
 export function buildFetchOptions(options: FetchOptions): CurlyRequestInit {
-  // When using form data, we need special handling:
-  // 1. Build FormData instead of string body
-  // 2. Don't set Content-Type - fetch auto-generates it with boundary
   if (options.form && options.form.length > 0) {
     const headers = buildHeaders(options)
-    // Remove Content-Type if set - FormData needs to set its own with boundary
     delete headers['Content-Type']
 
     return {
@@ -256,7 +265,6 @@ export function buildFormData(formFields: string[]): FormData {
     const parsed = parseFormField(field)
 
     if (parsed.isFile) {
-      // Read file and create a Blob with appropriate MIME type
       const fileBuffer = readFileSync(parsed.value)
       const mimeType = getContentTypeFromExtension(parsed.value) ?? 'application/octet-stream'
       const blob = new Blob([fileBuffer], { type: mimeType })

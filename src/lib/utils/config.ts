@@ -19,6 +19,10 @@ export interface Config {
 
 const CONFIG_PATH = path.join(os.homedir(), '.config', 'curly', 'config.json')
 
+/**
+ * Loads the curly configuration file from ~/.config/curly/config.json.
+ * Returns null if the file doesn't exist or cannot be parsed.
+ */
 export async function loadConfig(): Promise<Config | null> {
   try {
     const content = await fs.readFile(CONFIG_PATH, 'utf8')
@@ -56,6 +60,14 @@ function normalizeToArray(value: string[] | Record<string, string> | undefined):
   return undefined
 }
 
+/**
+ * Retrieves a profile from the configuration by name.
+ * Falls back to the default profile if no name is specified.
+ *
+ * @param config - The loaded configuration object
+ * @param profileName - Optional profile name; uses config.default if not provided
+ * @returns The profile settings or null if not found
+ */
 export function getProfile(config: Config | null, profileName?: string): Profile | null {
   if (!config || !config.profiles) {
     return null
@@ -82,6 +94,14 @@ export function getProfile(config: Config | null, profileName?: string): Profile
   }
 }
 
+/**
+ * Resolves a URL against an optional base URL.
+ * Returns the original URL if it's already absolute or no base URL is provided.
+ *
+ * @example
+ * resolveUrl('/api/users', 'https://api.example.com') // 'https://api.example.com/api/users'
+ * resolveUrl('https://other.com/path', 'https://api.example.com') // 'https://other.com/path'
+ */
 export function resolveUrl(url: string, baseUrl?: string): string {
   if (!baseUrl) {
     return url

@@ -52,7 +52,7 @@ CURLY_TUI=1 curly https://api.example.com -n 1000 -c 50
 
 **Precedence:** CLI flag > Environment variable > Profile setting
 
-This allows `--no-tui` to override a profile default when needed (e.g., CI pipelines).
+Non-TTY environments (CI, piped output) automatically disable TUI regardless of settings.
 
 ---
 
@@ -117,7 +117,7 @@ This allows `--no-tui` to override a profile default when needed (e.g., CI pipel
 
 | Key | Action | Description |
 |-----|--------|-------------|
-| `Space` | Pause/Resume | Halt request dispatch temporarily |
+| `Space` | Pause/Resume | Cancel in-flight requests and halt dispatch |
 | `q` / `Ctrl+C` | Quit | Stop test and show final summary |
 | `+` / `-` | Adjust RPS | Increase/decrease concurrency by 10% |
 | `r` | Reset Stats | Clear accumulated metrics |
@@ -160,7 +160,6 @@ This allows `--no-tui` to override a profile default when needed (e.g., CI pipel
 
 ```bash
 --tui, -T         # Enable TUI mode
---no-tui          # Disable TUI (override profile/env)
 --tui-compact     # Force compact layout
 ```
 

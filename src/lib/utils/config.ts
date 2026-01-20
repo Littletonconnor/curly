@@ -35,6 +35,27 @@ export async function loadConfig(): Promise<Config | null> {
   }
 }
 
+/**
+ * Normalizes a value that could be either an array of strings or an object
+ * into an array of "key: value" strings.
+ *
+ * @example
+ * normalizeToArray(['a', 'b']) // ['a', 'b']
+ * normalizeToArray({ 'Content-Type': 'application/json' }) // ['Content-Type: application/json']
+ */
+function normalizeToArray(value: string[] | Record<string, string> | undefined): string[] | undefined {
+  if (!value) {
+    return undefined
+  }
+  if (Array.isArray(value)) {
+    return value
+  }
+  if (typeof value === 'object') {
+    return Object.entries(value).map(([key, val]) => `${key}: ${val}`)
+  }
+  return undefined
+}
+
 export function getProfile(config: Config | null, profileName?: string): Profile | null {
   if (!config || !config.profiles) {
     return null
@@ -54,7 +75,11 @@ export function getProfile(config: Config | null, profileName?: string): Profile
   }
 
   logger().debug(`Using profile: ${name}`)
-  return profile
+
+  return {
+    ...profile,
+    headers: normalizeToArray(profile.headers as string[] | Record<string, string> | undefined),
+  }
 }
 
 export function resolveUrl(url: string, baseUrl?: string): string {

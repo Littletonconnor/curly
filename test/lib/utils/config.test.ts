@@ -44,6 +44,48 @@ describe('config', () => {
       }
       expect(getProfile(config, 'staging')).toBeNull()
     })
+
+    it('normalizes object-style headers to array format', () => {
+      const config = {
+        profiles: {
+          dev: {
+            baseUrl: 'http://localhost:3000',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer token' },
+          },
+        },
+      }
+      const profile = getProfile(config as any, 'dev')
+      expect(profile?.headers).toEqual([
+        'Content-Type: application/json',
+        'Authorization: Bearer token',
+      ])
+    })
+
+    it('preserves array-style headers as-is', () => {
+      const config = {
+        profiles: {
+          dev: {
+            baseUrl: 'http://localhost:3000',
+            headers: ['Content-Type: application/json', 'Authorization: Bearer token'],
+          },
+        },
+      }
+      const profile = getProfile(config, 'dev')
+      expect(profile?.headers).toEqual([
+        'Content-Type: application/json',
+        'Authorization: Bearer token',
+      ])
+    })
+
+    it('handles profile with undefined headers', () => {
+      const config = {
+        profiles: {
+          dev: { baseUrl: 'http://localhost:3000' },
+        },
+      }
+      const profile = getProfile(config, 'dev')
+      expect(profile?.headers).toBeUndefined()
+    })
   })
 
   describe('resolveUrl', () => {

@@ -33,7 +33,7 @@ curly https://httpbin.org/ip -w '\nStatus: %{http_code}'
 
 ---
 
-### Profiles feature crashes with TypeError
+~~### Profiles feature crashes with TypeError~~ ✓
 
 **Command:**
 ```sh

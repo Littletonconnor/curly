@@ -20,7 +20,7 @@
 
 ---
 
-### Write-out `\n` escape sequences not interpreted
+~~### Write-out `\n` escape sequences not interpreted~~ ✓
 
 **Command:**
 ```sh

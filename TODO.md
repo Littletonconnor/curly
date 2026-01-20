@@ -16,16 +16,7 @@
 
 ---
 
-### `-o` with `-i` doesn't save file to disk
-
-**Command:**
-```sh
-curly https://httpbin.org/get -i -o output.txt
-```
-
-**Expected:** Response with headers should be saved to `output.txt`.
-
-**Actual:** File is not created. The output is shown in terminal but not written to the file.
+~~### `-o` with `-i` doesn't save file to disk~~ ✓
 
 ---
 

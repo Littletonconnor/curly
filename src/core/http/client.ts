@@ -76,7 +76,13 @@ export async function curl(
     }, retryOptions)
   } catch (error: unknown) {
     if (isError(error) && error.name === 'AbortError') {
-      logger().error(`Request timed out after ${timeoutMs}ms`)
+      // Check if this was an external abort (e.g., TUI pause/quit) vs a timeout
+      const wasExternalAbort = externalSignal?.aborted
+      if (!wasExternalAbort && timeoutMs) {
+        logger().error(`Request timed out after ${timeoutMs}ms`)
+      }
+      // Don't log anything for external aborts - they're intentional
+      throw error
     }
     logger().error(`Fetch response failed: ${getErrorMessage(error)}`)
     throw error

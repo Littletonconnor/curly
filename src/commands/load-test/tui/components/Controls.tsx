@@ -7,6 +7,17 @@ interface ControlsProps {
 }
 
 export function Controls({ status, compact = false }: ControlsProps) {
+  if (status === 'completed') {
+    return (
+      <Box>
+        <Text color="gray">[r] </Text>
+        <Text>Repeat</Text>
+        <Text color="gray">  [q] </Text>
+        <Text>Quit</Text>
+      </Box>
+    )
+  }
+
   if (compact) {
     return (
       <Box>

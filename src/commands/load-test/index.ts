@@ -37,8 +37,8 @@ interface LoadReporter {
   onResult(result: RequestResult): void
   /** Called after each batch completes */
   onBatchComplete(results: RequestResult[]): void
-  /** Called when all requests complete */
-  onComplete(): void
+  /** Called when all requests complete. Returns 'repeat' to run again, 'quit' to exit */
+  onComplete(stats: StatsCollector, duration: number): Promise<'quit' | 'repeat'>
   /** Cleanup resources */
   cleanup(): void
 }
@@ -58,7 +58,11 @@ function createProgressReporter(totalRequests: number, concurrency: number): Loa
       const errors = results.length - successes
       progress.update(successes, errors)
     },
-    onComplete: () => progress.finish(),
+    onComplete: async (stats, duration) => {
+      progress.finish()
+      stats.print(duration)
+      return 'quit'
+    },
     cleanup: () => progress.finish(),
   }
 }
@@ -107,11 +111,27 @@ function createTuiReporter(
     onBatchComplete: () => {},
     onComplete: async () => {
       const state = controller.getState()
-      if (state.status !== 'stopped') {
-        controller.complete()
+      if (state.status === 'stopped') {
+        return 'quit'
       }
-      // Brief pause to show final state
-      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      controller.complete()
+
+      // Wait for user to press 'q' (quit) or 'r' (repeat)
+      return new Promise<'quit' | 'repeat'>((resolve) => {
+        const onStop = () => {
+          controller.off('stop', onStop)
+          controller.off('repeat', onRepeat)
+          resolve('quit')
+        }
+        const onRepeat = () => {
+          controller.off('stop', onStop)
+          controller.off('repeat', onRepeat)
+          resolve('repeat')
+        }
+        controller.on('stop', onStop)
+        controller.on('repeat', onRepeat)
+      })
     },
     cleanup: () => controller.unmount(),
   }
@@ -129,50 +149,54 @@ export async function load(url: string, options: LoadOptions): Promise<void> {
     ? createTuiReporter(url, totalRequests, concurrency, options)
     : createProgressReporter(totalRequests, concurrency)
 
-  const stats = new StatsCollector()
-  const startTime = performance.now()
-  let completed = 0
+  let shouldRepeat = true
 
   try {
-    while (completed < totalRequests && (await reporter.shouldContinue())) {
-      const currentConcurrency = reporter.getConcurrency()
-      const batchSize = Math.min(currentConcurrency, totalRequests - completed)
-      const abortSignal = reporter.getAbortSignal?.()
+    while (shouldRepeat) {
+      const stats = new StatsCollector()
+      const startTime = performance.now()
+      let completed = 0
 
-      const batch = Array(batchSize)
-        .fill(null)
-        .map(() =>
-          curl(url, options, abortSignal)
-            .then(buildResponse)
-            .then((result) => {
-              reporter.onResult(result)
-              return result
-            })
-            .catch((error: unknown) => {
-              // Don't count aborted requests
-              if (error instanceof Error && error.name === 'AbortError') {
-                return null
-              }
-              const result = createErrorResult(error)
-              reporter.onResult(result)
-              return result
-            }),
-        )
+      while (completed < totalRequests && (await reporter.shouldContinue())) {
+        const currentConcurrency = reporter.getConcurrency()
+        const batchSize = Math.min(currentConcurrency, totalRequests - completed)
+        const abortSignal = reporter.getAbortSignal?.()
 
-      const batchResults = await Promise.all(batch)
-      const validResults = batchResults.filter((r): r is RequestResult => r !== null)
+        const batch = Array(batchSize)
+          .fill(null)
+          .map(() =>
+            curl(url, options, abortSignal)
+              .then(buildResponse)
+              .then((result) => {
+                reporter.onResult(result)
+                return result
+              })
+              .catch((error: unknown) => {
+                // Don't count aborted requests (from pause/quit)
+                if (error instanceof Error && error.name === 'AbortError') {
+                  return null
+                }
+                const result = createErrorResult(error)
+                reporter.onResult(result)
+                return result
+              }),
+          )
 
-      stats.addResults(validResults)
-      reporter.onBatchComplete(validResults)
-      completed += validResults.length
+        const batchResults = await Promise.all(batch)
+        const validResults = batchResults.filter((r): r is RequestResult => r !== null)
+
+        stats.addResults(validResults)
+        reporter.onBatchComplete(validResults)
+        completed += validResults.length
+      }
+
+      const totalDuration = (performance.now() - startTime) / 1000
+      logger().verbose('load-test', `Completed in ${totalDuration.toFixed(2)}s`)
+
+      const action = await reporter.onComplete(stats, totalDuration)
+      shouldRepeat = action === 'repeat'
     }
-
-    await reporter.onComplete()
   } finally {
     reporter.cleanup()
   }
-
-  const totalDuration = (performance.now() - startTime) / 1000
-  logger().verbose('load-test', `Completed in ${totalDuration.toFixed(2)}s`)
-  stats.print(totalDuration)
 }

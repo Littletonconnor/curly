@@ -11,6 +11,7 @@ interface DashboardProps {
   onQuit: () => void
   onAdjustConcurrency: (delta: number) => void
   onResetStats: () => void
+  onRepeat: () => void
 }
 
 function getStatusIndicator(status: TuiState['status']): { symbol: string; color: string; text: string } {
@@ -33,6 +34,7 @@ export function Dashboard({
   onQuit,
   onAdjustConcurrency,
   onResetStats,
+  onRepeat,
 }: DashboardProps) {
   const statusInfo = getStatusIndicator(state.status)
   const elapsedMs = performance.now() - state.startTime
@@ -50,11 +52,19 @@ export function Dashboard({
         onPause()
       }
     } else if (input === '+' || input === '=') {
-      onAdjustConcurrency(Math.ceil(state.concurrency * 0.1))
+      if (state.status === 'running') {
+        onAdjustConcurrency(Math.ceil(state.concurrency * 0.1))
+      }
     } else if (input === '-' || input === '_') {
-      onAdjustConcurrency(-Math.ceil(state.concurrency * 0.1))
+      if (state.status === 'running') {
+        onAdjustConcurrency(-Math.ceil(state.concurrency * 0.1))
+      }
     } else if (input === 'r') {
-      onResetStats()
+      if (state.status === 'completed') {
+        onRepeat()
+      } else if (state.status === 'running') {
+        onResetStats()
+      }
     }
   })
 
@@ -138,7 +148,7 @@ export function Dashboard({
           <Chart title="Request Rate (req/s)" data={state.rpsHistory} height={5} />
         </Box>
         <Box flexDirection="column" flexGrow={1}>
-          <Chart title="Latency (ms)" data={state.latencyHistory} height={5} />
+          <Chart title="Max Latency (ms)" data={state.latencyHistory} height={5} />
         </Box>
       </Box>
 

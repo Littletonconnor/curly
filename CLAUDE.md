@@ -2,16 +2,6 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Learning Mode
-
-**Important:** Always use the `learning` output style when working on this project. This mode:
-- Identifies opportunities for the user to write meaningful code (5-10 lines) that shapes the solution
-- Provides educational insights about implementation choices using `★ Insight` blocks
-- Focuses on business logic, design choices, and implementation strategies where user input matters
-- Explains trade-offs and guidance rather than just implementing everything directly
-
-Sessions should be collaborative and educational, helping the user learn while building features.
-
 ## Project Overview
 
 Curly is a Node.js CLI tool that simplifies making HTTP requests, acting as a wrapper around the fetch API with curl-like syntax. The project is written in TypeScript and uses ES modules.
@@ -104,3 +94,30 @@ The application follows a modular architecture with clear separation of concerns
 **After completing any feature or task**, always update `TODO.md`:
 - Mark the completed item with strikethrough (`~~item~~`) and a checkmark (`✓`)
 - This keeps the roadmap accurate and helps track progress
+
+## Example Maintenance
+
+**When adding new flags or features**, always update the examples:
+
+1. **Update existing example scripts** if the feature fits an existing category:
+   - `01-basic-requests.sh` - HTTP methods
+   - `02-headers-and-auth.sh` - Headers and authentication
+   - `03-data-and-forms.sh` - Request body and form data
+   - `04-query-params.sh` - Query string parameters
+   - `05-cookies.sh` - Cookie handling
+   - `06-output-control.sh` - Output formatting (`-i`, `-o`, `-w`, `--quiet`)
+   - `07-error-handling.sh` - Timeouts, retries, fail mode
+   - `08-redirects.sh` - Redirect following
+   - `09-load-testing.sh` - Load testing (`-n`, `-c`)
+   - `10-profiles-aliases.sh` - Profiles and aliases
+   - `11-proxy.sh` - Proxy support
+   - `12-env-interpolation.sh` - Environment variable interpolation
+   - `13-completions.sh` - Shell completions
+
+2. **Create a new example script** if the feature is substantial and doesn't fit existing categories
+
+3. **Update `run-all-examples.sh`** to include tests for the new feature
+
+4. **Update `examples/README.md`** if adding a new example file
+
+This ensures all features are documented with working examples and can be validated through the test suite.

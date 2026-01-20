@@ -52,6 +52,9 @@ These examples use public APIs that are freely available for testing:
 | `08-redirects.sh` | Following redirects |
 | `09-load-testing.sh` | Load testing with concurrency |
 | `10-profiles-aliases.sh` | Profiles and request aliases |
+| `11-proxy.sh` | HTTP proxy support |
+| `12-env-interpolation.sh` | Environment variable interpolation |
+| `13-completions.sh` | Shell completions (bash/zsh) |
 
 ## Sample Data
 
@@ -62,9 +65,30 @@ The `sample-data/` directory contains files used by the examples:
 - `data.json` - Sample JSON payload
 - `upload.txt` - Sample file for upload testing
 
+## Validation Script
+
+Run the comprehensive validation script to test all curly features:
+
+```bash
+# Run full test suite
+./examples/run-all-examples.sh
+
+# Quick mode (essential tests only)
+./examples/run-all-examples.sh --quick
+
+# Verbose mode (show full output)
+./examples/run-all-examples.sh --verbose
+```
+
+This script is useful for:
+- Regression testing after making changes
+- Verifying installation is working correctly
+- CI/CD pipeline integration
+
 ## Tips
 
 - Use `--verbose` or `-v` with any command to see detailed request/response info
 - Use `--quiet` to suppress status output (useful for piping)
 - Use `-i` to include response headers in output
 - Use `-w '%{http_code}'` to extract just the status code
+- Use `{{ENV_VAR}}` syntax for environment variable interpolation

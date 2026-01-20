@@ -2,29 +2,237 @@
 
 ## Features
 
-### Interactive TUI for load testing
+### Interactive TUI for Load Testing
 
-Explore adding a real-time terminal UI dashboard for load testing that displays live metrics, charts, and statistics during test execution.
+A real-time terminal UI dashboard for load testing that displays live metrics, charts, and statistics during test execution.
+
+---
+
+#### Overview
+
+The TUI provides a visual dashboard during load tests, showing progress, latency charts, status code distribution, and percentiles in real-time. It's opt-in and gracefully degrades in non-TTY environments.
 
 **Inspiration:**
 
-- [ali](https://github.com/nakabonne/ali) - HTTP load testing with embedded terminal UI, real-time latency charts, percentiles, and zoomable graphs
-- [vegeta + jplot](https://github.com/tsenart/vegeta) - Vegeta integrates with jplot/jaggr for real-time terminal charts
-- [blessed-contrib](https://github.com/yaronn/blessed-contrib) - Node.js terminal dashboards with charts, maps, and gauges
+- [ali](https://github.com/nakabonne/ali) - HTTP load testing with embedded terminal UI
+- [vegeta + jplot](https://github.com/tsenart/vegeta) - Real-time terminal charts
+- [blessed-contrib](https://github.com/yaronn/blessed-contrib) - Node.js terminal dashboards
 
-**Potential features:**
+---
 
-- Live request rate and latency charts
-- Response code distribution histogram
-- P50/P95/P99 percentile tracking
-- Error rate visualization
-- Interactive controls (pause/resume, adjust rate)
+#### Activation Methods
 
-**Libraries to evaluate:**
+**1. CLI Flag**
 
-- [blessed](https://github.com/chjj/blessed) / [blessed-contrib](https://github.com/yaronn/blessed-contrib) - Terminal UI for Node.js
-- [ink](https://github.com/vadimdemedes/ink) - React for CLI apps
-- [terminal-kit](https://github.com/cronvel/terminal-kit) - Terminal utilities with drawing capabilities
+```bash
+curly https://api.example.com -n 1000 -c 50 --tui
+curly https://api.example.com -n 1000 -c 50 -T   # short form
+```
+
+**2. Profile Setting**
+
+```json
+{
+  "profiles": {
+    "load-test": {
+      "baseUrl": "https://api.example.com",
+      "requests": 1000,
+      "concurrency": 50,
+      "tui": true
+    }
+  }
+}
+```
+
+**3. Environment Variable**
+
+```bash
+CURLY_TUI=1 curly https://api.example.com -n 1000 -c 50
+```
+
+**Precedence:** CLI flag > Environment variable > Profile setting
+
+This allows `--no-tui` to override a profile default when needed (e.g., CI pipelines).
+
+---
+
+#### TUI Layout
+
+**Full Layout (≥80 columns)**
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│  Curly Load Test: https://api.example.com/users                             │
+│  Requests: 1000 | Concurrency: 50 | Profile: production                     │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  Progress: ████████████████████░░░░░░░░░░░░░░░░░  523/1000 (52.3%)         │
+│  Elapsed: 12.4s | ETA: 11.2s | RPS: 42.1                                    │
+│                                                                             │
+├───────────────────────────────────┬─────────────────────────────────────────┤
+│  Request Rate (req/s)             │  Latency (ms)                           │
+│       ╭──────────────╮            │       ╭──────────────╮                  │
+│   50 ─┤    ╭─╮  ╭───╮│            │  200 ─┤         ╭────│                  │
+│   40 ─┤   ╭╯ ╰──╯   ││            │  150 ─┤    ╭────╯    │                  │
+│   30 ─┤  ╭╯         ││            │  100 ─┤╭───╯         │                  │
+│   20 ─┤ ╭╯          ╰│            │   50 ─┤╯             │                  │
+│       ╰──────────────╯            │       ╰──────────────╯                  │
+├───────────────────────────────────┴─────────────────────────────────────────┤
+│  Latency Distribution                                                        │
+│  0-50ms   ████████████████████████████████  312 (59.7%)                     │
+│  50-100ms ████████████████                  156 (29.8%)                      │
+│  100-150ms ████                              42 (8.0%)                       │
+│  150-200ms █                                  9 (1.7%)                       │
+│  200ms+   ░                                   4 (0.8%)                       │
+├───────────────────────────────────┬─────────────────────────────────────────┤
+│  Status Codes                     │  Percentiles                            │
+│  2xx ████████████████████ 489     │  p50:   45ms                            │
+│  3xx ██                    23     │  p75:   78ms                            │
+│  4xx █                      8     │  p90:  112ms                            │
+│  5xx ░                      3     │  p99:  198ms                            │
+├───────────────────────────────────┴─────────────────────────────────────────┤
+│  [Space] Pause  [+/-] Adjust RPS  [r] Reset Stats  [q] Quit                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+**Compact Layout (<80 columns)**
+
+```
+┌─────────────────────────────────────────────┐
+│ Curly: https://api.example.com/users        │
+├─────────────────────────────────────────────┤
+│ ████████████░░░░░░░░  523/1000 (52.3%)      │
+│ RPS: 42.1 | Avg: 67ms | Errors: 3           │
+├─────────────────────────────────────────────┤
+│ 2xx: 489  3xx: 23  4xx: 8  5xx: 3           │
+│ p50: 45ms  p95: 145ms  p99: 198ms           │
+├─────────────────────────────────────────────┤
+│ [Space] Pause  [q] Quit                     │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+#### Keyboard Controls
+
+| Key | Action | Description |
+|-----|--------|-------------|
+| `Space` | Pause/Resume | Halt request dispatch temporarily |
+| `q` / `Ctrl+C` | Quit | Stop test and show final summary |
+| `+` / `-` | Adjust RPS | Increase/decrease concurrency by 10% |
+| `r` | Reset Stats | Clear accumulated metrics |
+| `?` | Help | Show keyboard shortcuts |
+
+---
+
+#### Metrics Displayed
+
+**Real-time (updated every 100ms)**
+- Requests completed / total
+- Current RPS (rolling 1s average)
+- Average latency
+- Error count
+- Active connections
+
+**Aggregated**
+- Total duration
+- Fastest / Slowest / Average response time
+- Percentiles: p50, p75, p90, p95, p99
+- Status code distribution (2xx, 3xx, 4xx, 5xx)
+- Latency histogram (10 buckets)
+
+---
+
+#### Graceful Degradation
+
+**Non-TTY environments** (piped output, CI):
+- Falls back to simple text progress bar
+- Periodic stat updates every 5 seconds
+- No interactive controls
+
+**Terminal resize**:
+- Auto-switches between full and compact layouts
+- Minimum: 45 columns for compact, 80 for full
+
+---
+
+#### CLI Flags
+
+```bash
+--tui, -T         # Enable TUI mode
+--no-tui          # Disable TUI (override profile/env)
+--tui-compact     # Force compact layout
+```
+
+---
+
+#### Library Recommendation
+
+**Primary: [Ink](https://github.com/vadimdemedes/ink)**
+- React-based component model
+- Active maintenance, good TypeScript support
+- Flexbox layout for responsive design
+
+**Charts: [asciichart](https://github.com/kroitor/asciichart)**
+- Lightweight, no dependencies
+- Simple API for time-series rendering
+
+---
+
+#### Module Structure
+
+```
+src/commands/load-test/
+├── index.ts           # Entry point (existing)
+├── stats.ts           # Stats collection (existing)
+└── tui/
+    ├── index.ts       # TUI orchestrator
+    ├── layout.ts      # Layout management
+    └── components/
+        ├── progress.ts
+        ├── chart.ts
+        ├── histogram.ts
+        ├── stats.ts
+        └── controls.ts
+```
+
+---
+
+#### Implementation Phases
+
+**Phase 1: Foundation**
+- [ ] Add `--tui` / `-T` flag to CLI parser
+- [ ] Add `tui: boolean` to profile schema
+- [ ] Create basic TUI module structure
+- [ ] Implement progress bar and stats display
+
+**Phase 2: Core Features**
+- [ ] Add time-series charts (RPS, latency)
+- [ ] Add latency histogram
+- [ ] Add status code distribution
+- [ ] Implement keyboard controls (pause/quit)
+
+**Phase 3: Polish**
+- [ ] Add interactive rate adjustment (+/-)
+- [ ] Implement compact layout
+- [ ] Add terminal resize handling
+- [ ] Add graceful degradation for non-TTY
+
+**Phase 4: Future Enhancements** (optional)
+- [ ] Add `tuiConfig` for customization (refresh rate, chart height, etc.)
+- [ ] Color themes
+- [ ] Export results to JSON/HTML report
+- [ ] Comparison mode vs. previous run
+
+---
+
+#### Open Questions
+
+1. **Chart history**: How many seconds of time-series data to display? (Suggest: 60s rolling window)
+
+2. **Memory**: Should we cap data points to prevent growth during long tests?
+
+3. **Sound**: Support audio alerts for completion/errors?
 
 ---
 

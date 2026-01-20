@@ -7,7 +7,6 @@ export async function executeRequest(url: string, options: FetchOptions) {
   const { response, duration } = await curl(url, options)
   const method = buildMethod(options)
 
-  // HEAD requests have no body - skip body parsing
   const data: ResponseData =
     method === 'HEAD'
       ? { response: null, duration, headers: response.headers, status: response.status, size: '0 B' }

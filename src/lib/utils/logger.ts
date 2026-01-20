@@ -39,10 +39,17 @@ const VERBOSE_LABEL_COLORS: Record<VerboseLabel, StyleColor> = {
 
 let verboseEnabled = false
 
+/**
+ * Enables or disables verbose logging mode.
+ * When enabled, detailed request/response information is printed to the console.
+ */
 export function setVerbose(enabled: boolean): void {
   verboseEnabled = enabled
 }
 
+/**
+ * Returns whether verbose logging is currently enabled.
+ */
 export function isVerbose(): boolean {
   return verboseEnabled
 }
@@ -55,6 +62,15 @@ function formatLogMessage(level: LogLevel, args: string[]): string {
   return `${time} ${message}`
 }
 
+/**
+ * Returns a logger instance with methods for different log levels.
+ *
+ * - `verbose(label, message)` - Logs detailed info when verbose mode is enabled
+ * - `debug(...args)` - Logs debug info when DEBUG=true environment variable is set
+ * - `info(...args)` - Logs informational messages
+ * - `warn(...args)` - Logs warning messages
+ * - `error(...args)` - Logs error messages and exits the process with code 1
+ */
 export function logger() {
   return {
     verbose(label: VerboseLabel, message: string): void {

@@ -27,6 +27,15 @@ function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
+/**
+ * Wraps an async operation with retry logic using exponential backoff.
+ * Retries on network errors (ECONNRESET, ECONNREFUSED, ETIMEDOUT) and AbortError.
+ *
+ * @param operation - The async function to execute
+ * @param options - Retry configuration (maxRetries, baseDelay, optional shouldRetry predicate)
+ * @returns The result of the operation
+ * @throws The last error if all retries are exhausted
+ */
 export async function withRetry<T>(
   operation: () => Promise<T>,
   options: RetryOptions,

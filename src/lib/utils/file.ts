@@ -44,6 +44,9 @@ export function parseFormField(field: string): FormField {
   }
 }
 
+/**
+ * Checks if a value is a valid JSON string.
+ */
 export function isValidJson(str: unknown): boolean {
   if (typeof str !== 'string') return false
 
@@ -55,11 +58,18 @@ export function isValidJson(str: unknown): boolean {
   }
 }
 
+/**
+ * Reads file contents to be used as a request body.
+ */
 export function readBodyFromFile(filePath: string): string {
   logger().verbose('request', `Reading request body from file: ${filePath}`)
   return readFileSync(filePath, 'utf8')
 }
 
+/**
+ * Returns the MIME type for a file based on its extension.
+ * Returns undefined for unknown extensions.
+ */
 export function getContentTypeFromExtension(filePath: string): string | undefined {
   const ext = filePath.split('.').pop()?.toLowerCase()
   const contentTypes: Record<string, string> = {

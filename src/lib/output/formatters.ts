@@ -7,6 +7,9 @@ import { logger } from '../utils/logger'
 import { writeOutputToFile } from '../utils/fs'
 import { type ResponseData, type StatusColor } from '../../types'
 
+/**
+ * Extracts Set-Cookie headers from the response and saves them to a cookie jar file.
+ */
 export async function writeToCookieJar(
   data: ResponseData,
   options: FetchOptions,
@@ -24,12 +27,16 @@ export async function writeToCookieJar(
   }
 }
 
+/**
+ * Main output handler that formats and displays the HTTP response.
+ * Handles cookie jar saving, file output, headers display, and status line.
+ */
 export async function stdout(data: ResponseData, options: FetchOptions): Promise<void> {
   if (options['cookie-jar']) {
     await writeToCookieJar(data, options)
   }
 
-  const includeHeaders = options.include || options.head
+  const includeHeaders = !!(options.include || options.head)
   const includeBody = !options.head
 
   if (options.output) {
@@ -93,10 +100,16 @@ function getStatusColor(status: number): StatusColor {
   return 'white'
 }
 
+/**
+ * Prints the response body to stdout with syntax highlighting.
+ */
 export function printResponse(response: ResponseData['response']): void {
   console.log(inspect(response, { depth: null, maxArrayLength: null, colors: true }))
 }
 
+/**
+ * Prints the colored status line showing HTTP status, duration, and response size.
+ */
 export function printStatusLine(data: ResponseData, options: FetchOptions): void {
   if (options.quiet) return
 
@@ -112,6 +125,9 @@ export function printStatusLine(data: ResponseData, options: FetchOptions): void
   console.log(`${statusColored}  ${details}`)
 }
 
+/**
+ * Prints response headers to stdout in "key: value" format.
+ */
 export function printHeaders(headers: Headers): void {
   const headersObj = Object.fromEntries(headers.entries())
   Object.entries(headersObj).forEach(([k, v]) => console.log(`${k}: ${v}`))

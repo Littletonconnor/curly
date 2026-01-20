@@ -127,7 +127,6 @@ export function handleCompletions(arg: string | undefined): void {
     process.exit(0)
   }
 
-  // Handle "install" with optional shell argument
   if (arg === 'install') {
     const shell = detectShell()
     if (!shell) {
@@ -139,7 +138,6 @@ export function handleCompletions(arg: string | undefined): void {
     process.exit(result.success ? 0 : 1)
   }
 
-  // Handle shell-specific commands
   switch (arg) {
     case 'bash':
       console.log(getBashScript())
@@ -148,7 +146,6 @@ export function handleCompletions(arg: string | undefined): void {
       console.log(getZshScript())
       break
     default:
-      // Check if it's "install bash" or "install zsh" passed as single string
       if (arg.startsWith('install ')) {
         const shell = arg.split(' ')[1] as Shell
         if (shell !== 'bash' && shell !== 'zsh') {

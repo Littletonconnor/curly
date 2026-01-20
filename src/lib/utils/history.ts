@@ -6,8 +6,10 @@ import { isNodeError, getErrorMessage } from '../../types'
 
 const HISTORY_PATH = `${CONFIG_DIR}/history`
 
-// TODO: build some removal system in here.
-// Example: We get to 1000 lines of history so we start to remove old entries.
+/**
+ * Appends the current command to the history file.
+ * Creates the config directory if it doesn't exist.
+ */
 export async function writeHistoryFile(): Promise<void> {
   await ensureConfigDir()
   const args = process.argv.slice(2)
@@ -20,6 +22,9 @@ export async function writeHistoryFile(): Promise<void> {
   }
 }
 
+/**
+ * Reads and prints the command history file to stdout.
+ */
 export async function printHistoryFile(): Promise<void> {
   try {
     console.log(styleText('yellowBright', '\n---- [CURLY] HISTORY ----'))

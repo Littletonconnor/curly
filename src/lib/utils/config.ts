@@ -10,6 +10,7 @@ export interface Profile {
   headers?: string[]
   retry?: number
   retryDelay?: number
+  tui?: boolean
 }
 
 export interface Config {

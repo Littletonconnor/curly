@@ -57,6 +57,8 @@ export function cli() {
       form: { type: 'string', short: 'F', multiple: true },
       proxy: { type: 'string', short: 'x' },
       'write-out': { type: 'string', short: 'w' },
+      tui: { type: 'boolean', short: 'T', default: false },
+      'tui-compact': { type: 'boolean', default: false },
     },
     allowPositionals: true,
   })

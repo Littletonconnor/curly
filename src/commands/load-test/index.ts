@@ -4,6 +4,7 @@ import { parseIntOption } from '../../lib/utils/parse'
 import { getErrorMessage } from '../../types'
 import { ProgressIndicator } from './progress'
 import { StatsCollector, type RequestResult } from './stats'
+import { TuiController, shouldEnableTui, isTTY, isCompactMode } from './tui'
 
 const DEFAULT_REQUESTS = 200
 const DEFAULT_CONCURRENCY = 50
@@ -17,40 +18,161 @@ function createErrorResult(error: unknown): RequestResult {
   }
 }
 
-export async function load(url: string, options: FetchOptions): Promise<void> {
-  const requests = parseIntOption(options.requests, DEFAULT_REQUESTS)
-  const concurrency = parseIntOption(options.concurrency, DEFAULT_CONCURRENCY)
+export interface LoadOptions extends FetchOptions {
+  profileTui?: boolean
+  profileName?: string
+}
 
-  logger().verbose('load-test', `Starting: ${requests} requests with concurrency ${concurrency}`)
+/**
+ * Reporter interface for abstracting progress reporting
+ */
+interface LoadReporter {
+  /** Called before each batch to check if we should continue */
+  shouldContinue(): boolean | Promise<boolean>
+  /** Get current concurrency (may change dynamically in TUI) */
+  getConcurrency(): number
+  /** Get abort signal for request cancellation (optional) */
+  getAbortSignal?(): AbortSignal
+  /** Called for each completed request */
+  onResult(result: RequestResult): void
+  /** Called after each batch completes */
+  onBatchComplete(results: RequestResult[]): void
+  /** Called when all requests complete */
+  onComplete(): void
+  /** Cleanup resources */
+  cleanup(): void
+}
+
+/**
+ * Simple progress bar reporter
+ */
+function createProgressReporter(totalRequests: number, concurrency: number): LoadReporter {
+  const progress = new ProgressIndicator(totalRequests)
+
+  return {
+    shouldContinue: () => true,
+    getConcurrency: () => concurrency,
+    onResult: () => {},
+    onBatchComplete: (results) => {
+      const successes = results.filter(({ status }) => status >= 200 && status < 400).length
+      const errors = results.length - successes
+      progress.update(successes, errors)
+    },
+    onComplete: () => progress.finish(),
+    cleanup: () => progress.finish(),
+  }
+}
+
+/**
+ * TUI dashboard reporter
+ */
+function createTuiReporter(
+  url: string,
+  totalRequests: number,
+  initialConcurrency: number,
+  options: LoadOptions,
+): LoadReporter {
+  let concurrency = initialConcurrency
+
+  const controller = new TuiController({
+    url,
+    totalRequests,
+    concurrency,
+    compact: isCompactMode(options['tui-compact']),
+    profileName: options.profileName,
+  })
+
+  controller.on('concurrency', (newConcurrency: number) => {
+    concurrency = newConcurrency
+  })
+
+  controller.start()
+
+  return {
+    shouldContinue: async () => {
+      if (!controller.shouldContinue()) return false
+      const shouldProceed = await controller.waitForResume()
+      if (!shouldProceed) return false
+      return controller.getState().status !== 'stopped'
+    },
+    getConcurrency: () => concurrency,
+    getAbortSignal: () => controller.getAbortSignal(),
+    onResult: (result) => {
+      controller.recordResult({
+        duration: result.duration,
+        status: result.status,
+        error: result.error,
+      })
+    },
+    onBatchComplete: () => {},
+    onComplete: async () => {
+      const state = controller.getState()
+      if (state.status !== 'stopped') {
+        controller.complete()
+      }
+      // Brief pause to show final state
+      await new Promise((resolve) => setTimeout(resolve, 500))
+    },
+    cleanup: () => controller.unmount(),
+  }
+}
+
+export async function load(url: string, options: LoadOptions): Promise<void> {
+  const totalRequests = parseIntOption(options.requests, DEFAULT_REQUESTS)
+  const concurrency = parseIntOption(options.concurrency, DEFAULT_CONCURRENCY)
+  const useTui = shouldEnableTui(options, options.profileTui) && isTTY()
+
+  logger().verbose('load-test', `Starting: ${totalRequests} requests with concurrency ${concurrency}`)
   logger().verbose('load-test', `Target: ${url}`)
 
+  const reporter = useTui
+    ? createTuiReporter(url, totalRequests, concurrency, options)
+    : createProgressReporter(totalRequests, concurrency)
+
   const stats = new StatsCollector()
-  const progress = new ProgressIndicator(requests)
-
   const startTime = performance.now()
+  let completed = 0
 
-  for (let i = 0; i < requests; i += concurrency) {
-    const batchSize = Math.min(concurrency, requests - i)
-    const batch = Array(batchSize)
-      .fill(null)
-      .map(() =>
-        curl(url, options)
-          .then(buildResponse)
-          .catch((error: unknown) => createErrorResult(error)),
-      )
+  try {
+    while (completed < totalRequests && (await reporter.shouldContinue())) {
+      const currentConcurrency = reporter.getConcurrency()
+      const batchSize = Math.min(currentConcurrency, totalRequests - completed)
+      const abortSignal = reporter.getAbortSignal?.()
 
-    const batchResults = await Promise.all(batch)
-    const successes = batchResults.filter(({ status }) => status >= 200 && status < 400).length
-    const errors = batchResults.length - successes
-    progress.update(successes, errors)
-    stats.addResults(batchResults)
+      const batch = Array(batchSize)
+        .fill(null)
+        .map(() =>
+          curl(url, options, abortSignal)
+            .then(buildResponse)
+            .then((result) => {
+              reporter.onResult(result)
+              return result
+            })
+            .catch((error: unknown) => {
+              // Don't count aborted requests
+              if (error instanceof Error && error.name === 'AbortError') {
+                return null
+              }
+              const result = createErrorResult(error)
+              reporter.onResult(result)
+              return result
+            }),
+        )
+
+      const batchResults = await Promise.all(batch)
+      const validResults = batchResults.filter((r): r is RequestResult => r !== null)
+
+      stats.addResults(validResults)
+      reporter.onBatchComplete(validResults)
+      completed += validResults.length
+    }
+
+    await reporter.onComplete()
+  } finally {
+    reporter.cleanup()
   }
 
-  const endTime = performance.now()
-  const totalDuration = (endTime - startTime) / 1000
-  progress.finish()
-
+  const totalDuration = (performance.now() - startTime) / 1000
   logger().verbose('load-test', `Completed in ${totalDuration.toFixed(2)}s`)
-
   stats.print(totalDuration)
 }

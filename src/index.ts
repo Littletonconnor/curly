@@ -130,7 +130,11 @@ export async function main(): Promise<void> {
 
     const isLoadTest = options.concurrency || options.requests
     if (isLoadTest) {
-      await load(url, options)
+      await load(url, {
+        ...options,
+        profileTui: profile?.tui,
+        profileName: cliFlags.profile,
+      })
     } else {
       await executeRequest(url, options)
     }

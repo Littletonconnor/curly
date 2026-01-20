@@ -72,6 +72,13 @@ Options:
   -c, --concurrency <num>      Concurrency level for load testing
                                Example: curly -n 100 -c 10 https://example.com
 
+  -T, --tui                    Enable interactive TUI dashboard for load testing
+                               Shows live charts, histograms, and percentiles
+                               Example: curly -n 1000 -c 50 --tui https://example.com
+
+  --tui-compact                Force compact TUI layout (for smaller terminals)
+                               Example: curly -n 1000 --tui --tui-compact https://example.com
+
   --retry <num>                Retry failed requests (default: 0)
                                Example: curly --retry 3 https://flaky-api.example.com
 

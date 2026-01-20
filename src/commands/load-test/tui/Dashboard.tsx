@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box, Text, useInput } from 'ink'
 import { ProgressBar, StatsPanel, Chart, Histogram, StatusCodes, Percentiles, Controls } from './components'
+import { calculateRps, calculateAvgLatency, getPercentile } from '../stats'
 import type { TuiState } from './types'
 
 interface DashboardProps {
@@ -25,17 +26,6 @@ function getStatusIndicator(status: TuiState['status']): { symbol: string; color
   }
 }
 
-function calculateCurrentRps(state: TuiState): number {
-  const elapsed = (performance.now() - state.startTime) / 1000
-  if (elapsed < 0.1) return 0
-  return state.completed / elapsed
-}
-
-function calculateAvgLatency(durations: number[]): number {
-  if (durations.length === 0) return 0
-  return durations.reduce((a, b) => a + b, 0) / durations.length
-}
-
 export function Dashboard({
   state,
   onPause,
@@ -45,8 +35,9 @@ export function Dashboard({
   onResetStats,
 }: DashboardProps) {
   const statusInfo = getStatusIndicator(state.status)
-  const elapsed = (performance.now() - state.startTime) / 1000
-  const rps = calculateCurrentRps(state)
+  const elapsedMs = performance.now() - state.startTime
+  const elapsed = elapsedMs / 1000
+  const rps = calculateRps(state.completed, elapsedMs)
   const avgLatency = calculateAvgLatency(state.durations)
 
   useInput((input, key) => {
@@ -207,21 +198,17 @@ function CompactPercentiles({ durations }: { durations: number[] }) {
     return <Text color="gray">p50: - p95: - p99: -</Text>
   }
   const sorted = [...durations].sort((a, b) => a - b)
-  const getP = (p: number) => {
-    const idx = Math.ceil((p / 100) * sorted.length) - 1
-    return sorted[Math.max(0, idx)]
-  }
 
   return (
     <Box>
       <Text color="gray">p50: </Text>
-      <Text color="cyan">{getP(50).toFixed(0)}ms</Text>
+      <Text color="cyan">{getPercentile(sorted, 50).toFixed(0)}ms</Text>
       <Text>  </Text>
       <Text color="gray">p95: </Text>
-      <Text color="yellow">{getP(95).toFixed(0)}ms</Text>
+      <Text color="yellow">{getPercentile(sorted, 95).toFixed(0)}ms</Text>
       <Text>  </Text>
       <Text color="gray">p99: </Text>
-      <Text color="red">{getP(99).toFixed(0)}ms</Text>
+      <Text color="red">{getPercentile(sorted, 99).toFixed(0)}ms</Text>
     </Box>
   )
 }

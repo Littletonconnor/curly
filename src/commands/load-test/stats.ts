@@ -6,6 +6,32 @@ export interface RequestResult {
   error?: string
 }
 
+/**
+ * Calculate requests per second from completed count and elapsed time
+ */
+export function calculateRps(completed: number, elapsedMs: number): number {
+  const elapsedSecs = elapsedMs / 1000
+  if (elapsedSecs < 0.1) return 0
+  return completed / elapsedSecs
+}
+
+/**
+ * Calculate average latency from an array of durations (in ms)
+ */
+export function calculateAvgLatency(durations: number[]): number {
+  if (durations.length === 0) return 0
+  return durations.reduce((a, b) => a + b, 0) / durations.length
+}
+
+/**
+ * Calculate a percentile from a sorted array of values
+ */
+export function getPercentile(sortedValues: number[], percentile: number): number {
+  if (sortedValues.length === 0) return 0
+  const index = Math.ceil((percentile / 100) * sortedValues.length) - 1
+  return sortedValues[Math.max(0, index)]
+}
+
 export const PERCENTILES = {
   p10: 10,
   p25: 25,
@@ -21,12 +47,6 @@ export class StatsCollector {
 
   addResults(results: RequestResult[]) {
     this.results.push(...results)
-  }
-
-  getPercentile(results: number[], percentile: number) {
-    const length = results.length
-    const index = Math.ceil((percentile / 100) * length) - 1
-    return results[Math.max(0, index)]
   }
 
   getStatusCodes() {
@@ -54,14 +74,14 @@ export class StatsCollector {
       failed: this.results.length - durations.length,
       min: durations[0],
       max: durations[durations.length - 1],
-      mean: durations.reduce((a, b) => a + b, 0) / durations.length,
-      p10: this.getPercentile(durations, PERCENTILES.p10),
-      p25: this.getPercentile(durations, PERCENTILES.p25),
-      p50: this.getPercentile(durations, PERCENTILES.p50),
-      p75: this.getPercentile(durations, PERCENTILES.p75),
-      p90: this.getPercentile(durations, PERCENTILES.p90),
-      p95: this.getPercentile(durations, PERCENTILES.p95),
-      p99: this.getPercentile(durations, PERCENTILES.p99),
+      mean: calculateAvgLatency(durations),
+      p10: getPercentile(durations, PERCENTILES.p10),
+      p25: getPercentile(durations, PERCENTILES.p25),
+      p50: getPercentile(durations, PERCENTILES.p50),
+      p75: getPercentile(durations, PERCENTILES.p75),
+      p90: getPercentile(durations, PERCENTILES.p90),
+      p95: getPercentile(durations, PERCENTILES.p95),
+      p99: getPercentile(durations, PERCENTILES.p99),
       statusCodes: this.getStatusCodes(),
       durations,
       errors: this.results.filter((r) => r.error).map((r) => r.error),

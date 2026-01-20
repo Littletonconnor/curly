@@ -1,14 +1,9 @@
 import React from 'react'
 import { Box, Text } from 'ink'
+import { getPercentile } from '../../stats'
 
 interface PercentilesProps {
   durations: number[]
-}
-
-function getPercentile(sorted: number[], p: number): number {
-  if (sorted.length === 0) return 0
-  const idx = Math.ceil((p / 100) * sorted.length) - 1
-  return sorted[Math.max(0, idx)]
 }
 
 export function Percentiles({ durations }: PercentilesProps) {

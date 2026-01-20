@@ -12,18 +12,7 @@
 
 ---
 
-### Cookies from JSON file produces `undefined: undefined`
-
-**Command:**
-```sh
-curly https://httpbin.org/cookies -b /path/to/cookies.json
-```
-
-**Expected:** Cookies from the JSON file should be parsed and sent correctly.
-
-**Actual:** Response shows `{ cookies: { undefined: 'undefined' } }` instead of the actual cookie values.
-
-**Example file:** `examples/sample-data/cookies.json`
+~~### Cookies from JSON file produces `undefined: undefined`~~ ✓
 
 ---
 

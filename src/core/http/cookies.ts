@@ -49,7 +49,9 @@ function parseJsonCookies(fileData: string) {
       }
     }
   } else {
-    cookies.push(`${parsedFileData.name}=${parsedFileData.value}`)
+    for (const [name, value] of Object.entries(parsedFileData)) {
+      cookies.push(`${name}=${value}`)
+    }
   }
 
   return cookies.join('; ').trim()

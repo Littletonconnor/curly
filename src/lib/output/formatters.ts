@@ -117,6 +117,11 @@ export function printHeaders(headers: Headers): void {
   Object.entries(headersObj).forEach(([k, v]) => console.log(`${k}: ${v}`))
 }
 
+/**
+ * Prints formatted output using curl-style write-out format strings.
+ * Supports variables like %{http_code}, %{time_total}, %{size_download}
+ * and escape sequences like \n, \t, \r, and \\.
+ */
 function printWriteOut(data: ResponseData, format: string): void {
   const output = format
     .replace(/%\{http_code\}/g, String(data.status))
@@ -127,6 +132,10 @@ function printWriteOut(data: ResponseData, format: string): void {
     .replace(/^status_code$/, String(data.status))
     .replace(/^time_total$/, (data.duration / 1000).toFixed(6))
     .replace(/^size_download$/, data.size)
+    .replace(/\\([ntr\\])/g, (_, char) => {
+      const escapes: Record<string, string> = { n: '\n', t: '\t', r: '\r', '\\': '\\' }
+      return escapes[char] ?? char
+    })
 
   console.log(output)
 }

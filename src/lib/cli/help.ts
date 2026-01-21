@@ -43,6 +43,10 @@ Options:
   -v, --verbose                Show detailed request/response information
                                Example: curly -v https://example.com
 
+  --dry-run                    Show request details without sending the request
+                               Useful for debugging complex requests
+                               Example: curly --dry-run -X POST -d name=test https://example.com
+
   -f, --fail                   Exit with code 22 on HTTP errors (4xx/5xx)
                                Example: curly -f https://example.com/health || echo "Failed"
 

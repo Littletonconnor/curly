@@ -377,9 +377,9 @@ Consolidate testing strategy around the `examples/` directory for end-to-end val
 
 ---
 
-### Dry Run Mode (`--dry-run`)
+### ~~Dry Run Mode (`--dry-run`)~~ ✓
 
-Validate and display request details without actually sending the HTTP request. Useful for debugging complex requests.
+~~Validate and display request details without actually sending the HTTP request. Useful for debugging complex requests.~~
 
 ---
 
@@ -430,9 +430,9 @@ dryRun?: boolean
 - Add under a "Debugging" section
 
 **5. Documentation**
-- [ ] Add to README options table
-- [ ] Add to `examples/07-error-handling.sh` (or create new `examples/14-debugging.sh`)
-- [ ] Update bash/zsh completions
+- [x] Add to README options table
+- [x] Add to `examples/07-error-handling.sh` (or create new `examples/14-debugging.sh`)
+- [x] Update bash/zsh completions
 
 ---
 

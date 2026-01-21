@@ -51,6 +51,7 @@ const OPTIONS = [
   '-x',
   '--write-out',
   '-w',
+  '--dry-run',
 ]
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
@@ -210,6 +211,7 @@ _curly() {
         '*'{-F,--form}'[Multipart form data]:data:_files' \\
         '(-x --proxy)'{-x,--proxy}'[Proxy server URL]:url:' \\
         '(-w --write-out)'{-w,--write-out}'[Output format]:format:(http_code status_code time_total size_download)' \\
+        '--dry-run[Show request details without sending]' \\
         '*:URL:_urls'
 }
 

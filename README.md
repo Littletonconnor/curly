@@ -130,6 +130,7 @@ Usage: curly [OPTIONS] <url>
 | `--include`     | `-i`  | Include response headers in output                                      |
 | `--head`        | `-I`  | Send HEAD request (headers only)                                        |
 | `--verbose`     | `-v`  | Show detailed request/response information                              |
+| `--dry-run`     |       | Show request details without sending the request                        |
 | `--quiet`       |       | Suppress status line (for piping output)                                |
 | `--write-out`   | `-w`  | Extract specific info from response (status_code, time_total, size_download) |
 | `--history`     |       | View command history                                                    |

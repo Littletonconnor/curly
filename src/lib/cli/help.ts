@@ -56,6 +56,11 @@ Options:
   --quiet                      Suppress status line (for piping output)
                                Example: curly --quiet https://example.com | jq .
 
+  -j, --json                   Output response as structured JSON
+                               Includes request info, response headers, timing, and body
+                               Example: curly --json https://example.com
+                               Example: curly --json https://example.com | jq '.timing.total'
+
   -w, --write-out <format>     Extract specific info from response (like curl -w)
                                Supported variables: http_code (or status_code), time_total, size_download
                                Example: curly -w status_code https://example.com

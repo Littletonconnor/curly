@@ -60,6 +60,7 @@ export function cli() {
       tui: { type: 'boolean', short: 'T', default: false },
       'tui-compact': { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
+      json: { type: 'boolean', short: 'j', default: false },
     },
     allowPositionals: true,
   })

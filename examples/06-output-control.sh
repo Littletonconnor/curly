@@ -2,7 +2,7 @@
 # =============================================================================
 # 06-output-control.sh - Output Formatting and Control
 # =============================================================================
-# Demonstrates: -i, -I, -o, -w/--write-out, --quiet
+# Demonstrates: -i, -I, -o, -w/--write-out, --quiet, -j/--json
 # API: httpbin.org
 # =============================================================================
 
@@ -140,17 +140,58 @@ echo ""
 echo ""
 
 # -----------------------------------------------------------------------------
+# JSON Output Mode (-j/--json)
+# -----------------------------------------------------------------------------
+
+echo "15. Get structured JSON response"
+echo "    Command: curly https://httpbin.org/get --json"
+echo "    ---"
+curly https://httpbin.org/get --json
+echo ""
+echo ""
+
+echo "16. JSON output with short flag"
+echo "    Command: curly https://httpbin.org/ip -j"
+echo "    ---"
+curly https://httpbin.org/ip -j
+echo ""
+echo ""
+
+echo "17. Extract timing from JSON output"
+echo "    Command: curly https://httpbin.org/get --json | jq '.timing.total'"
+echo "    ---"
+curly https://httpbin.org/get --json | jq '.timing.total'
+echo ""
+echo ""
+
+echo "18. Extract response status from JSON output"
+echo "    Command: curly https://httpbin.org/status/201 --json | jq '.response.status'"
+echo "    ---"
+curly https://httpbin.org/status/201 --json | jq '.response.status'
+echo ""
+echo ""
+
+echo "19. Save structured JSON to file"
+echo "    Command: curly https://httpbin.org/get --json -o ${TEMP_DIR}/structured.json"
+echo "    ---"
+curly https://httpbin.org/get --json -o "${TEMP_DIR}/structured.json"
+echo "    File contents:"
+cat "${TEMP_DIR}/structured.json"
+echo ""
+echo ""
+
+# -----------------------------------------------------------------------------
 # Combining Output Options
 # -----------------------------------------------------------------------------
 
-echo "15. Save to file and show status"
+echo "20. Save to file and show status"
 echo "    Command: curly https://httpbin.org/json -o ${TEMP_DIR}/out.json -w 'Saved! Status: %{http_code}'"
 echo "    ---"
 curly https://httpbin.org/json -o "${TEMP_DIR}/out.json" -w 'Saved! Status: %{http_code}'
 echo ""
 echo ""
 
-echo "16. Headers + output file"
+echo "21. Headers + output file"
 echo "    Command: curly https://httpbin.org/get -i -o ${TEMP_DIR}/with-headers.txt"
 echo "    ---"
 curly https://httpbin.org/get -i -o "${TEMP_DIR}/with-headers.txt"
@@ -182,4 +223,8 @@ echo "    %{size_download}   Response size in bytes"
 echo ""
 echo "  Quiet Mode:"
 echo "    --quiet            Suppress status line"
+echo ""
+echo "  JSON Output Mode (-j/--json):"
+echo "    --json, -j         Output structured JSON"
+echo "    Includes: request, response, timing, body"
 echo ""

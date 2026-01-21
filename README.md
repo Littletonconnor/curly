@@ -132,6 +132,7 @@ Usage: curly [OPTIONS] <url>
 | `--verbose`     | `-v`  | Show detailed request/response information                              |
 | `--dry-run`     |       | Show request details without sending the request                        |
 | `--quiet`       |       | Suppress status line (for piping output)                                |
+| `--json`        | `-j`  | Output response as structured JSON (request, response, timing, body)    |
 | `--write-out`   | `-w`  | Extract specific info from response (status_code, time_total, size_download) |
 | `--history`     |       | View command history                                                    |
 | `--requests`    | `-n`  | Number of requests for load testing (auto-detects load test mode)       |
@@ -325,6 +326,61 @@ curly -o ./response.json https://jsonplaceholder.typicode.com/posts/1
 
 ```sh
 curly --quiet https://jsonplaceholder.typicode.com/posts/1 | jq .title
+```
+
+#### JSON Output Mode
+
+Use `-j` or `--json` to output a structured JSON object containing request metadata, response headers, timing, and body. This is useful for scripting and programmatic consumption.
+
+##### Get structured JSON response
+
+```sh
+curly --json https://jsonplaceholder.typicode.com/posts/1
+```
+
+**Output:**
+```json
+{
+  "request": {
+    "method": "GET",
+    "url": "https://jsonplaceholder.typicode.com/posts/1"
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    }
+  },
+  "timing": {
+    "total": 145
+  },
+  "body": {
+    "userId": 1,
+    "id": 1,
+    "title": "...",
+    "body": "..."
+  }
+}
+```
+
+##### Extract specific fields with jq
+
+```sh
+# Get timing information
+curly --json https://api.example.com/users | jq '.timing.total'
+
+# Get response status
+curly --json https://api.example.com/users | jq '.response.status'
+
+# Get specific header
+curly --json https://api.example.com/users | jq '.response.headers["content-type"]'
+```
+
+##### Save structured response to file
+
+```sh
+curly --json https://api.example.com/users -o response.json
 ```
 
 #### Write-Out (Status Code Extraction)

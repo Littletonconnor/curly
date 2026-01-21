@@ -436,9 +436,9 @@ dryRun?: boolean
 
 ---
 
-### JSON Output Mode (`--json`)
+### ~~JSON Output Mode (`--json`)~~ ✓
 
-Output structured JSON containing request metadata, response headers, timing, and body for programmatic consumption.
+~~Output structured JSON containing request metadata, response headers, timing, and body for programmatic consumption.~~
 
 ---
 
@@ -498,10 +498,10 @@ json?: boolean
 - Suppress status line and other decorative output
 
 **5. Documentation**
-- [ ] Add to README options table
-- [ ] Add to `examples/06-output-control.sh`
-- [ ] Update bash/zsh completions
-- [ ] Note: differs from `--quiet` (which just suppresses status line)
+- [x] Add to README options table
+- [x] Add to `examples/06-output-control.sh`
+- [x] Update bash/zsh completions
+- [x] Note: differs from `--quiet` (which just suppresses status line)
 
 ---
 

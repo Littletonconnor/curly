@@ -40,6 +40,7 @@ export interface FetchOptions {
   tui?: boolean
   'tui-compact'?: boolean
   'dry-run'?: boolean
+  json?: boolean
 }
 
 export interface ResponseData {

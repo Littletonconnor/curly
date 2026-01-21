@@ -1,4 +1,4 @@
-import { cli, printHelpMessage } from './lib/cli'
+import { cli, printHelpMessage, printDryRun, shouldDryRun } from './lib/cli'
 import {
   printHistoryFile,
   writeHistoryFile,
@@ -126,6 +126,11 @@ export async function main(): Promise<void> {
         retryDelay: cliFlags['retry-delay'] !== '1000' ? cliFlags['retry-delay'] : undefined,
       })
       console.log(`Saved alias "${cliFlags.save}"`)
+    }
+
+    if (shouldDryRun(options)) {
+      printDryRun(url, options)
+      process.exit(0)
     }
 
     const isLoadTest = options.concurrency || options.requests

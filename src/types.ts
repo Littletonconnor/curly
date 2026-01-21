@@ -39,6 +39,7 @@ export interface FetchOptions {
   'write-out'?: string
   tui?: boolean
   'tui-compact'?: boolean
+  'dry-run'?: boolean
 }
 
 export interface ResponseData {

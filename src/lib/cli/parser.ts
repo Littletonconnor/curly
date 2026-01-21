@@ -59,6 +59,7 @@ export function cli() {
       'write-out': { type: 'string', short: 'w' },
       tui: { type: 'boolean', short: 'T', default: false },
       'tui-compact': { type: 'boolean', default: false },
+      'dry-run': { type: 'boolean', default: false },
     },
     allowPositionals: true,
   })

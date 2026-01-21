@@ -148,6 +148,31 @@ done
 echo ""
 
 # -----------------------------------------------------------------------------
+# Dry Run Mode (Debugging)
+# -----------------------------------------------------------------------------
+
+echo "15. Dry run - show request details without sending"
+echo "    Command: curly --dry-run https://httpbin.org/get"
+echo "    ---"
+curly --dry-run https://httpbin.org/get
+echo ""
+echo ""
+
+echo "16. Dry run with POST data"
+echo "    Command: curly --dry-run -X POST -d name=test -d value=123 https://httpbin.org/post"
+echo "    ---"
+curly --dry-run -X POST -d name=test -d value=123 https://httpbin.org/post
+echo ""
+echo ""
+
+echo "17. Dry run with headers and query params"
+echo "    Command: curly --dry-run -H \"Authorization: Bearer token123\" -q search=term https://httpbin.org/get"
+echo "    ---"
+curly --dry-run -H "Authorization: Bearer token123" -q search=term https://httpbin.org/get
+echo ""
+echo ""
+
+# -----------------------------------------------------------------------------
 # Summary
 # -----------------------------------------------------------------------------
 
@@ -164,6 +189,9 @@ echo "    --retry-delay MS   Initial delay (doubles each retry)"
 echo ""
 echo "  Fail Mode:"
 echo "    -f, --fail         Exit code 22 on HTTP 4xx/5xx"
+echo ""
+echo "  Dry Run:"
+echo "    --dry-run          Show request details without sending"
 echo ""
 echo "  Exit Codes:"
 echo "    0   Success"

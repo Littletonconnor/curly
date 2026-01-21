@@ -1,5 +1,5 @@
 import { STATUS_CODES } from 'node:http'
-import type { FetchOptions, ResponseData } from '../../types'
+import type { ResponseData } from '../../types'
 
 export interface JsonOutput {
   request: {
@@ -17,15 +17,7 @@ export interface JsonOutput {
   body: unknown
 }
 
-export function shouldOutputJson(options: FetchOptions): boolean {
-  return options.json === true
-}
-
-export function formatJsonOutput(
-  url: string,
-  method: string,
-  data: ResponseData,
-): JsonOutput {
+export function formatJsonOutput(url: string, method: string, data: ResponseData): JsonOutput {
   const headers: Record<string, string> = {}
   data.headers.forEach((value, key) => {
     headers[key] = value
@@ -46,13 +38,4 @@ export function formatJsonOutput(
     },
     body: data.response,
   }
-}
-
-export function printJsonOutput(
-  url: string,
-  method: string,
-  data: ResponseData,
-): void {
-  const output = formatJsonOutput(url, method, data)
-  console.log(JSON.stringify(output, null, 2))
 }

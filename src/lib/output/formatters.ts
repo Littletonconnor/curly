@@ -6,6 +6,12 @@ import { type FetchOptions } from '../../core/http/client'
 import { logger } from '../utils/logger'
 import { writeOutputToFile } from '../utils/fs'
 import { type ResponseData, type StatusColor } from '../../types'
+import { formatJsonOutput } from './json-output'
+
+export interface OutputContext {
+  url: string
+  method: string
+}
 
 /**
  * Extracts Set-Cookie headers from the response and saves them to a cookie jar file.
@@ -29,11 +35,29 @@ export async function writeToCookieJar(
 
 /**
  * Main output handler that formats and displays the HTTP response.
- * Handles cookie jar saving, file output, headers display, and status line.
+ * Handles cookie jar saving, JSON output, file output, headers display, and status line.
  */
-export async function stdout(data: ResponseData, options: FetchOptions): Promise<void> {
+export async function stdout(
+  data: ResponseData,
+  options: FetchOptions,
+  context?: OutputContext,
+): Promise<void> {
   if (options['cookie-jar']) {
     await writeToCookieJar(data, options)
+  }
+
+  // JSON output mode - outputs structured JSON and skips normal formatting
+  if (options.json && context) {
+    const jsonOutput = formatJsonOutput(context.url, context.method, data)
+    const jsonString = JSON.stringify(jsonOutput, null, 2)
+
+    if (options.output) {
+      await writeOutputToFile(jsonString, options.output, { colors: false })
+      logger().verbose('output', `JSON response saved to: ${options.output}`)
+    } else {
+      console.log(jsonString)
+    }
+    return
   }
 
   const includeHeaders = !!(options.include || options.head)

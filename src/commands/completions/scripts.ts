@@ -52,6 +52,8 @@ const OPTIONS = [
   '--write-out',
   '-w',
   '--dry-run',
+  '--json',
+  '-j',
 ]
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
@@ -212,6 +214,7 @@ _curly() {
         '(-x --proxy)'{-x,--proxy}'[Proxy server URL]:url:' \\
         '(-w --write-out)'{-w,--write-out}'[Output format]:format:(http_code status_code time_total size_download)' \\
         '--dry-run[Show request details without sending]' \\
+        '(-j --json)'{-j,--json}'[Output response as structured JSON]' \\
         '*:URL:_urls'
 }
 

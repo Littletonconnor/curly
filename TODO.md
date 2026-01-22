@@ -352,9 +352,9 @@ When adding a new CLI flag or feature, update these locations:
 
 ## Upcoming Features
 
-### Remove Unit Tests
+### ~~Remove Unit Tests~~ ✓
 
-Consolidate testing strategy around the `examples/` directory for end-to-end validation rather than maintaining unit tests.
+~~Consolidate testing strategy around the `examples/` directory for end-to-end validation rather than maintaining unit tests.~~
 
 ---
 
@@ -368,12 +368,12 @@ Consolidate testing strategy around the `examples/` directory for end-to-end val
 
 #### Implementation
 
-- [ ] Remove `src/__tests__/` directory
-- [ ] Remove vitest from devDependencies in `package.json`
-- [ ] Remove `test` script from `package.json`
-- [ ] Update `prepublishOnly` script to exclude test step
-- [ ] Ensure `examples/run-all-examples.sh` covers all critical paths
-- [ ] Update CLAUDE.md to reflect testing philosophy
+- [x] Remove `src/__tests__/` directory
+- [x] Remove vitest from devDependencies in `package.json`
+- [x] Remove `test` script from `package.json`
+- [x] Update `prepublishOnly` script to exclude test step (N/A - no prepublishOnly script exists)
+- [x] Ensure `examples/run-all-examples.sh` covers all critical paths
+- [x] Update CLAUDE.md to reflect testing philosophy
 
 ---
 

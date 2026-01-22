@@ -16,10 +16,7 @@ export interface OutputContext {
 /**
  * Extracts Set-Cookie headers from the response and saves them to a cookie jar file.
  */
-export async function writeToCookieJar(
-  data: ResponseData,
-  options: FetchOptions,
-): Promise<void> {
+export async function writeToCookieJar(data: ResponseData, options: FetchOptions): Promise<void> {
   const cookieHeaders = parseSetCookieHeaders(data.headers)
   const cookieJarFilePath = options['cookie-jar']!
 
@@ -104,7 +101,8 @@ async function writeContentToFile(
   }
 
   if (opts.includeBody) {
-    const bodyStr = typeof data.response === 'string' ? data.response : JSON.stringify(data.response, null, 2)
+    const bodyStr =
+      typeof data.response === 'string' ? data.response : JSON.stringify(data.response, null, 2)
     parts.push(bodyStr)
   }
 

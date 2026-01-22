@@ -6,7 +6,10 @@ export function validateExportFlag(exportFormat: string | undefined, isLoadTest:
   if (exportFormat && !isLoadTest) {
     logger().error('--export is only available in load test mode (use -n or -c)')
   }
-  if (exportFormat && !VALID_EXPORT_FORMATS.includes(exportFormat as (typeof VALID_EXPORT_FORMATS)[number])) {
+  if (
+    exportFormat &&
+    !VALID_EXPORT_FORMATS.includes(exportFormat as (typeof VALID_EXPORT_FORMATS)[number])
+  ) {
     logger().error(`Invalid export format: "${exportFormat}". Valid formats: json, csv`)
   }
 }

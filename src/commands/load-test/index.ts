@@ -153,7 +153,10 @@ export async function load(url: string, options: LoadOptions): Promise<void> {
   const concurrency = parseIntOption(options.concurrency, DEFAULT_CONCURRENCY)
   const useTui = shouldEnableTui(options, options.profileTui) && isTTY()
 
-  logger().verbose('load-test', `Starting: ${totalRequests} requests with concurrency ${concurrency}`)
+  logger().verbose(
+    'load-test',
+    `Starting: ${totalRequests} requests with concurrency ${concurrency}`,
+  )
   logger().verbose('load-test', `Target: ${url}`)
 
   const reporter = useTui

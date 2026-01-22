@@ -15,9 +15,8 @@
   "scripts": {
     "build": "tsup --config ./tsup.config.ts",
     "dev": "npm run build && ./bin/curly.js",
-    "lint": "oxlint src/",
-    "lint:fix": "oxlint src/ --fix",
-    "prettier:write": "prettier --config .prettierrc 'src/**/*.ts' --write",
+    "format": "prettier --write 'src/**/*.ts'",
+    "format:check": "prettier --check 'src/**/*.ts'",
     "types": "tsc --noEmit"
   },
   "keywords": [
@@ -28,8 +27,7 @@
     "@types/asciichart": "^1.5.8",
     "@types/node": "^22.10.5",
     "@types/react": "^19.2.8",
-    "oxlint": "^1.38.0",
-    "prettier": "^3.4.2",
+    "prettier": "^3.8.0",
     "tsup": "^8.3.5",
     "typescript": "^5.7.3"
   },

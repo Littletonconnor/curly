@@ -9,7 +9,11 @@ export function isValidExportFormat(format: string | undefined): format is Expor
   return format === 'json' || format === 'csv'
 }
 
-export function formatExport(stats: StatsCollector, duration: number, format: ExportFormat): string {
+export function formatExport(
+  stats: StatsCollector,
+  duration: number,
+  format: ExportFormat,
+): string {
   switch (format) {
     case 'json':
       return formatJson(stats, duration)

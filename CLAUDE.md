@@ -18,15 +18,14 @@ npm run dev         # Build and run the CLI locally
 ### Code Quality
 
 ```bash
-npm run lint           # Run oxlint to check for issues
-npm run lint:fix       # Run oxlint and auto-fix issues
-npm run prettier:write # Format code with Prettier
+npm run format         # Format code with Prettier
+npm run format:check   # Check formatting without writing
 npm run types          # Type check with tsc --noEmit
 ```
 
 **After making changes**, always run:
 ```bash
-npm run types && npm run lint
+npm run types && npm run format:check
 ```
 
 ### Testing

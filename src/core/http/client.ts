@@ -1,11 +1,7 @@
 import { readFileSync } from 'fs'
 import { ProxyAgent } from 'undici'
 import { CONTENT_TYPES } from '../config/constants'
-import {
-  readBodyFromFile,
-  getContentTypeFromExtension,
-  parseFormField,
-} from '../../lib/utils/file'
+import { readBodyFromFile, getContentTypeFromExtension, parseFormField } from '../../lib/utils/file'
 import { applyCookieHeader } from './cookies'
 import { logger } from '../../lib/utils/logger'
 import { withRetry } from '../../lib/utils/retry'
@@ -162,9 +158,7 @@ async function executeFetch(
   let redirectCount = 0
 
   while (true) {
-    const requestOptions = proxyAgent
-      ? { ...fetchOptions, dispatcher: proxyAgent }
-      : fetchOptions
+    const requestOptions = proxyAgent ? { ...fetchOptions, dispatcher: proxyAgent } : fetchOptions
     const response = await fetch(currentUrl, requestOptions as RequestInit)
 
     if (!isRedirectStatus(response.status)) {
@@ -307,7 +301,10 @@ export function buildFormData(formFields: string[]): FormData {
       const blob = new Blob([fileBuffer], { type: mimeType })
 
       formData.append(parsed.name, blob, parsed.filename)
-      logger().verbose('form', `Added file field: ${parsed.name} = ${parsed.filename} (${mimeType})`)
+      logger().verbose(
+        'form',
+        `Added file field: ${parsed.name} = ${parsed.filename} (${mimeType})`,
+      )
     } else {
       formData.append(parsed.name, parsed.value)
       logger().verbose('form', `Added text field: ${parsed.name} = ${parsed.value}`)
@@ -359,8 +356,8 @@ export function buildHeaders(options: FetchOptions): Record<string, string> {
     return { 'Content-Type': 'application/json' }
   }
 
-  const headers: Record<string, string> = options?.headers?.reduce(
-    (obj: Record<string, string>, h: string) => {
+  const headers: Record<string, string> =
+    options?.headers?.reduce((obj: Record<string, string>, h: string) => {
       if (!h.includes(':')) {
         logger().error('Headers are improperly formatted.')
       } else if (h.toLowerCase().includes('cookie')) {
@@ -370,9 +367,7 @@ export function buildHeaders(options: FetchOptions): Record<string, string> {
 
       const [key, value] = h.split(':')
       return { ...obj, [key.trim()]: value.trim() }
-    },
-    {},
-  ) ?? {}
+    }, {}) ?? {}
 
   return {
     ...headers,

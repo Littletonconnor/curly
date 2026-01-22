@@ -107,6 +107,16 @@ source ~/.bashrc   # for bash
 source ~/.zshrc    # for zsh
 ```
 
+## Getting Started
+
+The easiest way to set up curly is with the interactive configuration wizard:
+
+```sh
+curly --init
+```
+
+This will guide you through creating configuration profiles with base URLs, headers, timeouts, and retry settings. Configuration is saved to `~/.config/curly/config.json`.
+
 ## Usage
 
 ```sh
@@ -146,6 +156,7 @@ Usage: curly [OPTIONS] <url>
 | `--retry`       |       | Retry failed requests with exponential backoff (default: 0)             |
 | `--retry-delay` |       | Initial delay between retries in milliseconds (default: 1000)           |
 | `--profile`     | `-p`  | Use a named profile from `~/.config/curly/config.json`                  |
+| `--init`        |       | Interactive wizard to set up configuration profiles                     |
 | `--completions` |       | Generate or install shell completions (bash, zsh, install)              |
 | `--save`        |       | Save the current request as a named alias                               |
 | `--use`         |       | Execute a saved alias (CLI flags override alias values)                 |

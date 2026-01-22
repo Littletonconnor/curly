@@ -56,6 +56,7 @@ const OPTIONS = [
   '-j',
   '--export',
   '-e',
+  '--init',
 ]
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
@@ -222,6 +223,7 @@ _curly() {
         '--dry-run[Show request details without sending]' \\
         '(-j --json)'{-j,--json}'[Output response as structured JSON]' \\
         '(-e --export)'{-e,--export}'[Export load test results]:format:(json csv)' \\
+        '--init[Interactive config setup wizard]' \\
         '*:URL:_urls'
 }
 

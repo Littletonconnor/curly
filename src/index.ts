@@ -1,4 +1,4 @@
-import { cli, printHelpMessage, printDryRun, shouldDryRun } from './lib/cli'
+import { cli, printHelpMessage, printDryRun, shouldDryRun, validateExportFlag } from './lib/cli'
 import {
   printHistoryFile,
   writeHistoryFile,
@@ -133,18 +133,8 @@ export async function main(): Promise<void> {
       process.exit(0)
     }
 
-    const isLoadTest = options.concurrency || options.requests
-
-    // Validate export flag
-    if (options.export && !isLoadTest) {
-      console.error('--export is only available in load test mode (use -n or -c)')
-      process.exit(1)
-    }
-    if (options.export && options.export !== 'json' && options.export !== 'csv') {
-      console.error(`Invalid export format: "${options.export}"`)
-      console.error('Valid formats: json, csv')
-      process.exit(1)
-    }
+    const isLoadTest = !!(options.concurrency || options.requests)
+    validateExportFlag(options.export, isLoadTest)
 
     if (isLoadTest) {
       await load(url, {

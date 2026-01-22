@@ -82,7 +82,11 @@ export async function main(): Promise<void> {
     const resolvedUrl = resolveUrl(rawUrl, profile?.baseUrl)
     const url = interpolate(resolvedUrl)
 
-    const mergedHeaders = mergeInterpolatedArrays(profile?.headers, alias?.headers, cliFlags.headers)
+    const mergedHeaders = mergeInterpolatedArrays(
+      profile?.headers,
+      alias?.headers,
+      cliFlags.headers,
+    )
     const mergedData = mergeInterpolatedArrays(alias?.data, cliFlags.data)
     const mergedCookies = mergeInterpolatedArrays(alias?.cookie, cliFlags.cookie)
     const mergedQuery = mergeInterpolatedArrays(alias?.query, cliFlags.query)
@@ -110,7 +114,10 @@ export async function main(): Promise<void> {
           ? interpolate(alias.user)
           : undefined,
       timeout: cliFlags.timeout ?? alias?.timeout ?? profile?.timeout?.toString(),
-      retry: cliFlags.retry !== '0' ? cliFlags.retry : (alias?.retry ?? profile?.retry?.toString() ?? '0'),
+      retry:
+        cliFlags.retry !== '0'
+          ? cliFlags.retry
+          : (alias?.retry ?? profile?.retry?.toString() ?? '0'),
       'retry-delay':
         cliFlags['retry-delay'] !== '1000'
           ? cliFlags['retry-delay']

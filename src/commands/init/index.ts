@@ -32,7 +32,11 @@ async function prompt(rl: readline.Interface, question: string): Promise<PromptR
   })
 }
 
-async function confirm(rl: readline.Interface, question: string, defaultValue = false): Promise<boolean> {
+async function confirm(
+  rl: readline.Interface,
+  question: string,
+  defaultValue = false,
+): Promise<boolean> {
   const hint = defaultValue ? '(Y/n)' : '(y/N)'
   const result = await prompt(rl, `${question} ${hint} `)
   if (result.cancelled) return false
@@ -72,7 +76,9 @@ async function collectHeaders(rl: readline.Interface): Promise<string[]> {
   return headers
 }
 
-async function createProfile(rl: readline.Interface): Promise<{ name: string; profile: Profile } | null> {
+async function createProfile(
+  rl: readline.Interface,
+): Promise<{ name: string; profile: Profile } | null> {
   const nameResult = await prompt(rl, '? Profile name: ')
   if (nameResult.cancelled || !nameResult.answer) return null
 
@@ -154,7 +160,7 @@ export async function handleInit(): Promise<void> {
   const rl = createInterface()
 
   console.log('')
-  console.log('Welcome to Curly! Let\'s set up your configuration.')
+  console.log("Welcome to Curly! Let's set up your configuration.")
   console.log('')
 
   const existingConfig = await loadExistingConfig()
@@ -217,7 +223,9 @@ export async function handleInit(): Promise<void> {
       }
       if (config.default) {
         console.log('')
-        console.log(`Default profile '${config.default}' will be used when no -p flag is specified.`)
+        console.log(
+          `Default profile '${config.default}' will be used when no -p flag is specified.`,
+        )
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error)

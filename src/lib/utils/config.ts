@@ -48,7 +48,9 @@ export async function loadConfig(): Promise<Config | null> {
  * normalizeToArray(['a', 'b']) // ['a', 'b']
  * normalizeToArray({ 'Content-Type': 'application/json' }) // ['Content-Type: application/json']
  */
-function normalizeToArray(value: string[] | Record<string, string> | undefined): string[] | undefined {
+function normalizeToArray(
+  value: string[] | Record<string, string> | undefined,
+): string[] | undefined {
   if (!value) {
     return undefined
   }

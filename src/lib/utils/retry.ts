@@ -14,9 +14,7 @@ const defaultShouldRetry = (error: unknown): boolean => {
 
   if (isNodeError(error)) {
     return (
-      error.code === 'ECONNRESET' ||
-      error.code === 'ECONNREFUSED' ||
-      error.code === 'ETIMEDOUT'
+      error.code === 'ECONNRESET' || error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT'
     )
   }
 
@@ -36,10 +34,7 @@ function sleep(ms: number): Promise<void> {
  * @returns The result of the operation
  * @throws The last error if all retries are exhausted
  */
-export async function withRetry<T>(
-  operation: () => Promise<T>,
-  options: RetryOptions,
-): Promise<T> {
+export async function withRetry<T>(operation: () => Promise<T>, options: RetryOptions): Promise<T> {
   const { maxRetries, baseDelay, shouldRetry = defaultShouldRetry } = options
 
   if (maxRetries === 0) {

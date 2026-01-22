@@ -666,83 +666,426 @@ src/commands/init/
 
 ### CI/CD Integration
 
-GitHub Actions workflows for automated testing and publishing.
+GitHub Actions workflows for automated testing, security scanning, dependency management, and publishing.
 
 ---
 
-#### Workflows
+#### Workflows Overview
 
-**1. Test on PR** (`.github/workflows/test.yml`)
-- Trigger: Pull requests to main
-- Steps: Install deps, type check, lint, run examples
-- Matrix: Node 20.x, 22.x
-
-**2. Publish on Release** (`.github/workflows/publish.yml`)
-- Trigger: New GitHub release or version tag
-- Steps: Build, publish to npm
-- Requires: `NPM_TOKEN` secret
+| Workflow | Trigger | Purpose |
+|----------|---------|---------|
+| `ci.yml` | Push/PR to main | Type check, format, build, E2E tests |
+| `publish.yml` | GitHub Release | Build and publish to npm |
+| `dependabot.yml` | Weekly schedule | Automated dependency updates |
+| `security.yml` | Push/PR + weekly | CodeQL security scanning |
 
 ---
 
-#### Implementation
+#### 1. CI Workflow (`.github/workflows/ci.yml`)
 
-**1. Test Workflow** (`.github/workflows/test.yml`)
+Primary test workflow with caching, matrix testing, and proper concurrency handling.
+
 ```yaml
-name: Test
+name: CI
+
 on:
-  pull_request:
-    branches: [main]
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  ci:
+    name: Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
     strategy:
+      # Don't cancel other matrix jobs if one fails
+      fail-fast: false
       matrix:
         node-version: [20.x, 22.x]
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm ci
-      - run: npm run types
-      - run: npm run lint
-      - run: npm run build
-      - run: ./examples/run-all-examples.sh
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run types
+
+      - name: Format check
+        run: npm run format:check
+
+      - name: Build
+        run: npm run build
+
+      - name: Run E2E tests
+        run: ./examples/run-all-examples.sh
+
+      - name: Verify CLI works
+        run: |
+          npm link
+          curly --version
+          curly --help
 ```
 
-**2. Publish Workflow** (`.github/workflows/publish.yml`)
+**Key Features:**
+- **Concurrency control**: Cancels redundant runs when new commits are pushed
+- **npm cache**: Uses `actions/setup-node` built-in caching for faster installs
+- **fail-fast: false**: Ensures all Node versions are tested even if one fails
+- **Timeout**: Prevents hung jobs from consuming resources
+- **Smoke test**: Verifies the built CLI actually runs
+
+---
+
+#### 2. Publish Workflow (`.github/workflows/publish.yml`)
+
+Automated npm publishing with provenance and safety checks.
+
 ```yaml
-name: Publish
+name: Publish to npm
+
 on:
   release:
     types: [published]
 
 jobs:
   publish:
+    name: Publish
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    # Required for npm provenance
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20.x
           registry-url: https://registry.npmjs.org
-      - run: npm ci
-      - run: npm run build
-      - run: npm publish --access public
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify version matches release tag
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          RELEASE_TAG="${{ github.event.release.tag_name }}"
+          # Strip 'v' prefix if present
+          RELEASE_VERSION="${RELEASE_TAG#v}"
+          if [ "$PACKAGE_VERSION" != "$RELEASE_VERSION" ]; then
+            echo "Error: package.json version ($PACKAGE_VERSION) doesn't match release tag ($RELEASE_VERSION)"
+            exit 1
+          fi
+
+      - name: Dry run publish
+        run: npm publish --access public --dry-run
+
+      - name: Publish to npm
+        run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
-**3. Setup**
-- [ ] Create `.github/workflows/` directory
-- [ ] Add `test.yml` workflow
-- [ ] Add `publish.yml` workflow
-- [ ] Add `NPM_TOKEN` to repository secrets
-- [ ] Update `examples/run-all-examples.sh` to exit with proper codes for CI
+**Key Features:**
+- **Version validation**: Ensures package.json version matches the release tag
+- **Dry run**: Catches publishing issues before the actual publish
+- **Provenance**: Adds cryptographic proof linking the package to its source (npm best practice)
+- **id-token permission**: Required for provenance generation
 
-**4. Documentation**
-- [ ] Add CI badge to README
-- [ ] Document release process in CONTRIBUTING.md (if created)
+---
+
+#### 3. Dependabot Configuration (`.github/dependabot.yml`)
+
+Automated dependency updates with sensible grouping.
+
+```yaml
+version: 2
+updates:
+  # npm dependencies
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/New_York"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(deps):"
+    groups:
+      # Group minor/patch updates to reduce PR noise
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+    # Always create PRs for major updates individually
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+
+  # GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    commit-message:
+      prefix: "chore(ci):"
+```
+
+**Key Features:**
+- **Grouped updates**: Combines minor/patch updates to reduce PR noise
+- **Separate major updates**: Major versions get individual PRs for careful review
+- **Actions updates**: Keeps GitHub Actions up to date for security
+- **Scheduled**: Weekly on Monday mornings to start the week fresh
+
+---
+
+#### 4. Security Scanning (`.github/workflows/security.yml`)
+
+CodeQL analysis for JavaScript/TypeScript vulnerabilities.
+
+```yaml
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run weekly on Sunday at midnight
+    - cron: '0 0 * * 0'
+
+jobs:
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          # Use default queries plus security-extended
+          queries: security-extended
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:javascript-typescript"
+```
+
+**Key Features:**
+- **Scheduled scans**: Weekly scans catch vulnerabilities in dependencies
+- **security-extended queries**: More comprehensive security checks
+- **PR integration**: Results appear as PR annotations
+
+---
+
+#### 5. Optional: Release Drafter (`.github/workflows/release-drafter.yml`)
+
+Automatically drafts release notes from PR labels.
+
+```yaml
+name: Release Drafter
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  update_release_draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+**Requires:** `.github/release-drafter.yml` configuration:
+
+```yaml
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'feature'
+      - 'enhancement'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'fix'
+      - 'bugfix'
+      - 'bug'
+  - title: '🧰 Maintenance'
+    labels:
+      - 'chore'
+      - 'maintenance'
+      - 'dependencies'
+  - title: '📚 Documentation'
+    labels:
+      - 'documentation'
+      - 'docs'
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\<*_&'
+version-resolver:
+  major:
+    labels:
+      - 'major'
+      - 'breaking'
+  minor:
+    labels:
+      - 'minor'
+      - 'feature'
+  patch:
+    labels:
+      - 'patch'
+      - 'fix'
+      - 'bugfix'
+  default: patch
+template: |
+  ## Changes
+
+  $CHANGES
+
+  ## Contributors
+
+  $CONTRIBUTORS
+```
+
+---
+
+#### Repository Settings & Best Practices
+
+**Branch Protection Rules (Settings > Branches > main):**
+- [ ] Require pull request reviews before merging
+- [ ] Require status checks to pass (select `ci` jobs)
+- [ ] Require branches to be up to date before merging
+- [ ] Do not allow bypassing the above settings
+
+**Secret Management:**
+- [ ] Add `NPM_TOKEN` to repository secrets (Settings > Secrets > Actions)
+  - Generate at: https://www.npmjs.com/settings/tokens
+  - Use "Automation" token type for CI/CD
+  - Consider using granular access tokens scoped to the package
+
+**Recommended Labels:**
+Create these labels for PRs to work with Release Drafter:
+- `feature` - New features
+- `enhancement` - Improvements to existing features
+- `fix` - Bug fixes
+- `documentation` - Documentation changes
+- `chore` - Maintenance tasks
+- `breaking` - Breaking changes (triggers major version)
+
+---
+
+#### Implementation Checklist
+
+**Phase 1: Core CI**
+- [ ] Create `.github/workflows/` directory
+- [ ] Add `ci.yml` workflow
+- [ ] Verify E2E tests pass in CI environment
+- [ ] Add CI status badge to README
+
+**Phase 2: Publishing**
+- [ ] Create npm account and enable 2FA
+- [ ] Generate npm automation token
+- [ ] Add `NPM_TOKEN` to repository secrets
+- [ ] Add `publish.yml` workflow
+- [ ] Test with a prerelease version (e.g., `1.0.0-beta.1`)
+
+**Phase 3: Security & Maintenance**
+- [ ] Add `dependabot.yml` configuration
+- [ ] Add `security.yml` workflow
+- [ ] Enable Dependabot alerts in repository settings
+- [ ] Review and merge initial Dependabot PRs
+
+**Phase 4: Release Automation (Optional)**
+- [ ] Add `release-drafter.yml` workflow
+- [ ] Add `.github/release-drafter.yml` configuration
+- [ ] Create PR labels
+- [ ] Document release process in CONTRIBUTING.md
+
+---
+
+#### CI Badge for README
+
+Add this badge after setting up CI:
+
+```markdown
+[![CI](https://github.com/Littletonconnor/curly/actions/workflows/ci.yml/badge.svg)](https://github.com/Littletonconnor/curly/actions/workflows/ci.yml)
+```
+
+---
+
+#### Release Process
+
+1. **Prepare release:**
+   ```bash
+   # Ensure working directory is clean
+   git status
+
+   # Update version (creates commit and tag)
+   npm version patch  # or minor/major
+
+   # Push commit and tag
+   git push && git push --tags
+   ```
+
+2. **Create GitHub Release:**
+   - Go to Releases > "Draft a new release"
+   - Select the version tag (e.g., `v1.0.1`)
+   - If using Release Drafter, review and edit the draft
+   - Click "Publish release"
+
+3. **Verify:**
+   - Check GitHub Actions for successful publish
+   - Verify package on npm: `npm view @cwl/curly`
+   - Test installation: `npm install -g @cwl/curly`

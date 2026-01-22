@@ -447,6 +447,61 @@ run_test "History (--history)" \
 run_test "Verbose mode (-v)" \
     "curly https://httpbin.org/get -v --quiet"
 
+# -----------------------------------------------------------------------------
+# 14. DRY RUN AND DEBUGGING
+# -----------------------------------------------------------------------------
+
+print_header "14. Dry Run and Debugging"
+
+run_test_output "Dry run mode" \
+    "curly https://httpbin.org/post -X POST -d test=value --dry-run" \
+    "DRY RUN"
+
+run_test_output "Dry run shows method" \
+    "curly https://httpbin.org/post -X POST --dry-run" \
+    "Method:.*POST"
+
+run_test_output "Dry run shows URL" \
+    "curly https://httpbin.org/get --dry-run" \
+    "URL:.*httpbin.org"
+
+# -----------------------------------------------------------------------------
+# 15. JSON OUTPUT MODE
+# -----------------------------------------------------------------------------
+
+print_header "15. JSON Output Mode"
+
+run_test_output "JSON output format" \
+    "curly https://httpbin.org/get --json" \
+    '"request".*"response"'
+
+run_test_output "JSON includes timing" \
+    "curly https://httpbin.org/get --json" \
+    '"timing"'
+
+run_test_output "JSON includes status" \
+    "curly https://httpbin.org/get --json" \
+    '"status".*200'
+
+# -----------------------------------------------------------------------------
+# 16. LOAD TEST EXPORT
+# -----------------------------------------------------------------------------
+
+if ! $QUICK_MODE; then
+    print_header "16. Load Test Export"
+
+    run_test_output "Export to JSON" \
+        "curly https://httpbin.org/get -n 3 -c 1 --export json" \
+        '"summary".*"latency"'
+
+    run_test_output "Export to CSV" \
+        "curly https://httpbin.org/get -n 3 -c 1 --export csv" \
+        "timestamp,latency_ms,status_code"
+else
+    print_header "16. Load Test Export (SKIPPED in quick mode)"
+    skip_test "Load test export" "Quick mode"
+fi
+
 # =============================================================================
 # SUMMARY
 # =============================================================================

@@ -31,9 +31,15 @@ npm run types && npm run lint
 
 ### Testing
 
+This project uses end-to-end testing via shell scripts in the `examples/` directory. This approach tests actual CLI behavior and serves as both documentation and validation.
+
 ```bash
-npm run test           # Build and run tests with Vitest
+./examples/run-all-examples.sh           # Run full test suite
+./examples/run-all-examples.sh --quick   # Run essential tests only (faster)
+./examples/run-all-examples.sh --verbose # Show detailed output
 ```
+
+The test script exits with code 0 on success and 1 on failure, making it suitable for CI/CD pipelines.
 
 ### Installation for Development
 

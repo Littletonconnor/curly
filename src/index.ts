@@ -135,12 +135,21 @@ export async function main(): Promise<void> {
 
     const isLoadTest = options.concurrency || options.requests
     if (isLoadTest) {
+      if (options.export && options.export !== 'json' && options.export !== 'csv') {
+        console.error(`Invalid export format: "${options.export}"`)
+        console.error('Valid formats: json, csv')
+        process.exit(1)
+      }
       await load(url, {
         ...options,
         profileTui: profile?.tui,
         profileName: cliFlags.profile,
       })
     } else {
+      if (options.export) {
+        console.error('--export is only available in load test mode (use -n or -c)')
+        process.exit(1)
+      }
       await executeRequest(url, options)
     }
   } catch (e) {

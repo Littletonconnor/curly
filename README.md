@@ -137,6 +137,7 @@ Usage: curly [OPTIONS] <url>
 | `--history`     |       | View command history                                                    |
 | `--requests`    | `-n`  | Number of requests for load testing (auto-detects load test mode)       |
 | `--concurrency` | `-c`  | Concurrency level for load testing (auto-detects load test mode)        |
+| `--export`      | `-e`  | Export load test results to JSON or CSV format                          |
 | `--timeout`     | `-t`  | Request timeout in milliseconds (aborts if exceeded)                    |
 | `--follow`      | `-L`  | Follow HTTP redirects (disabled by default)                             |
 | `--max-redirects` |     | Maximum number of redirects to follow (default: 20, requires --follow)  |
@@ -439,6 +440,18 @@ curly -n 50 -c 5 -X POST -d title=test -d body=content -d userId=1 https://jsonp
 
 ```sh
 curly -n 1000 -c 50 https://jsonplaceholder.typicode.com/users
+```
+
+##### Export load test results to JSON
+
+```sh
+curly -n 100 -c 10 --export json https://jsonplaceholder.typicode.com/posts/1
+```
+
+##### Export load test results to CSV file
+
+```sh
+curly -n 100 -c 10 --export csv -o results.csv https://jsonplaceholder.typicode.com/posts/1
 ```
 
 #### Proxy Support

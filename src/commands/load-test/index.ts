@@ -5,6 +5,7 @@ import { getErrorMessage } from '../../types'
 import { ProgressIndicator } from './progress'
 import { StatsCollector, type RequestResult } from './stats'
 import { TuiController, shouldEnableTui, isTTY, isCompactMode } from './tui'
+import { exportResults, isValidExportFormat } from './export'
 
 const DEFAULT_REQUESTS = 200
 const DEFAULT_CONCURRENCY = 50
@@ -46,7 +47,11 @@ interface LoadReporter {
 /**
  * Simple progress bar reporter
  */
-function createProgressReporter(totalRequests: number, concurrency: number): LoadReporter {
+function createProgressReporter(
+  totalRequests: number,
+  concurrency: number,
+  options: LoadOptions,
+): LoadReporter {
   const progress = new ProgressIndicator(totalRequests)
 
   return {
@@ -60,7 +65,13 @@ function createProgressReporter(totalRequests: number, concurrency: number): Loa
     },
     onComplete: async (stats, duration) => {
       progress.finish()
-      stats.print(duration)
+
+      // Handle export if specified
+      if (options.export && isValidExportFormat(options.export)) {
+        await exportResults(stats, duration, options.export, options.output)
+      } else {
+        stats.print(duration)
+      }
       return 'quit'
     },
     cleanup: () => progress.finish(),
@@ -147,7 +158,7 @@ export async function load(url: string, options: LoadOptions): Promise<void> {
 
   const reporter = useTui
     ? createTuiReporter(url, totalRequests, concurrency, options)
-    : createProgressReporter(totalRequests, concurrency)
+    : createProgressReporter(totalRequests, concurrency, options)
 
   let shouldRepeat = true
 

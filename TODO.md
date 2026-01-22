@@ -505,9 +505,9 @@ json?: boolean
 
 ---
 
-### Load Test Export Formats
+### ~~Load Test Export Formats~~ ✓
 
-Export load test results to JSON or CSV for reporting and analysis.
+~~Export load test results to JSON or CSV for reporting and analysis.~~
 
 ---
 
@@ -584,9 +584,9 @@ src/commands/load-test/export/
 - Write to `-o` file or stdout
 
 **5. Documentation**
-- [ ] Add to README options table
-- [ ] Add to `examples/09-load-testing.sh`
-- [ ] Update bash/zsh completions (with format choices)
+- [x] Add to README options table
+- [x] Add to `examples/09-load-testing.sh`
+- [x] Update bash/zsh completions (with format choices)
 
 ---
 

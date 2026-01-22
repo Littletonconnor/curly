@@ -61,6 +61,7 @@ export function cli() {
       'tui-compact': { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
       json: { type: 'boolean', short: 'j', default: false },
+      export: { type: 'string', short: 'e' },
     },
     allowPositionals: true,
   })

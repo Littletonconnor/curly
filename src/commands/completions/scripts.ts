@@ -54,6 +54,8 @@ const OPTIONS = [
   '--dry-run',
   '--json',
   '-j',
+  '--export',
+  '-e',
 ]
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
@@ -129,6 +131,10 @@ _curly_completions() {
             ;;
         -n|--requests|-c|--concurrency|-t|--timeout|--retry|--retry-delay|--max-redirects)
             # Numeric values - no completion
+            return 0
+            ;;
+        -e|--export)
+            COMPREPLY=( $(compgen -W "json csv" -- "\${cur}") )
             return 0
             ;;
     esac
@@ -215,6 +221,7 @@ _curly() {
         '(-w --write-out)'{-w,--write-out}'[Output format]:format:(http_code status_code time_total size_download)' \\
         '--dry-run[Show request details without sending]' \\
         '(-j --json)'{-j,--json}'[Output response as structured JSON]' \\
+        '(-e --export)'{-e,--export}'[Export load test results]:format:(json csv)' \\
         '*:URL:_urls'
 }
 

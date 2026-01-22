@@ -1,4 +1,4 @@
-import { cli, printHelpMessage, printDryRun, shouldDryRun } from './lib/cli'
+import { cli, printHelpMessage, printDryRun, shouldDryRun, validateExportFlag } from './lib/cli'
 import {
   printHistoryFile,
   writeHistoryFile,
@@ -133,7 +133,9 @@ export async function main(): Promise<void> {
       process.exit(0)
     }
 
-    const isLoadTest = options.concurrency || options.requests
+    const isLoadTest = !!(options.concurrency || options.requests)
+    validateExportFlag(options.export, isLoadTest)
+
     if (isLoadTest) {
       await load(url, {
         ...options,

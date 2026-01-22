@@ -88,6 +88,11 @@ Options:
   --tui-compact                Force compact TUI layout (for smaller terminals)
                                Example: curly -n 1000 --tui --tui-compact https://example.com
 
+  -e, --export <format>        Export load test results to file (json, csv)
+                               Use with -o to specify output file
+                               Example: curly -n 100 -c 10 --export json https://example.com
+                               Example: curly -n 100 -c 10 --export csv -o results.csv https://example.com
+
   --retry <num>                Retry failed requests (default: 0)
                                Example: curly --retry 3 https://flaky-api.example.com
 

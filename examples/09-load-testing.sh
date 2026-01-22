@@ -137,6 +137,44 @@ echo ""
 echo ""
 
 # -----------------------------------------------------------------------------
+# Exporting Results
+# -----------------------------------------------------------------------------
+
+echo "14. Export results to JSON"
+echo "    Command: curly https://httpbin.org/get -n 10 -c 5 --export json"
+echo "    ---"
+curly https://httpbin.org/get -n 10 -c 5 --export json
+echo ""
+echo ""
+
+echo "15. Export results to CSV"
+echo "    Command: curly https://httpbin.org/get -n 10 -c 5 --export csv"
+echo "    ---"
+curly https://httpbin.org/get -n 10 -c 5 --export csv
+echo ""
+echo ""
+
+echo "16. Export results to a JSON file"
+echo "    Command: curly https://httpbin.org/get -n 10 -c 5 --export json -o /tmp/results.json"
+echo "    ---"
+curly https://httpbin.org/get -n 10 -c 5 --export json -o /tmp/results.json
+echo "    File contents:"
+cat /tmp/results.json
+rm -f /tmp/results.json
+echo ""
+echo ""
+
+echo "17. Export results to a CSV file"
+echo "    Command: curly https://httpbin.org/get -n 10 -c 5 --export csv -o /tmp/results.csv"
+echo "    ---"
+curly https://httpbin.org/get -n 10 -c 5 --export csv -o /tmp/results.csv
+echo "    File contents:"
+cat /tmp/results.csv
+rm -f /tmp/results.csv
+echo ""
+echo ""
+
+# -----------------------------------------------------------------------------
 # Summary
 # -----------------------------------------------------------------------------
 
@@ -147,6 +185,7 @@ echo ""
 echo "  Load Test Flags:"
 echo "    -n, --requests N      Number of total requests"
 echo "    -c, --concurrency N   Number of concurrent requests"
+echo "    -e, --export FORMAT   Export results (json, csv)"
 echo ""
 echo "  Auto-Detection:"
 echo "    Using -n or -c triggers load test mode"
@@ -158,8 +197,13 @@ echo "    - Response time histogram (visual distribution)"
 echo "    - Latency percentiles (p10, p25, p50, p75, p90, p99)"
 echo "    - Status code distribution"
 echo ""
+echo "  Export Formats:"
+echo "    - JSON: Structured data for programmatic consumption"
+echo "    - CSV: Tabular data for spreadsheet analysis"
+echo ""
 echo "  Tips:"
 echo "    - Start with small -n and -c values"
 echo "    - Increase gradually to find limits"
 echo "    - Watch for timeout errors at high concurrency"
+echo "    - Use --export json -o file.json to save results"
 echo ""

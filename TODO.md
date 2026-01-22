@@ -590,9 +590,9 @@ src/commands/load-test/export/
 
 ---
 
-### Config Init Wizard (`curly --init`)
+### ~~Config Init Wizard (`curly --init`)~~ ✓
 
-Interactive wizard to generate `~/.config/curly/config.json` with common settings and profiles.
+~~Interactive wizard to generate `~/.config/curly/config.json` with common settings and profiles.~~
 
 ---
 
@@ -657,10 +657,10 @@ src/commands/init/
 - Show example usage after completion
 
 **6. Documentation**
-- [ ] Add to README options table
-- [ ] Add to `examples/10-profiles-aliases.sh`
-- [ ] Update bash/zsh completions
-- [ ] Add "Getting Started" section to README referencing `--init`
+- [x] Add to README options table
+- [x] Add to `examples/10-profiles-aliases.sh`
+- [x] Update bash/zsh completions
+- [x] Add "Getting Started" section to README referencing `--init`
 
 ---
 

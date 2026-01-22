@@ -42,6 +42,7 @@ export interface FetchOptions {
   'dry-run'?: boolean
   json?: boolean
   export?: string
+  init?: boolean
 }
 
 export interface ResponseData {

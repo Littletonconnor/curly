@@ -62,6 +62,7 @@ export function cli() {
       'dry-run': { type: 'boolean', default: false },
       json: { type: 'boolean', short: 'j', default: false },
       export: { type: 'string', short: 'e' },
+      init: { type: 'boolean', default: false },
     },
     allowPositionals: true,
   })

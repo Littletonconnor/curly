@@ -15,6 +15,7 @@ import {
 import { executeRequest } from './commands/request'
 import { load } from './commands/load-test'
 import { handleCompletions } from './commands/completions'
+import { handleInit } from './commands/init'
 import { setVerbose } from './lib/utils/logger'
 
 export async function main(): Promise<void> {
@@ -38,6 +39,11 @@ export async function main(): Promise<void> {
 
     if (cliFlags.completions !== undefined) {
       handleCompletions(cliFlags.completions)
+      process.exit(0)
+    }
+
+    if (cliFlags.init) {
+      await handleInit()
       process.exit(0)
     }
 

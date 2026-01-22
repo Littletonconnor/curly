@@ -103,6 +103,10 @@ Options:
   -p, --profile <name>         Use a named profile from ~/.config/curly/config.json
                                Example: curly --profile prod /users
 
+  --init                       Interactive wizard to set up configuration
+                               Creates ~/.config/curly/config.json with profiles
+                               Example: curly --init
+
   --completions <shell>        Generate shell completions (bash, zsh)
                                Example: curly --completions bash
                                Example: curly --completions install

@@ -2,7 +2,7 @@
 # =============================================================================
 # 10-profiles-aliases.sh - Profiles and Request Aliases
 # =============================================================================
-# Demonstrates: -p/--profile, --save, --use, --aliases, --delete-alias
+# Demonstrates: --init, -p/--profile, --save, --use, --aliases, --delete-alias
 # =============================================================================
 
 set -e
@@ -57,6 +57,27 @@ cleanup() {
 # Restore on exit (normal or error)
 trap cleanup EXIT
 
+echo ""
+
+# -----------------------------------------------------------------------------
+# Interactive Setup (--init)
+# -----------------------------------------------------------------------------
+
+echo "INTERACTIVE SETUP"
+echo "-----------------"
+echo ""
+echo "The easiest way to create profiles is with the interactive wizard:"
+echo "  curly --init"
+echo ""
+echo "This guides you through creating profiles with base URLs, headers,"
+echo "timeouts, and retry settings. The wizard will:"
+echo "  - Detect existing config and offer to merge"
+echo "  - Create multiple named profiles"
+echo "  - Set a default profile"
+echo "  - Configure headers, timeouts, and retry settings"
+echo ""
+echo "(Note: --init is interactive and not run in this automated script)"
+echo ""
 echo ""
 
 # -----------------------------------------------------------------------------
@@ -251,6 +272,9 @@ echo ""
 echo "=============================================="
 echo "  Summary: Profiles and Aliases"
 echo "=============================================="
+echo ""
+echo "  Setup:"
+echo "    --init               Interactive config wizard"
 echo ""
 echo "  Profiles (~/.config/curly/config.json):"
 echo "    -p, --profile NAME   Use named profile"

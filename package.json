@@ -1,17 +1,27 @@
 {
-  "name": "@cwl/curly",
+  "name": "curly",
   "version": "0.0.1",
-  "author": "Connor Littleton",
   "private": false,
   "description": "A CLI tool for making curl easier to work with.",
+  "keywords": [
+    "cli",
+    "curly"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Littletonconnor/curly.git"
+  },
+  "license": "MIT",
+  "author": "Connor Littleton",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
     "curly": "bin/curly.js"
   },
-  "engines": {
-    "node": ">=20"
-  },
+  "files": [
+    "dist",
+    "bin"
+  ],
   "scripts": {
     "build": "tsup --config ./tsup.config.ts",
     "dev": "npm run build && ./bin/curly.js",
@@ -19,10 +29,12 @@
     "format:check": "prettier --check 'src/**/*.ts'",
     "types": "tsc --noEmit"
   },
-  "keywords": [
-    "cli",
-    "curly"
-  ],
+  "dependencies": {
+    "asciichart": "^1.5.25",
+    "ink": "^6.6.0",
+    "react": "^19.2.3",
+    "undici": "^7.18.2"
+  },
   "devDependencies": {
     "@types/asciichart": "^1.5.8",
     "@types/node": "^22.10.5",
@@ -31,10 +43,7 @@
     "tsup": "^8.3.5",
     "typescript": "^5.7.3"
   },
-  "dependencies": {
-    "asciichart": "^1.5.25",
-    "ink": "^6.6.0",
-    "react": "^19.2.3",
-    "undici": "^7.18.2"
+  "engines": {
+    "node": ">=20"
   }
 }

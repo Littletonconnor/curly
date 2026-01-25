@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "format": "prettier --write '{app,components,lib}/**/*.ts'",
+    "format:check": "prettier --check '{app,components,lib}/**/*.ts'",
     "types": "tsc --noEmit"
   },
   "dependencies": {

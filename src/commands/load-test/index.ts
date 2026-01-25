@@ -66,7 +66,6 @@ function createProgressReporter(
     onComplete: async (stats, duration) => {
       progress.finish()
 
-      // Handle export if specified
       if (options.export && isValidExportFormat(options.export)) {
         await exportResults(stats, duration, options.export, options.output)
       } else {
@@ -128,7 +127,6 @@ function createTuiReporter(
 
       controller.complete()
 
-      // Wait for user to press 'q' (quit) or 'r' (repeat)
       return new Promise<'quit' | 'repeat'>((resolve) => {
         const onStop = () => {
           controller.off('stop', onStop)

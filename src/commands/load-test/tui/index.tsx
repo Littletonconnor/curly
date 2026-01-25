@@ -44,7 +44,6 @@ export class TuiController extends EventEmitter {
   start(): void {
     this.instance = render(<TuiApp controller={this} initialState={this.state} />)
 
-    // Update RPS and latency history every 500ms
     this.updateInterval = setInterval(() => {
       this.updateHistory()
     }, 500)
@@ -179,7 +178,6 @@ export class TuiController extends EventEmitter {
   repeat(): void {
     if (this.state.status !== 'completed') return
 
-    // Reset all state for a new run
     this.state.status = 'running'
     this.state.durations = []
     this.state.statusCodes = {}
@@ -193,7 +191,6 @@ export class TuiController extends EventEmitter {
     this.state.requestsSinceLastRps = 0
     this.abortController = new AbortController()
 
-    // Restart the history update interval
     if (!this.updateInterval) {
       this.updateInterval = setInterval(() => {
         this.updateHistory()
@@ -310,17 +307,14 @@ function TuiApp({ controller, initialState }: { controller: TuiController; initi
  * Check if TUI should be enabled based on options and environment
  */
 export function shouldEnableTui(options: { tui?: boolean }, profileTui?: boolean): boolean {
-  // CLI flag takes precedence
   if (options.tui !== undefined) {
     return options.tui
   }
 
-  // Environment variable
   if (process.env.CURLY_TUI === '1' || process.env.CURLY_TUI === 'true') {
     return true
   }
 
-  // Profile setting
   if (profileTui) {
     return true
   }

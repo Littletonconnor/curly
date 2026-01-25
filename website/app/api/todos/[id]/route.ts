@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { todos } from '@/lib/data'
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const todo = todos.find((t) => t.id === parseInt(id))
 
@@ -15,10 +12,7 @@ export async function GET(
   return NextResponse.json(todo)
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const body = await request.json()
   const todo = todos.find((t) => t.id === parseInt(id))
@@ -31,10 +25,7 @@ export async function PUT(
   return NextResponse.json(updatedTodo)
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const body = await request.json()
   const todo = todos.find((t) => t.id === parseInt(id))
@@ -49,7 +40,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params
   const todo = todos.find((t) => t.id === parseInt(id))

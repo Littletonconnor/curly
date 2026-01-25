@@ -57,6 +57,51 @@ const features = [
       </svg>
     ),
   },
+  {
+    title: 'Output Control',
+    description: 'Save to file with -o, structured JSON output with -j, or custom formats with -w.',
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+      </svg>
+    ),
+  },
+  {
+    title: 'Cookie Handling',
+    description: 'Send cookies with -b, save response cookies to a jar with --cookie-jar.',
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.87c1.355 0 2.697.055 4.024.165C17.155 8.51 18 9.473 18 10.608v2.513m-3-4.87v-1.5m-6 1.5v-1.5m12 9.75l-1.5.75a3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0L3 16.5m15-3.38a48.474 48.474 0 00-6-.37c-2.032 0-4.034.125-6 .37m12 0c.39.049.777.102 1.163.16 1.07.16 1.837 1.094 1.837 2.175v5.17c0 .62-.504 1.124-1.125 1.124H4.125A1.125 1.125 0 013 20.625v-5.17c0-1.08.768-2.014 1.837-2.174A47.78 47.78 0 016 13.12M12.265 3.11a.375.375 0 11-.53 0L12 2.845l.265.265zm-3 0a.375.375 0 11-.53 0L9 2.845l.265.265zm6 0a.375.375 0 11-.53 0L15 2.845l.265.265z" />
+      </svg>
+    ),
+  },
+  {
+    title: 'Interactive TUI',
+    description: 'Live dashboard for load testing with -T. See real-time charts, histograms, and stats.',
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+      </svg>
+    ),
+  },
+  {
+    title: 'Form & File Upload',
+    description: 'Send multipart form data with -F. Upload files using @file syntax.',
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
+      </svg>
+    ),
+  },
+  {
+    title: 'Proxy Support',
+    description: 'Route requests through HTTP/HTTPS proxy with -x for debugging or corporate networks.',
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z" />
+      </svg>
+    ),
+  },
 ]
 
 export default function Home() {
@@ -160,6 +205,33 @@ export default function Home() {
                 <CodeBlock code="curly --retry 3 --retry-delay 1000 https://api.example.com/unstable" />
                 <CodeBlock code="curly -t 5000 https://api.example.com/slow" />
                 <CodeBlock code="curly -L --max-redirects 5 https://example.com/redirect" />
+              </div>
+            </div>
+
+            <div>
+              <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-neutral-500">Output Control</h3>
+              <div className="space-y-4">
+                <CodeBlock code="curly -o response.json https://api.example.com/data" />
+                <CodeBlock code="curly -j https://api.example.com/users | jq ." />
+                <CodeBlock code={`curly -w '%{http_code} %{time_total}s' --quiet https://api.example.com`} />
+              </div>
+            </div>
+
+            <div>
+              <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-neutral-500">Cookies & Forms</h3>
+              <div className="space-y-4">
+                <CodeBlock code='curly -b "session=abc123" https://api.example.com/me' />
+                <CodeBlock code='curly -F name=John -F avatar=@photo.jpg https://api.example.com/upload' />
+                <CodeBlock code="curly --cookie-jar cookies.txt https://api.example.com/login" />
+              </div>
+            </div>
+
+            <div>
+              <h3 className="mb-3 text-sm font-medium uppercase tracking-wider text-neutral-500">Advanced</h3>
+              <div className="space-y-4">
+                <CodeBlock code="curly -x http://proxy:8080 https://api.example.com" />
+                <CodeBlock code="curly -n 1000 -T https://api.example.com/health" />
+                <CodeBlock code="curly -n 100 -e json -o results.json https://api.example.com" />
               </div>
             </div>
           </div>

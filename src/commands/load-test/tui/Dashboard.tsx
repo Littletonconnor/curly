@@ -68,7 +68,6 @@ export function Dashboard({
     }
   })
 
-  // Compact layout for small terminals
   if (state.compact) {
     return (
       <Box flexDirection="column" borderStyle="round" paddingX={1}>
@@ -105,10 +104,8 @@ export function Dashboard({
     )
   }
 
-  // Full layout
   return (
     <Box flexDirection="column" borderStyle="round" paddingX={1}>
-      {/* Header */}
       <Box justifyContent="space-between">
         <Box>
           <Text bold>Curly Load Test: </Text>
@@ -128,7 +125,6 @@ export function Dashboard({
         </Text>
       </Box>
 
-      {/* Progress */}
       <Box marginY={1} flexDirection="column">
         <Text bold>Progress</Text>
         <ProgressBar completed={state.completed} total={state.totalRequests} />
@@ -142,7 +138,6 @@ export function Dashboard({
         />
       </Box>
 
-      {/* Charts row */}
       <Box>
         <Box flexDirection="column" flexGrow={1} marginRight={2}>
           <Chart title="Request Rate (req/s)" data={state.rpsHistory} height={5} />
@@ -152,12 +147,10 @@ export function Dashboard({
         </Box>
       </Box>
 
-      {/* Histogram */}
       <Box marginY={1}>
         <Histogram durations={state.durations} />
       </Box>
 
-      {/* Status codes and percentiles row */}
       <Box>
         <Box flexDirection="column" flexGrow={1} marginRight={4}>
           <StatusCodes statusCodes={state.statusCodes} />
@@ -167,7 +160,6 @@ export function Dashboard({
         </Box>
       </Box>
 
-      {/* Controls */}
       <Box marginTop={1} borderStyle="single" borderTop borderBottom={false} borderLeft={false} borderRight={false}>
         <Controls status={state.status} />
       </Box>

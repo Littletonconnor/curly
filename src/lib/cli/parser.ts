@@ -57,7 +57,7 @@ export function cli() {
       form: { type: 'string', short: 'F', multiple: true },
       proxy: { type: 'string', short: 'x' },
       'write-out': { type: 'string', short: 'w' },
-      tui: { type: 'boolean', short: 'T', default: false },
+      tui: { type: 'boolean', short: 'T' },
       'tui-compact': { type: 'boolean', default: false },
       'dry-run': { type: 'boolean', default: false },
       json: { type: 'boolean', short: 'j', default: false },

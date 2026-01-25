@@ -43,7 +43,6 @@ export async function stdout(
     await writeToCookieJar(data, options)
   }
 
-  // JSON output mode - outputs structured JSON and skips normal formatting
   if (options.json && context) {
     const jsonOutput = formatJsonOutput(context.url, context.method, data)
     const jsonString = JSON.stringify(jsonOutput, null, 2)

@@ -35,9 +35,19 @@ const examples: Example[] = [
     description: 'Filter todos by completion status',
   },
   {
-    label: 'Verbose Mode',
-    command: 'curly -v https://curly.dev/api/users/1',
-    description: 'See detailed request/response information',
+    label: 'JSON Output',
+    command: 'curly -j https://curly.dev/api/users/1',
+    description: 'Structured JSON output with timing and metadata',
+  },
+  {
+    label: 'Cookies',
+    command: 'curly -b "session=demo123" https://curly.dev/api/users/1',
+    description: 'Send cookies with your request',
+  },
+  {
+    label: 'Write-Out',
+    command: "curly -w '%{http_code} %{time_total}s' --quiet https://curly.dev/api/users/1",
+    description: 'Custom output format with status code and timing',
   },
 ]
 
@@ -124,6 +134,46 @@ X-Request-Id: abc-123
   "name": "Alice Johnson",
   "email": "alice@example.com"
 }`,
+  },
+  'JSON Output': {
+    status: '200 OK',
+    time: '38ms',
+    body: `{
+  "request": {
+    "method": "GET",
+    "url": "https://curly.dev/api/users/1"
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    }
+  },
+  "timing": {
+    "total": 38
+  },
+  "body": {
+    "id": 1,
+    "name": "Alice Johnson",
+    "email": "alice@example.com"
+  }
+}`,
+  },
+  'Cookies': {
+    status: '200 OK',
+    time: '42ms',
+    body: `{
+  "id": 1,
+  "name": "Alice Johnson",
+  "email": "alice@example.com",
+  "session": "active"
+}`,
+  },
+  'Write-Out': {
+    status: '200 OK',
+    time: '35ms',
+    body: `200 0.035s`,
   },
 }
 

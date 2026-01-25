@@ -183,7 +183,6 @@ export async function handleInit(): Promise<void> {
     console.log('')
   }
 
-  // Ask about default profile
   const wantDefault = await confirm(rl, '? Set a default profile name?', false)
   if (wantDefault) {
     const defaultResult = await prompt(rl, '? Default profile name: ')
@@ -193,7 +192,6 @@ export async function handleInit(): Promise<void> {
   }
   console.log('')
 
-  // Create profiles
   let createMore = await confirm(rl, '? Create a profile?', true)
 
   while (createMore) {
@@ -209,7 +207,6 @@ export async function handleInit(): Promise<void> {
     createMore = await confirm(rl, '? Create another profile?', false)
   }
 
-  // Save configuration
   if (config.profiles && Object.keys(config.profiles).length > 0) {
     try {
       await saveConfig(config)

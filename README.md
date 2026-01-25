@@ -2,682 +2,294 @@
 
 ![Curly Banner](./banner.svg)
 
-A command-line tool for making HTTP requests simpler and more intuitive. Think of `curly` as a modern alternative to `curl` - a light wrapper around `fetch` in Node.js with curl-like syntax, plus built-in load testing capabilities.
+A modern, developer-friendly HTTP client for the command line. Curly wraps Node.js `fetch` with curl-like syntax, adding built-in load testing, configuration profiles, and intelligent defaults.
 
-## Quick Demo
+## Table of Contents
 
-### Curl Endpoints
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Basic Requests](#basic-requests)
+  - [Headers & Authentication](#headers--authentication)
+  - [Request Body](#request-body)
+  - [Query Parameters](#query-parameters)
+  - [Cookies](#cookies)
+  - [Output Options](#output-options)
+  - [Timeouts & Retries](#timeouts--retries)
+  - [Redirects](#redirects)
+  - [Proxy Support](#proxy-support)
+- [Load Testing](#load-testing)
+- [Configuration](#configuration)
+  - [Profiles](#profiles)
+  - [Aliases](#aliases)
+  - [Environment Variables](#environment-variables)
+- [Shell Completions](#shell-completions)
+- [Command Reference](#command-reference)
+- [Requirements](#requirements)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Features
+
+- **Familiar Syntax** - Curl-compatible flags (`-X`, `-H`, `-d`, `-I`) for easy migration
+- **Smart Defaults** - Auto-sets `Content-Type: application/json` for POST requests with data
+- **Response Parsing** - Automatically detects and pretty-prints JSON responses
+- **Load Testing** - Built-in performance testing with histograms and percentile statistics
+- **Configuration Profiles** - Define environments (dev/staging/prod) with base URLs and headers
+- **Request Aliases** - Save and replay complex requests with a single command
+- **Environment Interpolation** - Inject `{{ENV_VARS}}` into URLs, headers, and bodies
+- **Cookie Management** - Full support for cookie files and cookie jars
+- **File Uploads** - Multipart form data with automatic MIME type detection
+- **Shell Completions** - Tab completion for bash and zsh
+
+## Quick Start
 
 ```sh
+# Simple GET request
 curly https://api.example.com/users/1
+
+# POST with JSON data
+curly -X POST -d name=John -d email=john@example.com https://api.example.com/users
+
+# Load test with 1000 requests at 50 concurrency
+curly -n 1000 -c 50 https://api.example.com/health
 ```
 
-```json
-{
-  "id": 1,
-  "name": "John Doe",
-  "email": "john@example.com"
-}
-```
+## Installation
 
-### Load Testing
+### npm (Recommended)
 
 ```sh
-curly -n 5000 -c 50 https://api.example.com/posts
+npm install -g @cwl/curly
 ```
+
+### From Source
+
+```sh
+git clone https://github.com/Littletonconnor/curly.git
+cd curly
+npm install
+npm run build
+npm link
+```
+
+Verify installation:
+
+```sh
+curly --help
+```
+
+## Usage
+
+```
+curly [OPTIONS] <url>
+```
+
+### Basic Requests
+
+```sh
+# GET request (default)
+curly https://api.example.com/posts/1
+
+# Specify HTTP method
+curly -X POST https://api.example.com/posts
+curly -X PUT https://api.example.com/posts/1
+curly -X PATCH https://api.example.com/posts/1
+curly -X DELETE https://api.example.com/posts/1
+
+# HEAD request (headers only)
+curly -I https://api.example.com/posts/1
+```
+
+### Headers & Authentication
+
+```sh
+# Custom headers
+curly -H "Accept: application/json" -H "X-API-Key: secret" https://api.example.com
+
+# Basic authentication
+curly -u username:password https://api.example.com/protected
+
+# Bearer token
+curly -H "Authorization: Bearer {{TOKEN}}" https://api.example.com/secure
+```
+
+### Request Body
+
+**Key-value pairs** (automatically converted to JSON):
+
+```sh
+curly -X POST -d title="Hello" -d body="World" https://api.example.com/posts
+# Sends: {"title": "Hello", "body": "World"}
+```
+
+**Raw JSON data**:
+
+```sh
+curly -X POST --data-raw '{"title": "Hello", "body": "World"}' https://api.example.com/posts
+```
+
+**From file**:
+
+```sh
+curly -X POST -d @payload.json https://api.example.com/posts
+```
+
+**Multipart form data** (file uploads):
+
+```sh
+curly -F "file=@document.pdf" -F "description=My file" https://api.example.com/upload
+```
+
+### Query Parameters
+
+```sh
+# Using flags
+curly -q page=1 -q limit=10 https://api.example.com/posts
+
+# In URL (also works)
+curly "https://api.example.com/posts?page=1&limit=10"
+```
+
+### Cookies
+
+```sh
+# Send cookies
+curly -b "session=abc123" -b "user=john" https://api.example.com
+
+# Send cookies from file
+curly -b ./cookies.json https://api.example.com
+
+# Save received cookies
+curly --cookie-jar ./cookies.json https://api.example.com/login
+```
+
+### Output Options
+
+```sh
+# Include response headers
+curly -i https://api.example.com/posts/1
+
+# Save response to file
+curly -o response.json https://api.example.com/posts/1
+
+# Quiet mode (suppress status line)
+curly --quiet https://api.example.com/posts/1 | jq .title
+
+# Structured JSON output
+curly --json https://api.example.com/posts/1
+
+# Extract specific values
+curly -w http_code https://api.example.com/health
+# Output: 200
+
+# Verbose mode
+curly -v https://api.example.com/posts/1
+
+# Dry run (preview request without sending)
+curly --dry-run -X POST -d name=test https://api.example.com
+```
+
+### Timeouts & Retries
+
+```sh
+# Set timeout (milliseconds)
+curly -t 5000 https://api.example.com/slow-endpoint
+
+# Retry with exponential backoff
+curly --retry 3 https://api.example.com/flaky-endpoint
+
+# Custom retry delay
+curly --retry 3 --retry-delay 500 https://api.example.com/flaky-endpoint
+
+# Exit with code 22 on HTTP errors
+curly -f https://api.example.com/health || echo "Health check failed"
+```
+
+### Redirects
+
+```sh
+# Follow redirects
+curly -L https://example.com/redirect
+
+# Limit redirect count
+curly -L --max-redirects 5 https://example.com/redirect
+```
+
+### Proxy Support
+
+```sh
+curly --proxy http://localhost:8080 https://api.example.com
+curly -x http://proxy.company.com:3128 https://api.example.com
+```
+
+## Load Testing
+
+Load testing mode activates automatically when `-n` (requests) or `-c` (concurrency) flags are present.
+
+```sh
+# Basic load test: 100 requests with 10 concurrent connections
+curly -n 100 -c 10 https://api.example.com/posts/1
+```
+
+**Sample output**:
 
 ```
 Summary:
-  Total:         10.5208 secs
+  Total:         2.5208 secs
   Slowest:       0.3903 secs
   Fastest:       0.0964 secs
   Average:       0.1631 secs
-  Requests/sec:  475.2479
+  Requests/sec:  475.25
 
 Response time histogram:
-  0.096 [ 605]  |■■■■■■■■■■■■■■
+  0.096 [605]   |■■■■■■■■■■■■■■
   0.126 [1741]  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
   0.155 [1278]  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-  0.185 [1200]  |■■■■■■■■■■■■■■■■■■■■■■■■■■■■
-  0.214 [  76]  |■■
-  0.243 [  22]  |■
-  0.273 [   5]  |
-  0.302 [  29]  |■
-  0.332 [   8]  |
-  0.361 [  36]  |■
 
 Latency distribution:
-  10% in 0.1238 secs
-  25% in 0.1352 secs
   50% in 0.1647 secs
-  75% in 0.1888 secs
   90% in 0.2010 secs
   99% in 0.3278 secs
 
 Status code distribution:
-  [201] 5000 responses
+  [200] 5000 responses
 ```
 
-## Features
-
-- **Simple JSON Posting**: Automatically sets `Content-Type`: `application/json` if you're posting data.
-- **Automatic Content-Type Parsing**: Tries to parse JSON responses by default. This makes it easier to make requests to JSON APIs or HTML documents without having to specify `Content-Type` headers.
-- **Load Testing**: Built-in load testing with automatic mode detection. Fire off multiple concurrent requests and get detailed performance statistics including response time histograms.
-- **Configuration Profiles**: Define named profiles in `~/.config/curly/config.json` with base URLs, headers, timeouts, and retry settings. Switch environments with `--profile dev` or `--profile prod`.
-- **Environment Variable Interpolation**: Use `{{VAR}}` syntax to inject environment variables into URLs, headers, and request bodies.
-- **Helper Flags** (like `--help`, `--verbose`, `--include`) for easier debugging and data introspection.
-- **Familiar options**: Mimics curl-style flags (`-X`, `-H`, `-d`, `-I`) for easy migration from curl.
-- **Pretty Printing**: The CLI automatically pretty prints the output for you, and groups response data into easily viewable chunks.
-- **Viewing history**: Easily view history of commands you have written.
-
-## Installation
-
-There are two main ways to install curly: globally via npm (for everyday usage) or by "linking" locally for development.
-
-### Global Installation
-
-- Ensure you have Node >= 20 installed.
-- Run `npm install -g @cwl/curly`
-- Verify that curly is installed `curly --help`
-
-### Linking
-
-If you're developing `curly` and want to test your changes without publishing:
-
-- Clone or download this repository.
-- Install dependencies `npm install`
-- Build the CLI `npm run build`
-- Create a symlink in your global `npm` bin folder: `npm link`
-- Confirm the CLI is now accessible: `which curly`
-
-## Shell Completions
-
-Curly supports tab completions for **bash** and **zsh**.
-
-### Install
+### Interactive TUI Dashboard
 
 ```sh
-curly --completions install
+curly -n 1000 -c 50 --tui https://api.example.com/posts
 ```
 
-Then restart your shell or run:
+The TUI provides real-time statistics, live histograms, and controls to pause/resume or adjust concurrency during the test.
+
+### Export Results
 
 ```sh
-source ~/.bashrc   # for bash
-source ~/.zshrc    # for zsh
+# Export to JSON
+curly -n 100 -c 10 --export json https://api.example.com/posts
+
+# Export to CSV file
+curly -n 100 -c 10 --export csv -o results.csv https://api.example.com/posts
 ```
 
-## Getting Started
+## Configuration
 
-The easiest way to set up curly is with the interactive configuration wizard:
+### Interactive Setup
+
+Run the configuration wizard to create profiles:
 
 ```sh
 curly --init
 ```
 
-This will guide you through creating configuration profiles with base URLs, headers, timeouts, and retry settings. Configuration is saved to `~/.config/curly/config.json`.
+This creates `~/.config/curly/config.json` with your settings.
 
-## Usage
+### Profiles
 
-```sh
-Usage: curly [OPTIONS] <url>
-```
-
-### Options
-
-| Option          | Short | Description                                                             |
-| --------------- | ----- | ----------------------------------------------------------------------- |
-| `--help`        | `-h`  | Display help information                                                |
-| `--method`      | `-X`  | HTTP method (GET, POST, PUT, DELETE, etc.)                              |
-| `--headers`     | `-H`  | Add custom headers (can be used multiple times)                         |
-| `--data`        | `-d`  | Send data as key=value pairs or from file with @filename                |
-| `--data-raw`    |       | Send raw JSON data                                                      |
-| `--form`        | `-F`  | Multipart form data (use @file for uploads)                             |
-| `--query`       | `-q`  | Add query parameters (can be used multiple times)                       |
-| `--cookie`      | `-b`  | Send cookies (file path or key=value pairs, can be used multiple times) |
-| `--cookie-jar`  |       | Save received cookies to a file                                         |
-| `--output`      | `-o`  | Write response to a file                                                |
-| `--include`     | `-i`  | Include response headers in output                                      |
-| `--head`        | `-I`  | Send HEAD request (headers only)                                        |
-| `--verbose`     | `-v`  | Show detailed request/response information                              |
-| `--dry-run`     |       | Show request details without sending the request                        |
-| `--quiet`       |       | Suppress status line (for piping output)                                |
-| `--json`        | `-j`  | Output response as structured JSON (request, response, timing, body)    |
-| `--write-out`   | `-w`  | Extract specific info from response (status_code, time_total, size_download) |
-| `--history`     |       | View command history                                                    |
-| `--requests`    | `-n`  | Number of requests for load testing (auto-detects load test mode)       |
-| `--concurrency` | `-c`  | Concurrency level for load testing (auto-detects load test mode)        |
-| `--export`      | `-e`  | Export load test results to JSON or CSV format                          |
-| `--timeout`     | `-t`  | Request timeout in milliseconds (aborts if exceeded)                    |
-| `--follow`      | `-L`  | Follow HTTP redirects (disabled by default)                             |
-| `--max-redirects` |     | Maximum number of redirects to follow (default: 20, requires --follow)  |
-| `--fail`        | `-f`  | Exit with code 22 on HTTP errors (4xx/5xx)                              |
-| `--user`        | `-u`  | Basic authentication credentials (user:password)                        |
-| `--retry`       |       | Retry failed requests with exponential backoff (default: 0)             |
-| `--retry-delay` |       | Initial delay between retries in milliseconds (default: 1000)           |
-| `--profile`     | `-p`  | Use a named profile from `~/.config/curly/config.json`                  |
-| `--init`        |       | Interactive wizard to set up configuration profiles                     |
-| `--completions` |       | Generate or install shell completions (bash, zsh, install)              |
-| `--save`        |       | Save the current request as a named alias                               |
-| `--use`         |       | Execute a saved alias (CLI flags override alias values)                 |
-| `--aliases`     |       | List all saved aliases                                                  |
-| `--delete-alias`|       | Delete a saved alias                                                    |
-| `--proxy`       | `-x`  | Route requests through a proxy server (HTTP/HTTPS)                      |
-
-### Examples
-
-#### Basic Requests
-
-##### Simple GET request (default method)
-
-```sh
-curly https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### POST request with method flag
-
-```sh
-curly -X POST https://jsonplaceholder.typicode.com/posts
-```
-
-##### PUT request
-
-```sh
-curly -X PUT https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### DELETE request
-
-```sh
-curly -X DELETE https://jsonplaceholder.typicode.com/posts/1
-```
-
-#### Working with Headers
-
-##### Add custom headers
-
-```sh
-curly -H "Accept: application/json" -H "X-Custom-Header: my-value" https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### Include response headers in output
-
-```sh
-curly -i https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### HEAD request (headers only, no body)
-
-```sh
-curly -I https://jsonplaceholder.typicode.com/posts/1
-# OR
-curly --head https://jsonplaceholder.typicode.com/posts/1
-```
-
-#### Sending Data
-
-##### POST JSON data using key=value pairs (automatically converted to JSON)
-
-```sh
-curly -X POST -d title=foo -d body=bar -d userId=1 https://jsonplaceholder.typicode.com/posts
-# Sends: {"title": "foo", "body": "bar", "userId": "1"}
-```
-
-##### POST raw JSON data
-
-```sh
-curly -X POST --data-raw '{"title": "foo", "body": "bar", "userId": 1}' https://jsonplaceholder.typicode.com/posts
-```
-
-##### Multiple data fields
-
-```sh
-curly -X POST -d title="My Post" -d body="Post content" -d userId=1 https://jsonplaceholder.typicode.com/posts
-```
-
-##### POST data from a file
-
-For complex payloads, store your JSON in a file and reference it with `@`:
-
-```sh
-# payload.json
-# {"title": "My Post", "body": "This came from a file!", "userId": 1}
-
-curly -X POST -d @payload.json https://jsonplaceholder.typicode.com/posts
-```
-
-Content-Type is automatically detected from the file extension (`.json` → `application/json`, `.xml` → `application/xml`, etc.).
-
-#### Multipart File Uploads
-
-Use `-F` or `--form` to send multipart form data, which is the standard format for file uploads.
-
-##### Upload a single file
-
-```sh
-curly -F "file=@photo.jpg" https://api.example.com/upload
-```
-
-##### Upload with additional form fields
-
-```sh
-curly -F "file=@document.pdf" -F "title=My Document" -F "public=true" https://api.example.com/upload
-```
-
-##### Upload multiple files
-
-```sh
-curly -F "image=@photo.jpg" -F "thumbnail=@thumb.png" https://api.example.com/gallery
-```
-
-##### Upload with custom headers
-
-```sh
-curly -F "file=@data.csv" -H "Authorization: Bearer {{API_KEY}}" https://api.example.com/import
-```
-
-**Notes:**
-- Use `@` prefix to reference a file path (e.g., `file=@photo.jpg`)
-- Without `@`, the value is sent as a plain text field (e.g., `name=John`)
-- MIME types are automatically detected from file extensions
-- Cannot be combined with `-d` or `--data-raw`
-
-#### Query Parameters
-
-##### Add query parameters using URL
-
-```sh
-curly https://jsonplaceholder.typicode.com/posts?userId=1&completed=true
-```
-
-##### Add query parameters using flags
-
-```sh
-curly -q userId=1 -q completed=true https://jsonplaceholder.typicode.com/posts
-```
-
-#### Cookie Management
-
-##### Send cookies as key=value pairs
-
-```sh
-curly -b sessionId=abc123 -b userId=456 https://jsonplaceholder.typicode.com/posts/1
-# Sends Cookie header: sessionId=abc123; userId=456
-```
-
-##### Send cookies from a file
-
-```sh
-# Reads cookies from a JSON or Netscape format file
-curly -b ./cookies.txt https://example.com/api
-```
-
-##### Save received cookies to a jar file
-
-```sh
-curly --cookie-jar ./cookies.json https://example.com/login
-```
-
-##### Send and save cookies in one request
-
-```sh
-curly -b sessionId=old123 --cookie-jar ./new-cookies.json https://example.com/refresh
-```
-
-**Note:** Unlike curl which uses `-c` for cookie jar, curly uses `--cookie-jar` for clarity
-
-#### Output Options
-
-##### Save response to a file
-
-```sh
-curly -o ./response.json https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### Quiet mode (suppress status line for piping)
-
-```sh
-curly --quiet https://jsonplaceholder.typicode.com/posts/1 | jq .title
-```
-
-#### JSON Output Mode
-
-Use `-j` or `--json` to output a structured JSON object containing request metadata, response headers, timing, and body. This is useful for scripting and programmatic consumption.
-
-##### Get structured JSON response
-
-```sh
-curly --json https://jsonplaceholder.typicode.com/posts/1
-```
-
-**Output:**
-```json
-{
-  "request": {
-    "method": "GET",
-    "url": "https://jsonplaceholder.typicode.com/posts/1"
-  },
-  "response": {
-    "status": 200,
-    "statusText": "OK",
-    "headers": {
-      "content-type": "application/json; charset=utf-8"
-    }
-  },
-  "timing": {
-    "total": 145
-  },
-  "body": {
-    "userId": 1,
-    "id": 1,
-    "title": "...",
-    "body": "..."
-  }
-}
-```
-
-##### Extract specific fields with jq
-
-```sh
-# Get timing information
-curly --json https://api.example.com/users | jq '.timing.total'
-
-# Get response status
-curly --json https://api.example.com/users | jq '.response.status'
-
-# Get specific header
-curly --json https://api.example.com/users | jq '.response.headers["content-type"]'
-```
-
-##### Save structured response to file
-
-```sh
-curly --json https://api.example.com/users -o response.json
-```
-
-#### Write-Out (Status Code Extraction)
-
-Use `-w` or `--write-out` to extract specific response information. This is useful for scripting and health checks.
-
-##### Get just the HTTP status code
-
-```sh
-curly -w http_code https://api.example.com/health
-# Output: 200
-```
-
-##### Use curl-style format variables
-
-```sh
-curly -w "%{http_code}" https://api.example.com/health
-# Output: 200
-```
-
-##### Health check script example
-
-```sh
-# Instead of: curl -sS -o /dev/null -w "%{http_code}" URL
-# Use:
-if [ "$(curly -w http_code https://api.example.com/health)" = "200" ]; then
-  echo "Service is healthy"
-fi
-```
-
-##### Available variables
-
-| Variable | Description |
-|----------|-------------|
-| `http_code` or `status_code` | HTTP status code (e.g., 200, 404, 500) |
-| `time_total` | Total request time in seconds |
-| `size_download` | Response body size |
-
-#### Load Testing
-
-Load testing mode is automatically detected when `-n` or `-c` flags are present.
-
-##### Basic load test
-
-```sh
-curly -n 100 -c 10 https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### Load test with POST data
-
-```sh
-curly -n 50 -c 5 -X POST -d title=test -d body=content -d userId=1 https://jsonplaceholder.typicode.com/posts
-```
-
-##### High concurrency load test
-
-```sh
-curly -n 1000 -c 50 https://jsonplaceholder.typicode.com/users
-```
-
-##### Export load test results to JSON
-
-```sh
-curly -n 100 -c 10 --export json https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### Export load test results to CSV file
-
-```sh
-curly -n 100 -c 10 --export csv -o results.csv https://jsonplaceholder.typicode.com/posts/1
-```
-
-#### Proxy Support
-
-Route requests through HTTP/HTTPS proxy servers. Useful for corporate environments, debugging with traffic inspection tools (mitmproxy, Charles, Fiddler), or security testing.
-
-##### Basic proxy usage
-
-```sh
-curly --proxy http://localhost:8080 https://api.example.com/users
-# OR use the short form
-curly -x http://localhost:8080 https://api.example.com/users
-```
-
-##### Proxy with verbose mode (see connection details)
-
-```sh
-curly -v --proxy http://localhost:8080 https://httpbin.org/get
-```
-
-##### Proxy with other options
-
-```sh
-curly --proxy http://proxy.corp.com:3128 \
-  -H "Authorization: Bearer {{API_KEY}}" \
-  -X POST \
-  -d title="New Post" \
-  https://api.example.com/posts
-```
-
-**Note:** See [docs/proxy.md](docs/proxy.md) for detailed documentation including testing with mitmproxy.
-
-#### Verbose Output and History
-
-##### Enable verbose mode (shows detailed request/response information)
-
-```sh
-curly --verbose https://jsonplaceholder.typicode.com/posts/1
-# OR use the short form
-curly -v https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### View command history
-
-```sh
-curly --history
-```
-
-- History is automatically saved to `~/.config/curly/history`
-
-#### Timeout
-
-##### Set a request timeout (in milliseconds)
-
-```sh
-curly --timeout 5000 https://api.example.com/slow-endpoint
-# OR
-curly -t 5000 https://api.example.com/slow-endpoint
-```
-
-If the request takes longer than 5 seconds, it will be aborted and an error will be shown.
-
-##### Timeout with POST request
-
-```sh
-curly -t 3000 -X POST -d title=test https://api.example.com/posts
-```
-
-#### Following Redirects
-
-By default, curly does not follow HTTP redirects (matching curl's behavior). Use `--follow` or `-L` to enable redirect following.
-
-##### Follow redirects
-
-```sh
-curly --follow https://example.com/redirect
-# OR
-curly -L https://example.com/redirect
-```
-
-##### Limit maximum redirects
-
-```sh
-curly -L --max-redirects 5 https://example.com/redirect
-```
-
-If the redirect chain exceeds the limit, an error will be thrown. The default limit when using `--follow` is 20 redirects.
-
-##### Follow redirects with other options
-
-```sh
-curly -L -i https://example.com/redirect  # Include headers in output
-curly -L -t 5000 https://example.com/redirect  # With timeout
-```
-
-#### Fail on HTTP Errors
-
-Use `--fail` or `-f` to exit with code 22 when the server returns a 4xx or 5xx status. Useful for scripts and CI pipelines.
-
-##### Basic fail check
-
-```sh
-curly -f https://api.example.com/health || echo "Health check failed"
-```
-
-##### Fail with verbose output
-
-```sh
-curly -f -v https://api.example.com/protected
-```
-
-#### Basic Authentication
-
-Use `-u` or `--user` to authenticate with HTTP Basic auth. Credentials are automatically base64 encoded.
-
-##### Simple basic auth
-
-```sh
-curly -u admin:secret https://api.example.com/protected
-```
-
-##### Basic auth with environment variables
-
-```sh
-curly -u "$API_USER:$API_PASS" https://api.example.com/protected
-```
-
-##### Basic auth with other options
-
-```sh
-curly -u admin:secret -H "Accept: application/json" https://api.example.com/users
-```
-
-#### Retry on Failure
-
-Use `--retry` to automatically retry failed requests with exponential backoff. This is useful for flaky APIs or transient network issues.
-
-##### Basic retry (3 attempts)
-
-```sh
-curly --retry 3 https://api.example.com/unstable-endpoint
-```
-
-##### Retry with custom initial delay
-
-```sh
-# Start with 500ms delay, then 1s, 2s... (exponential backoff)
-curly --retry 3 --retry-delay 500 https://api.example.com/unstable-endpoint
-```
-
-##### Retry with verbose output (see retry attempts)
-
-```sh
-curly --retry 3 -v https://api.example.com/unstable-endpoint
-```
-
-##### Retry with timeout
-
-```sh
-curly --retry 3 -t 5000 https://api.example.com/slow-endpoint
-```
-
-**Note:** Retries are triggered on network errors (connection refused, reset, timeout) and do not retry on successful HTTP responses (even 4xx/5xx status codes).
-
-#### Environment Variable Interpolation
-
-Use `{{VAR}}` syntax to inject environment variables into URLs, headers, data, and other options. This is useful for keeping secrets out of your shell history and for dynamic configuration.
-
-##### Interpolate API keys in headers
-
-```sh
-export API_KEY="sk-12345"
-curly -H "Authorization: Bearer {{API_KEY}}" https://api.example.com/protected
-```
-
-##### Interpolate base URL
-
-```sh
-export BASE_URL="https://api.example.com"
-curly "{{BASE_URL}}/users"
-```
-
-##### Interpolate values in request body
-
-```sh
-export USER_ID="42"
-curly -X POST --data-raw '{"userId": "{{USER_ID}}"}' https://api.example.com/action
-```
-
-##### Multiple variables in one request
-
-```sh
-export HOST="api.example.com"
-export TOKEN="secret-token"
-export USER_ID="123"
-curly -H "Authorization: {{TOKEN}}" \
-  -q userId={{USER_ID}} \
-  "https://{{HOST}}/users"
-```
-
-##### Interpolate basic auth credentials
-
-```sh
-export API_USER="admin"
-export API_PASS="secret"
-curly -u "{{API_USER}}:{{API_PASS}}" https://api.example.com/protected
-```
-
-**Note:** If a referenced environment variable is not defined, curly will exit with an error message indicating which variable is missing.
-
-#### Configuration Profiles
-
-Define named profiles in `~/.config/curly/config.json` to avoid repeating common options. Profiles can include base URLs, headers, timeouts, and retry settings.
-
-##### Create a config file
+Define named profiles with base URLs, headers, and default settings:
 
 ```json
 {
@@ -692,263 +304,145 @@ Define named profiles in `~/.config/curly/config.json` to avoid repeating common
       "baseUrl": "https://api.example.com",
       "timeout": 10000,
       "headers": ["Authorization: Bearer {{API_KEY}}"],
-      "retry": 3,
-      "retryDelay": 2000
+      "retry": 3
     }
   }
 }
 ```
 
-##### Use the default profile
+Use profiles:
 
 ```sh
-# Uses "dev" profile (set as default)
+# Uses default profile
 curly /users
-# → GET http://localhost:3000/users
-```
 
-##### Use a specific profile
-
-```sh
+# Specify profile
 curly --profile prod /users
-# → GET https://api.example.com/users with Authorization header
-```
 
-##### Override profile settings with CLI flags
-
-```sh
-# CLI flags override profile values
+# CLI flags override profile settings
 curly --profile prod --timeout 30000 /users
-
-# CLI headers merge with profile headers
-curly --profile prod -H "X-Request-Id: 123" /users
 ```
 
-##### Use full URLs to bypass baseUrl
+**Profile options**:
 
-```sh
-# Full URLs ignore the profile's baseUrl
-curly --profile dev https://other-api.com/health
-```
-
-**Profile properties:**
 | Property | Type | Description |
 |----------|------|-------------|
 | `baseUrl` | string | Prepended to paths starting with `/` |
 | `timeout` | number | Request timeout in milliseconds |
 | `headers` | string[] | Headers in `"Name: value"` format |
 | `retry` | number | Number of retry attempts |
-| `retryDelay` | number | Initial delay between retries in ms |
+| `retryDelay` | number | Initial retry delay in milliseconds |
 
-#### Saved Request Aliases
+### Aliases
 
-Save frequently used requests as named aliases and execute them with a single command. Aliases are stored in `~/.config/curly/aliases.json`.
-
-##### Save a request as an alias
+Save complex requests for reuse:
 
 ```sh
-curly --save "get-users" https://api.example.com/users
-```
+# Save a request
+curly --save "create-user" -X POST \
+  -H "Authorization: Bearer {{TOKEN}}" \
+  -d name=John -d email=john@example.com \
+  https://api.example.com/users
 
-##### Save a complex request
+# Execute saved alias
+curly --use "create-user"
 
-```sh
-curly --save "create-post" \
-  -X POST \
-  -H "Authorization: Bearer {{API_KEY}}" \
-  -d title="New Post" \
-  -d body="Content" \
-  https://api.example.com/posts
-```
-
-##### Execute a saved alias
-
-```sh
-curly --use "get-users"
-```
-
-##### Override alias values with CLI flags
-
-```sh
-# Use the alias but add an extra header
-curly --use "get-users" -H "X-Debug: true"
-
-# Use the alias but override the URL
-curly --use "create-post" https://api.example.com/drafts
-```
-
-##### List all saved aliases
-
-```sh
+# List all aliases
 curly --aliases
+
+# Delete an alias
+curly --delete-alias "create-user"
 ```
 
-##### Delete an alias
+Aliases support environment variable interpolation - variables are resolved when the alias is executed.
+
+### Environment Variables
+
+Use `{{VAR}}` syntax to inject environment variables:
 
 ```sh
-curly --delete-alias "get-users"
+export API_KEY="sk-12345"
+export BASE_URL="https://api.example.com"
+
+curly -H "Authorization: Bearer {{API_KEY}}" "{{BASE_URL}}/users"
 ```
 
-**Note:** Aliases support environment variable interpolation with `{{VAR}}` syntax. Variables are resolved when the alias is executed, not when it's saved.
+Works in URLs, headers, data, query parameters, cookies, and authentication credentials.
 
-#### Complex Examples
+## Shell Completions
 
-##### GET request with query parameters
+Install tab completions:
 
 ```sh
-curly -q userId=1 https://jsonplaceholder.typicode.com/posts
+curly --completions install
 ```
 
-##### GET nested resource (comments for a post)
+Then restart your shell or source your config:
 
 ```sh
-curly https://jsonplaceholder.typicode.com/posts/1/comments
+source ~/.bashrc   # bash
+source ~/.zshrc    # zsh
 ```
 
-##### GET with multiple query parameters
+## Command Reference
 
-```sh
-curly -q postId=1 -q id=1 https://jsonplaceholder.typicode.com/comments
-```
+| Option | Short | Description |
+|--------|-------|-------------|
+| `--help` | `-h` | Display help information |
+| `--method` | `-X` | HTTP method (GET, POST, PUT, DELETE, etc.) |
+| `--headers` | `-H` | Add custom headers (repeatable) |
+| `--data` | `-d` | Key=value pairs or @filename (repeatable) |
+| `--data-raw` | | Send raw data |
+| `--form` | `-F` | Multipart form data (repeatable) |
+| `--query` | `-q` | Query parameters (repeatable) |
+| `--cookie` | `-b` | Cookies (key=value or file path, repeatable) |
+| `--cookie-jar` | | Save cookies to file |
+| `--output` | `-o` | Write response to file |
+| `--include` | `-i` | Include response headers |
+| `--head` | `-I` | Fetch headers only |
+| `--verbose` | `-v` | Show detailed request/response |
+| `--dry-run` | | Preview request without sending |
+| `--quiet` | | Suppress status line |
+| `--json` | `-j` | Output as structured JSON |
+| `--write-out` | `-w` | Extract response info (http_code, time_total, size_download) |
+| `--timeout` | `-t` | Request timeout in milliseconds |
+| `--follow` | `-L` | Follow HTTP redirects |
+| `--max-redirects` | | Maximum redirects (default: 20) |
+| `--fail` | `-f` | Exit with code 22 on HTTP errors |
+| `--retry` | | Retry attempts with exponential backoff |
+| `--retry-delay` | | Initial retry delay in milliseconds |
+| `--user` | `-u` | Basic authentication (user:password) |
+| `--proxy` | `-x` | HTTP/HTTPS proxy URL |
+| `--requests` | `-n` | Number of requests (load testing) |
+| `--concurrency` | `-c` | Concurrency level (load testing) |
+| `--tui` | `-T` | Interactive TUI dashboard |
+| `--export` | `-e` | Export results (json, csv) |
+| `--profile` | `-p` | Use named profile |
+| `--init` | | Interactive configuration wizard |
+| `--save` | | Save request as alias |
+| `--use` | | Execute saved alias |
+| `--aliases` | | List saved aliases |
+| `--delete-alias` | | Delete an alias |
+| `--completions` | | Shell completion (bash, zsh, install) |
+| `--history` | | View command history |
 
-##### POST with JSON data (key=value pairs)
+## Requirements
 
-```sh
-curly -X POST \
-  -d title="My New Post" \
-  -d body="This is the content" \
-  -d userId=1 \
-  https://jsonplaceholder.typicode.com/posts
-```
+- Node.js >= 20
 
-##### POST with raw JSON data
+## Contributing
 
-```sh
-curly -X POST \
-  --data-raw '{"title": "My New Post", "body": "This is the content", "userId": 1}' \
-  https://jsonplaceholder.typicode.com/posts
-```
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-##### PUT request (update existing resource)
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Make your changes
+4. Run tests: `./examples/run-all-examples.sh`
+5. Run checks: `npm run types && npm run format:check`
+6. Commit your changes
+7. Push to your branch
+8. Open a Pull Request
 
-```sh
-curly -X PUT \
-  -d id=1 \
-  -d title="Updated Title" \
-  -d body="Updated body content" \
-  -d userId=1 \
-  https://jsonplaceholder.typicode.com/posts/1
-```
+## License
 
-##### PATCH request (partial update)
-
-```sh
-curly -X PATCH \
-  -d title="Only Update Title" \
-  https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### DELETE resource
-
-```sh
-curly -X DELETE https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### GET with custom headers
-
-```sh
-curly -H "Accept: application/json" \
-  -H "X-Custom-Header: my-value" \
-  https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### GET with headers and query parameters
-
-```sh
-curly -H "Accept: application/json" \
-  -q userId=1 \
-  https://jsonplaceholder.typicode.com/posts
-```
-
-##### POST with headers and data
-
-```sh
-curly -X POST \
-  -H "Content-Type: application/json" \
-  -H "X-Request-ID: 12345" \
-  -d title="New Post" \
-  -d body="Post body" \
-  -d userId=1 \
-  https://jsonplaceholder.typicode.com/posts
-```
-
-##### GET headers only (HEAD request)
-
-```sh
-curly -I https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### GET with included response headers
-
-```sh
-curly -i https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### Save response to file
-
-```sh
-curly -o ./post.json https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### GET user's posts and albums
-
-```sh
-# Get all posts by user 1
-curly -q userId=1 https://jsonplaceholder.typicode.com/posts
-
-# Get all albums by user 1
-curly -q userId=1 https://jsonplaceholder.typicode.com/albums
-```
-
-##### GET photos from an album
-
-```sh
-curly -q albumId=1 https://jsonplaceholder.typicode.com/photos
-```
-
-##### GET todos for a user
-
-```sh
-curly -q userId=1 https://jsonplaceholder.typicode.com/todos
-```
-
-##### POST and save response to file
-
-```sh
-curly -X POST \
-  -d title="Test Post" \
-  -d body="Test body" \
-  -d userId=1 \
-  -o ./new-post.json \
-  https://jsonplaceholder.typicode.com/posts
-```
-
-##### Verbose mode to see request details
-
-```sh
-curly -v https://jsonplaceholder.typicode.com/posts/1
-```
-
-##### Load test a specific endpoint
-
-```sh
-# Test GET endpoint
-curly -n 100 -c 10 https://jsonplaceholder.typicode.com/posts/1
-
-# Test POST endpoint with data
-curly -n 50 -c 5 -X POST \
-  -d title="Load Test" \
-  -d body="Testing" \
-  -d userId=1 \
-  https://jsonplaceholder.typicode.com/posts
-```
+MIT

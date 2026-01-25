@@ -7,7 +7,7 @@
  * interpolate("Bearer {{API_KEY}}") // Returns "Bearer sk-12345"
  */
 export function interpolate(input: string): string {
-  return input.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
+  return input.replace(/\{\{(\w+)\}\}/g, (_, varName) => {
     const value = process.env[varName]
     if (value === undefined) {
       throw new Error(`Environment variable "${varName}" is not defined`)

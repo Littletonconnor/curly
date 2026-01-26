@@ -1098,57 +1098,6 @@ Ideas for extending Curly beyond current planned features. These are longer-term
 
 ---
 
-### Request Collections/Sessions
-
-Save and replay sequences of HTTP requests, similar to Postman collections. Useful for API testing workflows and reproducible request sequences.
-
-#### Usage
-
-```bash
-# Record a session
-curly https://api.example.com/auth -X POST -d '{"user":"x"}' --record session.json
-curly https://api.example.com/users --record session.json --append
-
-# Replay a collection
-curly collection run session.json
-
-# Run with environment overrides
-curly collection run session.json --env production
-```
-
-#### Collection Format
-
-```json
-{
-  "name": "API Test Suite",
-  "requests": [
-    {
-      "name": "Authenticate",
-      "url": "{{baseUrl}}/auth",
-      "method": "POST",
-      "body": { "user": "{{username}}" }
-    },
-    {
-      "name": "Get Users",
-      "url": "{{baseUrl}}/users",
-      "headers": { "Authorization": "Bearer {{auth.token}}" }
-    }
-  ],
-  "variables": {
-    "baseUrl": "https://api.example.com"
-  }
-}
-```
-
-#### Implementation Considerations
-
-- New `collection` subcommand with `run`, `record`, `list` actions
-- Variable interpolation between requests (response chaining)
-- Environment file support for different configurations
-- Exit codes based on collection success/failure
-
----
-
 ### GraphQL Support
 
 First-class GraphQL query support with dedicated flags for queries, variables, and introspection.
@@ -1222,7 +1171,7 @@ curly https://api.example.com/health --assert-status 200 && echo "OK"
 
 ### Request Chaining
 
-Chain multiple requests where output from one feeds into subsequent requests.
+Chain multiple requests where output from one feeds into subsequent requests. This extends the existing alias system (which saves single requests) to support multi-step workflows with response interpolation.
 
 #### Usage
 

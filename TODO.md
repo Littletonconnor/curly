@@ -1089,3 +1089,308 @@ Add this badge after setting up CI:
    - Check GitHub Actions for successful publish
    - Verify package on npm: `npm view @cwl/curly`
    - Test installation: `npm install -g @cwl/curly`
+
+---
+
+## Future Directions
+
+Ideas for extending Curly beyond current planned features. These are longer-term possibilities that could significantly expand the tool's capabilities.
+
+---
+
+### GraphQL Support
+
+First-class GraphQL query support with dedicated flags for queries, variables, and introspection.
+
+#### Usage
+
+```bash
+# Inline query
+curly https://api.example.com/graphql --graphql '{ users { id name } }'
+
+# Query from file
+curly https://api.example.com/graphql -Q queries/getUsers.graphql
+
+# With variables
+curly https://api.example.com/graphql \
+  -Q queries/getUser.graphql \
+  --gql-vars '{"id": "123"}'
+
+# Introspection
+curly https://api.example.com/graphql --gql-schema
+```
+
+#### Implementation Considerations
+
+- `--graphql` / `-G` flag for inline queries
+- `-Q` flag to load query from file
+- `--gql-vars` for JSON variables
+- `--gql-schema` for introspection queries
+- Auto-set `Content-Type: application/json`
+- Pretty-print GraphQL responses with proper error handling
+
+---
+
+### Response Assertions/Testing
+
+Built-in assertions for validating responses in CI/CD pipelines without external tools.
+
+#### Usage
+
+```bash
+# Assert status code
+curly https://api.example.com/health --assert-status 200
+
+# Assert JSON values (using jq-like syntax)
+curly https://api.example.com/users/1 --assert-json '.name == "John"'
+
+# Assert response time
+curly https://api.example.com/fast --assert-time '<500ms'
+
+# Assert header presence
+curly https://api.example.com/api --assert-header 'X-Request-Id'
+
+# Multiple assertions
+curly https://api.example.com/users \
+  --assert-status 200 \
+  --assert-json '.length > 0' \
+  --assert-time '<1s'
+
+# Exit code reflects assertion results
+curly https://api.example.com/health --assert-status 200 && echo "OK"
+```
+
+#### Implementation Considerations
+
+- Exit code 0 on success, non-zero on assertion failure
+- Clear error messages showing expected vs actual
+- Support for common JSON path expressions
+- Integration with `--quiet` for CI-friendly output
+
+---
+
+### Request Chaining
+
+Chain multiple requests where output from one feeds into subsequent requests. This extends the existing alias system (which saves single requests) to support multi-step workflows with response interpolation.
+
+#### Usage
+
+```bash
+# Simple chain with response interpolation
+curly https://api.example.com/auth -X POST -d '{"user":"x"}' \
+  --chain 'https://api.example.com/users -H "Authorization: Bearer {{response.token}}"'
+
+# Multi-step chain
+curly https://api.example.com/auth -X POST -d '{"user":"x"}' \
+  --chain 'https://api.example.com/users' \
+  --chain 'https://api.example.com/users/{{response[0].id}}'
+
+# Chain with named steps
+curly https://api.example.com/auth -X POST --as auth \
+  --chain 'https://api.example.com/users -H "Auth: {{auth.token}}" --as users' \
+  --chain 'https://api.example.com/users/{{users[0].id}}/details'
+```
+
+#### Implementation Considerations
+
+- `--chain` flag to append subsequent requests
+- `{{response.*}}` interpolation for previous response
+- `--as` flag to name responses for complex chains
+- Error handling: stop chain on failure (configurable)
+- Output options: final response only, all responses, or summary
+
+---
+
+### WebSocket Support
+
+Interactive WebSocket connections for real-time APIs and debugging.
+
+#### Usage
+
+```bash
+# Connect and listen
+curly ws://api.example.com/stream --listen
+
+# Send message and listen
+curly ws://api.example.com/chat --send '{"type":"join","room":"general"}' --listen
+
+# Interactive mode
+curly ws://api.example.com/chat --interactive
+
+# With authentication
+curly wss://api.example.com/stream \
+  -H "Authorization: Bearer token" \
+  --listen --timeout 60s
+```
+
+#### Implementation Considerations
+
+- Support `ws://` and `wss://` protocols
+- `--listen` flag to receive messages
+- `--send` flag for outgoing messages
+- `--interactive` for bidirectional communication
+- Reconnection logic with `--reconnect`
+- Message formatting options (JSON pretty-print)
+
+---
+
+### Mock Server Mode
+
+Spin up a lightweight mock server from recorded responses for local development and testing.
+
+#### Usage
+
+```bash
+# Start mock server from recorded session
+curly mock --port 3000 --from recorded-session.json
+
+# Record responses for mocking
+curly https://api.example.com/users --record-mock mocks/users.json
+
+# Mock with latency simulation
+curly mock --port 3000 --from mocks/ --latency 100-500ms
+
+# Mock with custom response rules
+curly mock --port 3000 --config mock-config.json
+```
+
+#### Mock Configuration
+
+```json
+{
+  "port": 3000,
+  "routes": [
+    {
+      "path": "/users",
+      "method": "GET",
+      "response": { "file": "fixtures/users.json" },
+      "delay": "100ms"
+    },
+    {
+      "path": "/users/:id",
+      "method": "GET",
+      "response": { "status": 404, "body": { "error": "Not found" } }
+    }
+  ]
+}
+```
+
+#### Implementation Considerations
+
+- Built on Node's native HTTP server (no deps)
+- Directory-based mocking (path → file mapping)
+- Response delay simulation for realistic testing
+- Request logging for debugging
+- Hot reload when mock files change
+
+---
+
+### Response Diffing
+
+Compare responses between environments or over time to detect API changes.
+
+#### Usage
+
+```bash
+# Compare between profiles/environments
+curly diff /api/users -p staging -p production
+
+# Compare with saved baseline
+curly https://api.example.com/users --save-baseline baseline.json
+curly https://api.example.com/users --diff baseline.json
+
+# Diff specific fields only
+curly diff /api/users -p staging -p production --only '.data'
+
+# Ignore volatile fields
+curly diff /api/users -p staging -p production --ignore '.timestamp,.requestId'
+```
+
+#### Output
+
+```
+Comparing: staging vs production
+Endpoint:  /api/users
+
+ {
+   "users": [
+     {
+       "id": 1,
+-      "name": "John Doe",
++      "name": "John D.",
+       "email": "john@example.com"
+     }
+   ],
+-  "total": 10
++  "total": 12
+ }
+
+Differences: 2 fields changed
+```
+
+#### Implementation Considerations
+
+- Side-by-side and unified diff formats
+- JSON-aware diffing (ignore key order, format differences)
+- Field filtering with `--only` and `--ignore`
+- Exit codes for CI integration (0 = same, 1 = different)
+- HTML report output option
+
+---
+
+### Plugin System
+
+Allow community extensions for authentication, output formats, and custom behaviors.
+
+#### Usage
+
+```bash
+# Install a plugin
+curly plugin install curly-plugin-aws-sigv4
+
+# Use plugin-provided auth
+curly https://api.amazonaws.com/s3 --auth aws-sigv4
+
+# List installed plugins
+curly plugin list
+
+# Plugin-provided output format
+curly https://api.example.com/users --format table  # from plugin
+```
+
+#### Plugin API
+
+```typescript
+// curly-plugin-aws-sigv4/index.ts
+export default {
+  name: 'aws-sigv4',
+  version: '1.0.0',
+
+  // Hook: modify request before sending
+  beforeRequest(config, options) {
+    return addAwsSignature(config, options);
+  },
+
+  // Register new auth type
+  auth: {
+    'aws-sigv4': (config, credentials) => {
+      // Sign request with AWS SigV4
+    }
+  },
+
+  // Register new output format
+  formatters: {
+    'aws-table': (response) => {
+      // Format as AWS CLI-style table
+    }
+  }
+};
+```
+
+#### Implementation Considerations
+
+- Plugin discovery in `~/.config/curly/plugins/`
+- Hooks: `beforeRequest`, `afterResponse`, `onError`
+- Extension points: auth methods, output formatters, commands
+- Plugin manifest with dependencies and compatibility
+- Sandboxed execution for security

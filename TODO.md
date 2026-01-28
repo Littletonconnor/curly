@@ -152,24 +152,30 @@ curly mock --port 3000 --config mock-config.json
 
 When adding a new CLI flag or feature, update these locations:
 
-| Location | File | Always? | Description |
-|----------|------|---------|-------------|
-| CLI Parser | `src/lib/cli/parser.ts` | ✓ | Define flag in `options` object |
-| Types | `src/types.ts` | ✓ | Add to `FetchOptions` interface |
-| Help Text | `src/lib/cli/help.ts` | ✓ | Add description and examples |
-| Bash Completions | `src/commands/completions/scripts.ts` | ✓ | Add to `OPTIONS` array and case handling |
-| Zsh Completions | `src/commands/completions/scripts.ts` | ✓ | Add `_arguments` entry |
-| README Options Table | `README.md` | ✓ | Add row to options table |
-| README Examples | `README.md` | ✓ | Add usage examples |
-| Example Scripts | `examples/*.sh` | ✓ | Add working examples to appropriate file |
-| Profile Schema | `src/lib/utils/config.ts` | If saveable | Add to `Profile` interface |
-| Alias Schema | `src/lib/utils/aliases.ts` | If saveable | Add to `SavedAlias` interface |
-| HTTP Client | `src/core/http/client.ts` | If affects requests | Implement behavior |
-| Main Entry | `src/index.ts` | If special handling | Add early exit or validation |
+| Location             | File                                  | Always?             | Description                              |
+| -------------------- | ------------------------------------- | ------------------- | ---------------------------------------- |
+| CLI Parser           | `src/lib/cli/parser.ts`               | ✓                   | Define flag in `options` object          |
+| Types                | `src/types.ts`                        | ✓                   | Add to `FetchOptions` interface          |
+| Help Text            | `src/lib/cli/help.ts`                 | ✓                   | Add description and examples             |
+| Bash Completions     | `src/commands/completions/scripts.ts` | ✓                   | Add to `OPTIONS` array and case handling |
+| Zsh Completions      | `src/commands/completions/scripts.ts` | ✓                   | Add `_arguments` entry                   |
+| README Options Table | `README.md`                           | ✓                   | Add row to options table                 |
+| README Examples      | `README.md`                           | ✓                   | Add usage examples                       |
+| Example Scripts      | `examples/*.sh`                       | ✓                   | Add working examples to appropriate file |
+| Profile Schema       | `src/lib/utils/config.ts`             | If saveable         | Add to `Profile` interface               |
+| Alias Schema         | `src/lib/utils/aliases.ts`            | If saveable         | Add to `SavedAlias` interface            |
+| HTTP Client          | `src/core/http/client.ts`             | If affects requests | Implement behavior                       |
+| Main Entry           | `src/index.ts`                        | If special handling | Add early exit or validation             |
 
 **Example file mapping:**
+
 - Output flags → `examples/06-output-control.sh`
 - Auth flags → `examples/02-headers-and-auth.sh`
 - Load test flags → `examples/09-load-testing.sh`
 - Error handling → `examples/07-error-handling.sh`
 - Diffing → `examples/14-diffing.sh`
+
+### Docs
+
+- Add doc for TUI
+- Add doc for diffing algorithm

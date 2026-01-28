@@ -21,22 +21,3 @@ export async function ensureConfigDir(): Promise<void> {
 export interface WriteOutputOptions {
   colors?: boolean
 }
-
-/**
- * Writes data to a file using Node's inspect for formatting.
- * Handles errors gracefully with a warning log.
- */
-export async function writeOutputToFile(
-  data: unknown,
-  outputPath: string,
-  options: WriteOutputOptions = {},
-): Promise<void> {
-  const { colors = false } = options
-  const buffer = inspect(data, { depth: null, maxArrayLength: null, colors })
-
-  try {
-    await fs.writeFile(outputPath, buffer, 'utf8')
-  } catch {
-    logger().warn(`Failed to write to output path ${outputPath}`)
-  }
-}

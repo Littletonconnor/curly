@@ -177,5 +177,5 @@ When adding a new CLI flag or feature, update these locations:
 
 ### Docs
 
-- Add doc for TUI
-- Add doc for diffing algorithm
+- ~~Add doc for TUI~~ ✓
+- ~~Add doc for diffing algorithm~~ ✓

@@ -1,12 +1,12 @@
-import { promises } from 'fs'
+import { promises as fs } from 'fs'
 import { STATUS_CODES } from 'node:http'
 import { inspect, styleText } from 'node:util'
 import { parseSetCookieHeaders } from '../../core/http/cookies'
 import { type FetchOptions } from '../../core/http/client'
 import { logger } from '../utils/logger'
-import { writeOutputToFile } from '../utils/fs'
 import { type ResponseData, type StatusColor } from '../../types'
 import { formatJsonOutput } from './json-output'
+import { handleDiff } from '../../commands/diff'
 
 export interface OutputContext {
   url: string
@@ -23,7 +23,7 @@ export async function writeToCookieJar(data: ResponseData, options: FetchOptions
   logger().verbose('cookies', `Saving cookies to jar: ${cookieJarFilePath}`)
 
   try {
-    await promises.writeFile(cookieJarFilePath, JSON.stringify(cookieHeaders), 'utf-8')
+    await fs.writeFile(cookieJarFilePath, JSON.stringify(cookieHeaders), 'utf-8')
     logger().verbose('cookies', `Saved ${Object.keys(cookieHeaders).length} cookie(s)`)
   } catch {
     logger().warn(`Failed to write to output path ${cookieJarFilePath}`)
@@ -43,12 +43,24 @@ export async function stdout(
     await writeToCookieJar(data, options)
   }
 
+  if (options.diff) {
+    const hasDifferences = await handleDiff(data.response, options.diff)
+    if (hasDifferences) {
+      process.exit(1)
+    }
+    return
+  }
+
   if (options.json && context) {
     const jsonOutput = formatJsonOutput(context.url, context.method, data)
     const jsonString = JSON.stringify(jsonOutput, null, 2)
 
     if (options.output) {
-      await writeOutputToFile(jsonString, options.output, { colors: false })
+      try {
+        await fs.writeFile(options.output, jsonString, 'utf8')
+      } catch {
+        logger().warn(`Failed to write to output path ${options.output}`)
+      }
       logger().verbose('output', `JSON response saved to: ${options.output}`)
     } else {
       console.log(jsonString)
@@ -106,7 +118,11 @@ async function writeContentToFile(
   }
 
   const content = parts.join('\n\n')
-  await writeOutputToFile(content, filePath, { colors: false })
+  try {
+    await fs.writeFile(filePath, content, 'utf8')
+  } catch {
+    logger().warn(`Failed to write to output path ${filePath}`)
+  }
   logger().verbose('output', 'Response saved successfully')
 }
 

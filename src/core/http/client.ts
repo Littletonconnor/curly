@@ -35,7 +35,6 @@ export async function curl(
   const { signal: timeoutSignal, cleanup } = createTimeoutSignal(timeoutMs)
   const maxRedirects = getMaxRedirects(options)
 
-  // Combine timeout signal with external signal if both exist
   const signal = combineSignals(timeoutSignal, externalSignal)
   if (signal) {
     fetchOptions.signal = signal
@@ -72,12 +71,10 @@ export async function curl(
     }, retryOptions)
   } catch (error: unknown) {
     if (isError(error) && error.name === 'AbortError') {
-      // Check if this was an external abort (e.g., TUI pause/quit) vs a timeout
       const wasExternalAbort = externalSignal?.aborted
       if (!wasExternalAbort && timeoutMs) {
         logger().error(`Request timed out after ${timeoutMs}ms`)
       }
-      // Don't log anything for external aborts - they're intentional
       throw error
     }
     logger().error(`Fetch response failed: ${getErrorMessage(error)}`)
@@ -115,12 +112,10 @@ function combineSignals(
   if (!timeoutSignal) return externalSignal
   if (!externalSignal) return timeoutSignal
 
-  // Combine both signals using AbortSignal.any if available (Node 20+)
   if ('any' in AbortSignal) {
     return AbortSignal.any([timeoutSignal, externalSignal])
   }
 
-  // Fallback: create a new controller that aborts when either signal aborts
   const controller = new AbortController()
   const abort = () => controller.abort()
 

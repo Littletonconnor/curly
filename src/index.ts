@@ -16,7 +16,7 @@ import { executeRequest } from './commands/request'
 import { load } from './commands/load-test'
 import { handleCompletions } from './commands/completions'
 import { handleInit } from './commands/init'
-import { setVerbose } from './lib/utils/logger'
+import { logger, setVerbose } from './lib/utils/logger'
 
 export async function main(): Promise<void> {
   try {
@@ -138,7 +138,7 @@ export async function main(): Promise<void> {
         retry: cliFlags.retry !== '0' ? cliFlags.retry : undefined,
         retryDelay: cliFlags['retry-delay'] !== '1000' ? cliFlags['retry-delay'] : undefined,
       })
-      console.log(`Saved alias "${cliFlags.save}"`)
+      logger().info(`Saved alias "${cliFlags.save}"`)
     }
 
     if (shouldDryRun(options)) {

@@ -57,6 +57,9 @@ const OPTIONS = [
   '--export',
   '-e',
   '--init',
+  '--diff',
+  '--diff-only',
+  '--diff-ignore',
 ]
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
@@ -91,7 +94,7 @@ _curly_completions() {
             COMPREPLY=( $(compgen -W "\${methods}" -- "\${cur}") )
             return 0
             ;;
-        -o|--output|-b|--cookie|--cookie-jar|-d|--data|-F|--form)
+        -o|--output|-b|--cookie|--cookie-jar|-d|--data|-F|--form|--diff)
             # File completion
             COMPREPLY=( $(compgen -f -- "\${cur}") )
             return 0
@@ -224,6 +227,9 @@ _curly() {
         '(-j --json)'{-j,--json}'[Output response as structured JSON]' \\
         '(-e --export)'{-e,--export}'[Export load test results]:format:(json csv)' \\
         '--init[Interactive config setup wizard]' \\
+        '--diff[Compare response against baseline]:file:_files' \\
+        '--diff-only[Only diff these JSON paths]:path:' \\
+        '--diff-ignore[Ignore these JSON paths]:path:' \\
         '*:URL:_urls'
 }
 

@@ -224,6 +224,20 @@ curly --proxy http://localhost:8080 https://api.example.com
 curly -x http://proxy.company.com:3128 https://api.example.com
 ```
 
+### Response Diffing
+
+Compare API responses against saved baselines to detect changes:
+
+```sh
+# Save a baseline using -o
+curly --quiet -o baseline.json https://api.example.com/users
+
+# Compare against baseline (exits with code 1 if different)
+curly --diff baseline.json https://api.example.com/users
+```
+
+Useful in CI pipelines to catch unexpected API changes.
+
 ## Load Testing
 
 Load testing mode activates automatically when `-n` (requests) or `-c` (concurrency) flags are present.
@@ -424,6 +438,7 @@ source ~/.zshrc    # zsh
 | `--aliases` | | List saved aliases |
 | `--delete-alias` | | Delete an alias |
 | `--completions` | | Shell completion (bash, zsh, install) |
+| `--diff` | | Compare response against baseline |
 | `--history` | | View command history |
 
 ## Requirements

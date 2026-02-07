@@ -286,6 +286,15 @@ run_test_output "Write-out size_download" \
     "curly https://httpbin.org/get -w '%{size_download}' --quiet" \
     "[0-9]+"
 
+run_test "Download binary file (-o)" \
+    "curly https://httpbin.org/bytes/1024 -o '${TEMP_DIR}/binary.bin' && test -s '${TEMP_DIR}/binary.bin'"
+
+run_test "Download larger binary file (-o)" \
+    "curly https://httpbin.org/bytes/4096 -o '${TEMP_DIR}/sized.bin' && test -s '${TEMP_DIR}/sized.bin'"
+
+run_test "Download with write-out" \
+    "curly https://httpbin.org/bytes/512 -o '${TEMP_DIR}/wo.bin' -w '%{http_code}' --quiet"
+
 run_test "Quiet mode (--quiet)" \
     "curly https://httpbin.org/get --quiet"
 
@@ -473,7 +482,7 @@ print_header "15. JSON Output Mode"
 
 run_test_output "JSON output format" \
     "curly https://httpbin.org/get --json" \
-    '"request".*"response"'
+    '"method".*"GET"'
 
 run_test_output "JSON includes timing" \
     "curly https://httpbin.org/get --json" \

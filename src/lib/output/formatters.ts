@@ -1,12 +1,17 @@
 import { promises as fs } from 'fs'
+import { createWriteStream } from 'node:fs'
 import { STATUS_CODES } from 'node:http'
+import { Readable, Transform } from 'node:stream'
+import { pipeline } from 'node:stream/promises'
 import { inspect, styleText } from 'node:util'
-import { parseSetCookieHeaders } from '../../core/http/cookies'
-import { type FetchOptions } from '../../core/http/client'
-import { logger } from '../utils/logger'
-import { type ResponseData, type StatusColor } from '../../types'
-import { formatJsonOutput } from './json-output'
 import { handleDiff } from '../../commands/diff'
+import { type FetchOptions } from '../../core/http/client'
+import { parseSetCookieHeaders } from '../../core/http/cookies'
+import { type ResponseData, type StatusColor } from '../../types'
+import { formatBytes } from '../utils'
+import { logger } from '../utils/logger'
+import { ProgressIndicator } from './download-progress'
+import { formatJsonOutput } from './json-output'
 
 export interface OutputContext {
   url: string
@@ -71,9 +76,7 @@ export async function stdout(
   const includeHeaders = !!(options.include || options.head)
   const includeBody = !options.head
 
-  if (options.output) {
-    await writeContentToFile(data, options.output, { includeHeaders, includeBody })
-  } else {
+  if (!options.output) {
     printContent(data, { includeHeaders, includeBody })
   }
 
@@ -97,33 +100,55 @@ function printContent(
   }
 }
 
-async function writeContentToFile(
-  data: ResponseData,
-  filePath: string,
-  opts: { includeHeaders: boolean; includeBody: boolean },
-): Promise<void> {
-  logger().verbose('output', `Writing response to file: ${filePath}`)
+/**
+ * Streams an HTTP response body directly to a file on disk.
+ *
+ * Uses Node's stream pipeline pattern (Readable → Transform → Writable) to avoid
+ * buffering the entire response in memory, which would crash on large files that
+ * exceed Node's ~512MB string limit (ERR_STRING_TOO_LONG).
+ *
+ * The pipeline works in three stages:
+ *  1. Readable  — the HTTP response body, converted from a web ReadableStream
+ *                 to a Node.js Readable via Readable.fromWeb()
+ *  2. Transform — a pass-through that counts bytes per chunk to drive the progress bar,
+ *                 forwarding each chunk downstream unchanged
+ *  3. Writable  — a file write stream that writes raw binary bytes to disk
+ *
+ * pipeline() from stream/promises connects these stages, handling backpressure
+ * (slowing reads if writes fall behind) and cleanup (closing all streams on error).
+ *
+ * @param response - The raw fetch Response with an unconsumed body
+ * @param filePath - Destination file path to write to
+ * @returns The human-readable size of the downloaded file
+ */
+export async function streamDownload(response: Response, filePath: string) {
+  const contentLengthHeader = response.headers.get('Content-Length')
+  const totalBytes = contentLengthHeader ? parseInt(contentLengthHeader, 10) : null
 
-  const parts: string[] = []
+  const progress = new ProgressIndicator(totalBytes)
 
-  if (opts.includeHeaders) {
-    const headerLines = [...data.headers.entries()].map(([k, v]) => `${k}: ${v}`).join('\n')
-    parts.push(headerLines)
+  const progressTransform = new Transform({
+    transform(chunk, _, callback) {
+      progress.update(chunk.length)
+      callback(null, chunk)
+    },
+  })
+
+  if (!response.body) {
+    createWriteStream(filePath).end()
+    return {
+      size: '0 B',
+    }
   }
 
-  if (opts.includeBody) {
-    const bodyStr =
-      typeof data.response === 'string' ? data.response : JSON.stringify(data.response, null, 2)
-    parts.push(bodyStr)
-  }
+  const nodeReadable = Readable.fromWeb(response.body as any)
+  const writeStream = createWriteStream(filePath)
+  await pipeline(nodeReadable, progressTransform, writeStream)
 
-  const content = parts.join('\n\n')
-  try {
-    await fs.writeFile(filePath, content, 'utf8')
-  } catch {
-    logger().warn(`Failed to write to output path ${filePath}`)
+  progress.finish()
+  return {
+    size: formatBytes(progress.getBytesWritten()),
   }
-  logger().verbose('output', 'Response saved successfully')
 }
 
 function getStatusText(status: number): string {

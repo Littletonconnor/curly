@@ -129,9 +129,6 @@ Options:
                                Example: curly --proxy http://localhost:8080 https://example.com
                                Example: curly -x http://proxy.corp.com:3128 https://api.example.com
 
-  --diff <file>                Compare response against a saved baseline file
-                               Exits with code 1 if differences are found (CI-friendly)
-                               Example: curly --diff baseline.json https://api.example.com/users
 `
   console.log(message)
 }

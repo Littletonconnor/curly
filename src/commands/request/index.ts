@@ -14,7 +14,7 @@ export async function executeRequest(url: string, options: FetchOptions) {
   const method = buildMethod(options)
 
   let data: ResponseData
-  const shouldStream = options.output && method !== 'HEAD' && !options.json && !options.diff
+  const shouldStream = options.output && method !== 'HEAD' && !options.json
   if (shouldStream) {
     const { size } = await streamDownload(response, options.output!)
     data = {

@@ -4,7 +4,6 @@ import { STATUS_CODES } from 'node:http'
 import { Readable, Transform } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { inspect, styleText } from 'node:util'
-import { handleDiff } from '../../commands/diff'
 import { type FetchOptions } from '../../core/http/client'
 import { parseSetCookieHeaders } from '../../core/http/cookies'
 import { type ResponseData, type StatusColor } from '../../types'
@@ -46,14 +45,6 @@ export async function stdout(
 ): Promise<void> {
   if (options['cookie-jar']) {
     await writeToCookieJar(data, options)
-  }
-
-  if (options.diff) {
-    const hasDifferences = await handleDiff(data.response, options.diff)
-    if (hasDifferences) {
-      process.exit(1)
-    }
-    return
   }
 
   if (options.json && context) {

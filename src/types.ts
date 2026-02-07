@@ -35,9 +35,6 @@ export interface FetchOptions {
   aliases?: boolean
   'delete-alias'?: string
   form?: string[]
-  diff?: string
-  'diff-only'?: string
-  'diff-ignore'?: string
   proxy?: string
   'write-out'?: string
   tui?: boolean

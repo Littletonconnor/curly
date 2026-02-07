@@ -1,18 +1,18 @@
 import { readFileSync } from 'fs'
 import { ProxyAgent } from 'undici'
-import { CONTENT_TYPES } from '../config/constants'
-import { readBodyFromFile, getContentTypeFromExtension, parseFormField } from '../../lib/utils/file'
-import { applyCookieHeader } from './cookies'
+import { getContentTypeFromExtension, parseFormField, readBodyFromFile } from '../../lib/utils/file'
 import { logger } from '../../lib/utils/logger'
+import { formatBytes, parseIntOption } from '../../lib/utils/parse'
 import { withRetry } from '../../lib/utils/retry'
-import { parseIntOption, formatBytes } from '../../lib/utils/parse'
 import {
-  type FetchOptions,
   type CurlyRequestInit,
+  type FetchOptions,
   type ResponseData,
-  isError,
   getErrorMessage,
+  isError,
 } from '../../types'
+import { CONTENT_TYPES } from '../config/constants'
+import { applyCookieHeader } from './cookies'
 
 export type { FetchOptions } from '../../types'
 
@@ -190,12 +190,25 @@ function isRedirectStatus(status: number): boolean {
  * @returns Parsed response data including body, headers, status, and size
  */
 export async function buildResponse({
+  options,
   response,
   duration,
 }: {
+  options: FetchOptions
   response: Response
   duration: number
 }): Promise<ResponseData> {
+  const method = buildMethod(options)
+  if (method === 'HEAD') {
+    return {
+      response: null,
+      duration,
+      headers: response.headers,
+      status: response.status,
+      size: '0 B',
+    }
+  }
+
   const contentType = response.headers.get('content-type') ?? ''
   const size = await getResponseSize(response)
 

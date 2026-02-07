@@ -75,6 +75,22 @@ cat "${TEMP_DIR}/data.json"
 echo ""
 echo ""
 
+echo "6b. Download binary file (streamed directly to disk)"
+echo "    Command: curly https://httpbin.org/bytes/10240 -o ${TEMP_DIR}/binary.bin"
+echo "    ---"
+curly https://httpbin.org/bytes/10240 -o "${TEMP_DIR}/binary.bin"
+echo "    Saved file size: $(wc -c < "${TEMP_DIR}/binary.bin") bytes"
+echo ""
+echo ""
+
+echo "6c. Download larger binary file (with progress bar in TTY)"
+echo "    Command: curly https://httpbin.org/bytes/102400 -o ${TEMP_DIR}/large.bin"
+echo "    ---"
+curly https://httpbin.org/bytes/102400 -o "${TEMP_DIR}/large.bin"
+echo "    Saved file size: $(wc -c < "${TEMP_DIR}/large.bin") bytes"
+echo ""
+echo ""
+
 # -----------------------------------------------------------------------------
 # Write-Out Format (-w/--write-out)
 # -----------------------------------------------------------------------------
@@ -191,12 +207,10 @@ curly https://httpbin.org/json -o "${TEMP_DIR}/out.json" -w 'Saved! Status: %{ht
 echo ""
 echo ""
 
-echo "21. Headers + output file"
-echo "    Command: curly https://httpbin.org/get -i -o ${TEMP_DIR}/with-headers.txt"
+echo "21. Write-out with file download"
+echo "    Command: curly https://httpbin.org/bytes/1024 -o ${TEMP_DIR}/download.bin -w 'Status: %{http_code}, Size: %{size_download}'"
 echo "    ---"
-curly https://httpbin.org/get -i -o "${TEMP_DIR}/with-headers.txt"
-echo "   File contents (first 20 lines):"
-head -20 "${TEMP_DIR}/with-headers.txt"
+curly https://httpbin.org/bytes/1024 -o "${TEMP_DIR}/download.bin" -w 'Status: %{http_code}, Size: %{size_download}'
 echo ""
 echo ""
 
@@ -213,7 +227,8 @@ echo "    -i, --include      Include headers with body"
 echo "    -I, --head         Headers only (HEAD request)"
 echo ""
 echo "  Output Destination:"
-echo "    -o, --output FILE  Write body to file"
+echo "    -o, --output FILE  Stream body to file (no memory limit)"
+echo "                       Shows progress bar in TTY mode"
 echo ""
 echo "  Write-Out Format (-w/--write-out):"
 echo "    %{http_code}       HTTP status code"

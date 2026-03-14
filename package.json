@@ -1,6 +1,6 @@
 {
   "name": "@connorlittleton/curly",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "private": false,
   "description": "A CLI tool for making curl easier to work with.",
   "keywords": [

@@ -103,7 +103,9 @@ export async function main(): Promise<void> {
 
     const rawUrl = positionals[positionals.length - 1] || alias?.url
     if (!rawUrl) {
-      console.error('No URL provided')
+      console.error(
+        'No URL provided.\n  Usage: curly <url>\n  Run curly --help for more information.',
+      )
       process.exit(1)
     }
 
@@ -123,7 +125,11 @@ export async function main(): Promise<void> {
     const hasData = (mergedData && mergedData.length > 0) || cliFlags['data-raw']
     const hasForm = mergedForm && mergedForm.length > 0
     if (hasData && hasForm) {
-      console.error('Cannot use -d/--data and -F/--form together. Choose one.')
+      console.error(
+        'Cannot use -d/--data and -F/--form together.\n' +
+          '  Use -d for raw/JSON data: curly -d \'{"key":"val"}\' URL\n' +
+          "  Use -F for multipart form uploads: curly -F 'file=@photo.jpg' URL",
+      )
       process.exit(1)
     }
 

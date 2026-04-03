@@ -137,6 +137,34 @@ curly https://httpbin.org/ip -w '\nStatus: %{http_code}'
 echo ""
 echo ""
 
+echo "12a. Get content type"
+echo "     Command: curly https://httpbin.org/json -w '%{content_type}' --quiet"
+echo "     ---"
+curly https://httpbin.org/json -w '%{content_type}' --quiet
+echo ""
+echo ""
+
+echo "12b. Get final URL after redirects"
+echo "     Command: curly https://httpbin.org/redirect/2 -L -w '%{url_effective}' --quiet"
+echo "     ---"
+curly https://httpbin.org/redirect/2 -L -w '%{url_effective}' --quiet
+echo ""
+echo ""
+
+echo "12c. Get number of redirects followed"
+echo "     Command: curly https://httpbin.org/redirect/3 -L -w '%{num_redirects}' --quiet"
+echo "     ---"
+curly https://httpbin.org/redirect/3 -L -w '%{num_redirects}' --quiet
+echo ""
+echo ""
+
+echo "12d. Get response headers as JSON"
+echo "     Command: curly https://httpbin.org/get -w '%{header_json}' --quiet"
+echo "     ---"
+curly https://httpbin.org/get -w '%{header_json}' --quiet
+echo ""
+echo ""
+
 # -----------------------------------------------------------------------------
 # Quiet Mode (--quiet)
 # -----------------------------------------------------------------------------
@@ -235,6 +263,11 @@ echo "    %{http_code}       HTTP status code"
 echo "    %{status_code}     Alias for http_code"
 echo "    %{time_total}      Total time in seconds"
 echo "    %{size_download}   Response size in bytes"
+echo "    %{content_type}    Response Content-Type"
+echo "    %{url_effective}   Final URL after redirects"
+echo "    %{redirect_url}    Redirect destination URL"
+echo "    %{num_redirects}   Number of redirects followed"
+echo "    %{header_json}     Response headers as JSON"
 echo ""
 echo "  Quiet Mode:"
 echo "    --quiet            Suppress status line"

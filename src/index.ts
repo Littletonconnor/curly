@@ -1,3 +1,5 @@
+import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
 import { cli, printHelpMessage, printDryRun, shouldDryRun, validateExportFlag } from './lib/cli'
 import {
   printHistoryFile,
@@ -25,6 +27,13 @@ export async function main(): Promise<void> {
 
     if (cliFlags.verbose) {
       setVerbose(true)
+    }
+
+    if (cliFlags.version) {
+      const pkgPath = fileURLToPath(new URL('../package.json', import.meta.url))
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
+      console.log(`curly ${pkg.version}`)
+      process.exit(0)
     }
 
     if (cliFlags.help) {

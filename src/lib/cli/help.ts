@@ -3,6 +3,7 @@ export function printHelpMessage() {
 
 Options:
   -h, --help                   Show help menu
+  -V, --version                Show version number
 
   --history                    Show history logs (defaults to ~/curly_history.txt)
 
@@ -62,9 +63,17 @@ Options:
                                Example: curly --json https://example.com | jq '.timing.total'
 
   -w, --write-out <format>     Extract specific info from response (like curl -w)
-                               Supported variables: http_code (or status_code), time_total, size_download
-                               Example: curly -w status_code https://example.com
+                               Supported variables:
+                                 http_code / status_code  HTTP status code
+                                 time_total               Total time in seconds
+                                 size_download            Response size
+                                 content_type             Response Content-Type
+                                 url_effective            Final URL after redirects
+                                 redirect_url             Redirect destination URL
+                                 num_redirects            Number of redirects followed
+                                 header_json              Response headers as JSON
                                Example: curly -w "%{http_code}" https://example.com
+                               Example: curly -w "%{content_type}\n%{url_effective}" -L https://example.com
 
   -t, --timeout <ms>           Request timeout in milliseconds
                                Example: curly -t 5000 https://example.com

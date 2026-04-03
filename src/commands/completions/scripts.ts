@@ -57,6 +57,8 @@ const OPTIONS = [
   '--export',
   '-e',
   '--init',
+  '--version',
+  '-V',
 ]
 
 const HTTP_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS']
@@ -107,7 +109,7 @@ _curly_completions() {
             ;;
         -w|--write-out)
             # Write-out format variables
-            local vars="http_code status_code time_total size_download"
+            local vars="http_code status_code time_total size_download content_type url_effective redirect_url num_redirects header_json"
             COMPREPLY=( $(compgen -W "\${vars}" -- "\${cur}") )
             return 0
             ;;
@@ -219,11 +221,12 @@ _curly() {
         '--delete-alias[Delete a saved alias]:alias:' \\
         '*'{-F,--form}'[Multipart form data]:data:_files' \\
         '(-x --proxy)'{-x,--proxy}'[Proxy server URL]:url:' \\
-        '(-w --write-out)'{-w,--write-out}'[Output format]:format:(http_code status_code time_total size_download)' \\
+        '(-w --write-out)'{-w,--write-out}'[Output format]:format:(http_code status_code time_total size_download content_type url_effective redirect_url num_redirects header_json)' \\
         '--dry-run[Show request details without sending]' \\
         '(-j --json)'{-j,--json}'[Output response as structured JSON]' \\
         '(-e --export)'{-e,--export}'[Export load test results]:format:(json csv)' \\
         '--init[Interactive config setup wizard]' \\
+        '(-V --version)'{-V,--version}'[Show version number]' \\
         '*:URL:_urls'
 }
 

@@ -25,11 +25,19 @@ export type { FetchOptions } from '../../types'
  * @param externalSignal - Optional external abort signal (e.g., from TUI pause)
  * @returns The raw Response object and request duration in milliseconds
  */
+export interface CurlResult {
+  response: Response
+  duration: number
+  urlEffective: string
+  numRedirects: number
+  redirectUrl?: string
+}
+
 export async function curl(
   url: string,
   options: FetchOptions,
   externalSignal?: AbortSignal,
-): Promise<{ response: Response; duration: number }> {
+): Promise<CurlResult> {
   const fetchOptions = buildFetchOptions(options)
   const timeoutMs = parseIntOption(options.timeout, 0) || undefined
   const { signal: timeoutSignal, cleanup } = createTimeoutSignal(timeoutMs)
@@ -61,13 +69,19 @@ export async function curl(
   try {
     return await withRetry(async () => {
       const startTime = performance.now()
-      const response = await executeFetch(finalUrl, fetchOptions, maxRedirects, proxyAgent)
+      const result = await executeFetch(finalUrl, fetchOptions, maxRedirects, proxyAgent)
       const duration = performance.now() - startTime
       logger().verbose(
         'response',
-        `${response.status} ${response.statusText} (${duration.toFixed(0)}ms)`,
+        `${result.response.status} ${result.response.statusText} (${duration.toFixed(0)}ms)`,
       )
-      return { response, duration }
+      return {
+        response: result.response,
+        duration,
+        urlEffective: result.urlEffective,
+        numRedirects: result.numRedirects,
+        redirectUrl: result.redirectUrl,
+      }
     }, retryOptions)
   } catch (error: unknown) {
     if (isError(error) && error.name === 'AbortError') {
@@ -143,32 +157,60 @@ function createProxyAgent(proxyUrl: string | undefined): ProxyAgent | undefined 
   return new ProxyAgent(proxyUrl)
 }
 
+export interface FetchResult {
+  response: Response
+  urlEffective: string
+  numRedirects: number
+  redirectUrl?: string
+}
+
 async function executeFetch(
   url: string,
   fetchOptions: CurlyRequestInit,
   maxRedirects: number,
   proxyAgent?: ProxyAgent,
-): Promise<Response> {
+): Promise<FetchResult> {
   let currentUrl = url
   let redirectCount = 0
+  let lastRedirectUrl: string | undefined
 
   while (true) {
     const requestOptions = proxyAgent ? { ...fetchOptions, dispatcher: proxyAgent } : fetchOptions
     const response = await fetch(currentUrl, requestOptions as RequestInit)
 
     if (!isRedirectStatus(response.status)) {
-      return response
+      return {
+        response,
+        urlEffective: currentUrl,
+        numRedirects: redirectCount,
+        redirectUrl: lastRedirectUrl,
+      }
     }
 
     if (redirectCount >= maxRedirects) {
-      if (maxRedirects === 0) return response
+      const location = response.headers.get('Location')
+      const nextUrl = location ? new URL(location, currentUrl).href : undefined
+      if (maxRedirects === 0)
+        return {
+          response,
+          urlEffective: currentUrl,
+          numRedirects: redirectCount,
+          redirectUrl: nextUrl,
+        }
       throw new Error(`Maximum redirects (${maxRedirects}) exceeded`)
     }
 
     const location = response.headers.get('Location')
-    if (!location) return response
+    if (!location)
+      return {
+        response,
+        urlEffective: currentUrl,
+        numRedirects: redirectCount,
+        redirectUrl: lastRedirectUrl,
+      }
 
-    currentUrl = new URL(location, currentUrl).href
+    lastRedirectUrl = new URL(location, currentUrl).href
+    currentUrl = lastRedirectUrl
     redirectCount++
     logger().verbose(
       'redirect',
@@ -193,10 +235,16 @@ export async function buildResponse({
   options,
   response,
   duration,
+  urlEffective,
+  numRedirects,
+  redirectUrl,
 }: {
   options: FetchOptions
   response: Response
   duration: number
+  urlEffective?: string
+  numRedirects?: number
+  redirectUrl?: string
 }): Promise<ResponseData> {
   const method = buildMethod(options)
   if (method === 'HEAD') {
@@ -206,6 +254,9 @@ export async function buildResponse({
       headers: response.headers,
       status: response.status,
       size: '0 B',
+      urlEffective,
+      numRedirects,
+      redirectUrl,
     }
   }
 
@@ -235,6 +286,9 @@ export async function buildResponse({
     headers: response.headers,
     status: response.status,
     size,
+    urlEffective,
+    numRedirects,
+    redirectUrl,
   }
 }
 

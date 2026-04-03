@@ -6,6 +6,7 @@ export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 
 
 export interface FetchOptions {
   help?: boolean
+  version?: boolean
   history?: boolean
   method?: string
   headers?: string[]
@@ -51,6 +52,9 @@ export interface ResponseData {
   headers: Headers
   status: number
   size: string
+  urlEffective?: string
+  redirectUrl?: string
+  numRedirects?: number
 }
 
 export interface RequestResult {

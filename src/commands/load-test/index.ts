@@ -178,7 +178,16 @@ export async function load(url: string, options: LoadOptions): Promise<void> {
           .fill(null)
           .map(() =>
             curl(url, options, abortSignal)
-              .then(({ response, duration }) => buildResponse({ options, response, duration }))
+              .then(({ response, duration, urlEffective, numRedirects, redirectUrl }) =>
+                buildResponse({
+                  options,
+                  response,
+                  duration,
+                  urlEffective,
+                  numRedirects,
+                  redirectUrl,
+                }),
+              )
               .then((result) => {
                 reporter.onResult(result)
                 return result

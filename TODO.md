@@ -32,12 +32,12 @@ Core quality improvements that make the tool feel solid and production-ready.
 - [ ] Warn when sending cookies over non-HTTPS connections
 
 ### Write-Out Enhancements
-- [ ] Add `%{url_effective}` (final URL after redirects)
-- [ ] Add `%{redirect_url}` (redirect destination)
-- [ ] Add `%{num_redirects}` (redirect count)
-- [ ] Add `%{content_type}` (response content type)
+- ~~Add `%{url_effective}` (final URL after redirects)~~ ✓
+- ~~Add `%{redirect_url}` (redirect destination)~~ ✓
+- ~~Add `%{num_redirects}` (redirect count)~~ ✓
+- ~~Add `%{content_type}` (response content type)~~ ✓
 - [ ] Add `%{time_namelookup}`, `%{time_connect}`, `%{time_starttransfer}` for timing breakdown
-- [ ] Add `%{header_json}` for response headers as JSON
+- ~~Add `%{header_json}` for response headers as JSON~~ ✓
 - [ ] Support `%output{filename}` to send write-out to a file
 
 ---
@@ -49,7 +49,7 @@ Important curl features that users expect from a curl-like tool.
 ### Request Body Improvements
 - [ ] `--data-urlencode` flag for URL-encoded form data
 - [ ] `--data-binary @file` to send file contents as-is (no stripping)
-- [ ] `--json` flag as shortcut (sets Content-Type + Accept to application/json, like curl 7.82+)
+- ~~`--json` flag as shortcut (sets Content-Type + Accept to application/json, like curl 7.82+)~~ ✓ (implemented as `-j`/`--json` structured JSON output flag)
 - [ ] Support reading request body from stdin (`-d @-`)
 
 ### Compression
@@ -82,7 +82,7 @@ Important curl features that users expect from a curl-like tool.
 - [ ] `--trace` flag for full request/response wire-level dump
 - [ ] `--stderr` flag to redirect error output to a file
 - [ ] Progress bar for uploads (not just downloads)
-- [ ] `--silent` / `-s` flag (curl-compatible alias for `--quiet`)
+- ~~`--silent` / `-s` flag (curl-compatible alias for `--quiet`)~~ ✓ (implemented as `--quiet`)
 
 ---
 
@@ -228,7 +228,7 @@ Strengthen the foundation for long-term maintainability.
 
 Small improvements that punch above their weight.
 
-- [ ] `--version` / `-V` flag to show version number
+- ~~`--version` / `-V` flag to show version number~~ ✓
 - [ ] Colorize HTTP methods in verbose output (GET=green, POST=blue, DELETE=red)
 - [ ] Show request size in verbose mode (headers + body)
 - [ ] Auto-detect and warn about mixed HTTP/HTTPS redirect chains

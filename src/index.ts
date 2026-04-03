@@ -1,6 +1,17 @@
-import { cli, printHelpMessage, printDryRun, shouldDryRun, validateExportFlag } from './lib/cli'
+import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
+import {
+  cli,
+  printHelpMessage,
+  printDryRun,
+  shouldDryRun,
+  validateExportFlag,
+  validateOptions,
+} from './lib/cli'
 import {
   printHistoryFile,
+  clearHistoryFile,
+  searchHistoryFile,
   writeHistoryFile,
   interpolate,
   loadConfig,
@@ -27,8 +38,25 @@ export async function main(): Promise<void> {
       setVerbose(true)
     }
 
+    if (cliFlags.version) {
+      const pkgPath = fileURLToPath(new URL('../package.json', import.meta.url))
+      const pkg = JSON.parse(readFileSync(pkgPath, 'utf8'))
+      console.log(`curly ${pkg.version}`)
+      process.exit(0)
+    }
+
     if (cliFlags.help) {
       printHelpMessage()
+      process.exit(0)
+    }
+
+    if (cliFlags['history-clear']) {
+      await clearHistoryFile()
+      process.exit(0)
+    }
+
+    if (cliFlags['history-search'] !== undefined) {
+      await searchHistoryFile(cliFlags['history-search'])
       process.exit(0)
     }
 
@@ -140,6 +168,8 @@ export async function main(): Promise<void> {
       })
       logger().info(`Saved alias "${cliFlags.save}"`)
     }
+
+    validateOptions(url, options)
 
     if (shouldDryRun(options)) {
       printDryRun(url, options)

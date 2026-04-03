@@ -157,7 +157,9 @@ function getStatusColor(status: number): StatusColor {
  * Prints the response body to stdout with syntax highlighting.
  */
 export function printResponse(response: ResponseData['response']): void {
-  console.log(inspect(response, { depth: null, maxArrayLength: null, colors: true }))
+  console.log(
+    inspect(response, { depth: null, maxArrayLength: null, colors: !('NO_COLOR' in process.env) }),
+  )
 }
 
 /**
@@ -188,15 +190,24 @@ export function printHeaders(headers: Headers): void {
 
 /**
  * Prints formatted output using curl-style write-out format strings.
- * Supports variables like %{http_code}, %{time_total}, %{size_download}
- * and escape sequences like \n, \t, \r, and \\.
+ * Supports variables like %{http_code}, %{time_total}, %{size_download},
+ * %{content_type}, %{url_effective}, %{redirect_url}, %{num_redirects},
+ * %{header_json}, and escape sequences like \n, \t, \r, and \\.
  */
 function printWriteOut(data: ResponseData, format: string): void {
+  const contentType = data.headers.get('content-type') ?? ''
+  const headerJson = JSON.stringify(Object.fromEntries(data.headers.entries()))
+
   const output = format
     .replace(/%\{http_code\}/g, String(data.status))
     .replace(/%\{status_code\}/g, String(data.status))
     .replace(/%\{time_total\}/g, (data.duration / 1000).toFixed(6))
     .replace(/%\{size_download\}/g, data.size)
+    .replace(/%\{content_type\}/g, contentType)
+    .replace(/%\{url_effective\}/g, data.urlEffective ?? '')
+    .replace(/%\{redirect_url\}/g, data.redirectUrl ?? '')
+    .replace(/%\{num_redirects\}/g, String(data.numRedirects ?? 0))
+    .replace(/%\{header_json\}/g, headerJson)
     .replace(/^http_code$/, String(data.status))
     .replace(/^status_code$/, String(data.status))
     .replace(/^time_total$/, (data.duration / 1000).toFixed(6))

@@ -10,7 +10,7 @@ import { stdout, streamDownload } from '../../lib/output/formatters'
 import { type ResponseData } from '../../types'
 
 export async function executeRequest(url: string, options: FetchOptions) {
-  const { response, duration } = await curl(url, options)
+  const { response, duration, urlEffective, numRedirects, redirectUrl } = await curl(url, options)
   const method = buildMethod(options)
 
   let data: ResponseData
@@ -23,9 +23,19 @@ export async function executeRequest(url: string, options: FetchOptions) {
       headers: response.headers,
       status: response.status,
       size,
+      urlEffective,
+      numRedirects,
+      redirectUrl,
     }
   } else {
-    data = await buildResponse({ options, response, duration })
+    data = await buildResponse({
+      options,
+      response,
+      duration,
+      urlEffective,
+      numRedirects,
+      redirectUrl,
+    })
   }
 
   const finalUrl = buildUrl(url, options.query)

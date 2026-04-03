@@ -11,6 +11,7 @@ import {
   getErrorMessage,
   isError,
 } from '../../types'
+import { getFriendlyErrorMessage } from '../../lib/utils/errors'
 import { CONTENT_TYPES } from '../config/constants'
 import { applyCookieHeader } from './cookies'
 
@@ -25,11 +26,20 @@ export type { FetchOptions } from '../../types'
  * @param externalSignal - Optional external abort signal (e.g., from TUI pause)
  * @returns The raw Response object and request duration in milliseconds
  */
+export interface CurlResult {
+  response: Response
+  duration: number
+  urlEffective: string
+  numRedirects: number
+  redirectUrl?: string
+  redirectChain: RedirectHop[]
+}
+
 export async function curl(
   url: string,
   options: FetchOptions,
   externalSignal?: AbortSignal,
-): Promise<{ response: Response; duration: number }> {
+): Promise<CurlResult> {
   const fetchOptions = buildFetchOptions(options)
   const timeoutMs = parseIntOption(options.timeout, 0) || undefined
   const { signal: timeoutSignal, cleanup } = createTimeoutSignal(timeoutMs)
@@ -61,13 +71,20 @@ export async function curl(
   try {
     return await withRetry(async () => {
       const startTime = performance.now()
-      const response = await executeFetch(finalUrl, fetchOptions, maxRedirects, proxyAgent)
+      const result = await executeFetch(finalUrl, fetchOptions, maxRedirects, proxyAgent)
       const duration = performance.now() - startTime
       logger().verbose(
         'response',
-        `${response.status} ${response.statusText} (${duration.toFixed(0)}ms)`,
+        `${result.response.status} ${result.response.statusText} (${duration.toFixed(0)}ms)`,
       )
-      return { response, duration }
+      return {
+        response: result.response,
+        duration,
+        urlEffective: result.urlEffective,
+        numRedirects: result.numRedirects,
+        redirectUrl: result.redirectUrl,
+        redirectChain: result.redirectChain,
+      }
     }, retryOptions)
   } catch (error: unknown) {
     if (isError(error) && error.name === 'AbortError') {
@@ -76,6 +93,11 @@ export async function curl(
         logger().error(`Request timed out after ${timeoutMs}ms`)
       }
       throw error
+    }
+    const cause = isError(error) && 'cause' in error ? error.cause : error
+    const friendly = getFriendlyErrorMessage(cause) ?? getFriendlyErrorMessage(error)
+    if (friendly) {
+      logger().error(friendly)
     }
     logger().error(`Fetch response failed: ${getErrorMessage(error)}`)
     throw error
@@ -143,37 +165,109 @@ function createProxyAgent(proxyUrl: string | undefined): ProxyAgent | undefined 
   return new ProxyAgent(proxyUrl)
 }
 
+export interface RedirectHop {
+  status: number
+  from: string
+  to: string
+  methodChanged: boolean
+  method: string
+}
+
+export interface FetchResult {
+  response: Response
+  urlEffective: string
+  numRedirects: number
+  redirectUrl?: string
+  redirectChain: RedirectHop[]
+}
+
+/**
+ * Returns true for redirect status codes that should change the method to GET
+ * and drop the request body (301, 302, 303). Per HTTP spec, 307/308 must
+ * preserve the original method and body.
+ */
+function shouldRewriteMethod(status: number): boolean {
+  return status === 301 || status === 302 || status === 303
+}
+
 async function executeFetch(
   url: string,
   fetchOptions: CurlyRequestInit,
   maxRedirects: number,
   proxyAgent?: ProxyAgent,
-): Promise<Response> {
+): Promise<FetchResult> {
   let currentUrl = url
   let redirectCount = 0
+  let lastRedirectUrl: string | undefined
+  let currentMethod = fetchOptions.method
+  let currentBody = fetchOptions.body
+  const redirectChain: RedirectHop[] = []
 
   while (true) {
-    const requestOptions = proxyAgent ? { ...fetchOptions, dispatcher: proxyAgent } : fetchOptions
+    const hopOptions = { ...fetchOptions, method: currentMethod, body: currentBody }
+    const requestOptions = proxyAgent ? { ...hopOptions, dispatcher: proxyAgent } : hopOptions
     const response = await fetch(currentUrl, requestOptions as RequestInit)
 
     if (!isRedirectStatus(response.status)) {
-      return response
+      return {
+        response,
+        urlEffective: currentUrl,
+        numRedirects: redirectCount,
+        redirectUrl: lastRedirectUrl,
+        redirectChain,
+      }
     }
 
     if (redirectCount >= maxRedirects) {
-      if (maxRedirects === 0) return response
+      const location = response.headers.get('Location')
+      const nextUrl = location ? new URL(location, currentUrl).href : undefined
+      if (maxRedirects === 0)
+        return {
+          response,
+          urlEffective: currentUrl,
+          numRedirects: redirectCount,
+          redirectUrl: nextUrl,
+          redirectChain,
+        }
       throw new Error(`Maximum redirects (${maxRedirects}) exceeded`)
     }
 
     const location = response.headers.get('Location')
-    if (!location) return response
+    if (!location)
+      return {
+        response,
+        urlEffective: currentUrl,
+        numRedirects: redirectCount,
+        redirectUrl: lastRedirectUrl,
+        redirectChain,
+      }
 
-    currentUrl = new URL(location, currentUrl).href
+    lastRedirectUrl = new URL(location, currentUrl).href
+
+    // Per HTTP spec: 301/302/303 rewrite to GET and drop body.
+    // 307/308 preserve the original method and body.
+    const methodChanged = shouldRewriteMethod(response.status) && currentMethod !== 'GET'
+    if (shouldRewriteMethod(response.status)) {
+      currentMethod = 'GET'
+      currentBody = undefined
+    }
+
     redirectCount++
+    const hop: RedirectHop = {
+      status: response.status,
+      from: currentUrl,
+      to: lastRedirectUrl,
+      methodChanged,
+      method: currentMethod,
+    }
+    redirectChain.push(hop)
+
     logger().verbose(
       'redirect',
-      `Following redirect ${redirectCount}/${maxRedirects} → ${currentUrl}`,
+      `${response.status} ${currentUrl} → ${lastRedirectUrl}${methodChanged ? ` (method changed to ${currentMethod})` : ''}`,
     )
+
+    currentUrl = lastRedirectUrl
   }
 }
 
@@ -193,10 +287,16 @@ export async function buildResponse({
   options,
   response,
   duration,
+  urlEffective,
+  numRedirects,
+  redirectUrl,
 }: {
   options: FetchOptions
   response: Response
   duration: number
+  urlEffective?: string
+  numRedirects?: number
+  redirectUrl?: string
 }): Promise<ResponseData> {
   const method = buildMethod(options)
   if (method === 'HEAD') {
@@ -206,6 +306,9 @@ export async function buildResponse({
       headers: response.headers,
       status: response.status,
       size: '0 B',
+      urlEffective,
+      numRedirects,
+      redirectUrl,
     }
   }
 
@@ -235,6 +338,9 @@ export async function buildResponse({
     headers: response.headers,
     status: response.status,
     size,
+    urlEffective,
+    numRedirects,
+    redirectUrl,
   }
 }
 

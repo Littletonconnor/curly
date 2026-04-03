@@ -4,7 +4,10 @@ export function cli() {
   return parseArgs({
     options: {
       help: { type: 'boolean', short: 'h', default: false },
+      version: { type: 'boolean', short: 'V', default: false },
       history: { type: 'boolean', default: false },
+      'history-clear': { type: 'boolean', default: false },
+      'history-search': { type: 'string' },
       method: {
         type: 'string',
         short: 'X',

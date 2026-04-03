@@ -9,22 +9,22 @@ A phased plan for making curly a polished, impressive, and feature-complete mode
 Core quality improvements that make the tool feel solid and production-ready.
 
 ### Input Validation & Error Messages
-- [ ] Validate URL format before making requests (catch typos early)
-- [ ] Validate header format (`Key: Value`) with helpful error on malformed input
-- [ ] Validate `--timeout` is a positive number
-- [ ] Validate `--max-redirects` is a non-negative integer
-- [ ] Validate `--retry` and `--retry-delay` values
+- ~~Validate URL format before making requests (catch typos early)~~ ✓
+- ~~Validate header format (`Key: Value`) with helpful error on malformed input~~ ✓
+- ~~Validate `--timeout` is a positive number~~ ✓
+- ~~Validate `--max-redirects` is a non-negative integer~~ ✓
+- ~~Validate `--retry` and `--retry-delay` values~~ ✓
 - [ ] Improve error messages with actionable suggestions (e.g., "Did you mean --follow?")
 - [ ] Add `--retry-all-errors` flag to retry on HTTP errors (not just network errors)
 
 ### Redirect Handling
-- [ ] Preserve request method on 307/308 redirects (currently always follows as GET)
-- [ ] Show redirect chain in verbose mode (from → to for each hop)
+- ~~Preserve request method on 307/308 redirects (currently always follows as GET)~~ ✓
+- ~~Show redirect chain in verbose mode (from → to for each hop)~~ ✓
 
 ### History Management
-- [ ] Cap history file size (e.g., last 1000 entries)
-- [ ] Add `--history clear` to reset history
-- [ ] Add `--history search <term>` to search past commands
+- ~~Cap history file size (e.g., last 1000 entries)~~ ✓
+- ~~Add `--history clear` to reset history~~ ✓ (implemented as `--history-clear`)
+- ~~Add `--history search <term>` to search past commands~~ ✓ (implemented as `--history-search <term>`)
 
 ### Cookie Handling
 - [ ] Validate Netscape cookie file format with clear error on malformed lines
@@ -32,12 +32,12 @@ Core quality improvements that make the tool feel solid and production-ready.
 - [ ] Warn when sending cookies over non-HTTPS connections
 
 ### Write-Out Enhancements
-- [ ] Add `%{url_effective}` (final URL after redirects)
-- [ ] Add `%{redirect_url}` (redirect destination)
-- [ ] Add `%{num_redirects}` (redirect count)
-- [ ] Add `%{content_type}` (response content type)
+- ~~Add `%{url_effective}` (final URL after redirects)~~ ✓
+- ~~Add `%{redirect_url}` (redirect destination)~~ ✓
+- ~~Add `%{num_redirects}` (redirect count)~~ ✓
+- ~~Add `%{content_type}` (response content type)~~ ✓
 - [ ] Add `%{time_namelookup}`, `%{time_connect}`, `%{time_starttransfer}` for timing breakdown
-- [ ] Add `%{header_json}` for response headers as JSON
+- ~~Add `%{header_json}` for response headers as JSON~~ ✓
 - [ ] Support `%output{filename}` to send write-out to a file
 
 ---
@@ -49,7 +49,7 @@ Important curl features that users expect from a curl-like tool.
 ### Request Body Improvements
 - [ ] `--data-urlencode` flag for URL-encoded form data
 - [ ] `--data-binary @file` to send file contents as-is (no stripping)
-- [ ] `--json` flag as shortcut (sets Content-Type + Accept to application/json, like curl 7.82+)
+- ~~`--json` flag as shortcut (sets Content-Type + Accept to application/json, like curl 7.82+)~~ ✓ (implemented as `-j`/`--json` structured JSON output flag)
 - [ ] Support reading request body from stdin (`-d @-`)
 
 ### Compression
@@ -82,7 +82,7 @@ Important curl features that users expect from a curl-like tool.
 - [ ] `--trace` flag for full request/response wire-level dump
 - [ ] `--stderr` flag to redirect error output to a file
 - [ ] Progress bar for uploads (not just downloads)
-- [ ] `--silent` / `-s` flag (curl-compatible alias for `--quiet`)
+- ~~`--silent` / `-s` flag (curl-compatible alias for `--quiet`)~~ ✓ (implemented as `--quiet`)
 
 ---
 
@@ -228,13 +228,13 @@ Strengthen the foundation for long-term maintainability.
 
 Small improvements that punch above their weight.
 
-- [ ] `--version` / `-V` flag to show version number
+- ~~`--version` / `-V` flag to show version number~~ ✓
 - [ ] Colorize HTTP methods in verbose output (GET=green, POST=blue, DELETE=red)
 - [ ] Show request size in verbose mode (headers + body)
 - [ ] Auto-detect and warn about mixed HTTP/HTTPS redirect chains
 - [ ] Detect and pretty-print XML responses
-- [ ] Support `NO_COLOR` environment variable (https://no-color.org/)
+- ~~Support `NO_COLOR` environment variable (https://no-color.org/)~~ ✓
 - [ ] Add `--max-filesize` to abort downloads over a size limit
-- [ ] Short error summaries for common issues (ECONNREFUSED → "Connection refused - is the server running?")
+- ~~Short error summaries for common issues (ECONNREFUSED → "Connection refused - is the server running?")~~ ✓
 - [ ] `--location-trusted` to send auth headers on redirects (like curl)
 - [ ] Sort headers alphabetically in `-i` output for readability

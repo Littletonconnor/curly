@@ -139,17 +139,42 @@ echo ""
 echo ""
 
 # -----------------------------------------------------------------------------
+# Verbose Redirect Chain
+# -----------------------------------------------------------------------------
+
+echo "16. Verbose redirect chain (shows each hop with status)"
+echo "    Command: curly https://httpbin.org/redirect/3 -L -v"
+echo "    ---"
+curly https://httpbin.org/redirect/3 -L -v
+echo ""
+echo ""
+
+echo "17. POST with 307 redirect (preserves method and body)"
+echo "    Command: curly -X POST -d name=test \"https://httpbin.org/redirect-to?url=https://httpbin.org/post&status_code=307\" -L -v"
+echo "    ---"
+curly -X POST -d name=test "https://httpbin.org/redirect-to?url=https://httpbin.org/post&status_code=307" -L -v
+echo ""
+echo ""
+
+echo "18. POST with 302 redirect (method changes to GET)"
+echo "    Command: curly -X POST -d name=test \"https://httpbin.org/redirect-to?url=https://httpbin.org/get&status_code=302\" -L -v"
+echo "    ---"
+curly -X POST -d name=test "https://httpbin.org/redirect-to?url=https://httpbin.org/get&status_code=302" -L -v
+echo ""
+echo ""
+
+# -----------------------------------------------------------------------------
 # Absolute vs Relative Redirects
 # -----------------------------------------------------------------------------
 
-echo "16. Relative redirect handling"
+echo "19. Relative redirect handling"
 echo "    Command: curly https://httpbin.org/relative-redirect/2 -L"
 echo "    ---"
 curly https://httpbin.org/relative-redirect/2 -L
 echo ""
 echo ""
 
-echo "17. Absolute redirect handling"
+echo "20. Absolute redirect handling"
 echo "    Command: curly https://httpbin.org/absolute-redirect/2 -L"
 echo "    ---"
 curly https://httpbin.org/absolute-redirect/2 -L
@@ -173,9 +198,13 @@ echo "    Redirects are NOT followed by default"
 echo "    Use -i to see the redirect response headers"
 echo ""
 echo "  Redirect Types Handled:"
-echo "    301 - Permanent redirect"
-echo "    302 - Temporary redirect"
-echo "    303 - See Other"
-echo "    307 - Temporary redirect (preserves method)"
-echo "    308 - Permanent redirect (preserves method)"
+echo "    301 - Permanent redirect (method changes to GET)"
+echo "    302 - Temporary redirect (method changes to GET)"
+echo "    303 - See Other (method changes to GET)"
+echo "    307 - Temporary redirect (preserves method and body)"
+echo "    308 - Permanent redirect (preserves method and body)"
+echo ""
+echo "  Verbose Mode (-v):"
+echo "    Shows redirect chain with status code and URL for each hop"
+echo "    Indicates when method changes (e.g., POST → GET on 302)"
 echo ""

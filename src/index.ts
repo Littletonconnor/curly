@@ -1,6 +1,13 @@
 import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
-import { cli, printHelpMessage, printDryRun, shouldDryRun, validateExportFlag } from './lib/cli'
+import {
+  cli,
+  printHelpMessage,
+  printDryRun,
+  shouldDryRun,
+  validateExportFlag,
+  validateOptions,
+} from './lib/cli'
 import {
   printHistoryFile,
   writeHistoryFile,
@@ -149,6 +156,8 @@ export async function main(): Promise<void> {
       })
       logger().info(`Saved alias "${cliFlags.save}"`)
     }
+
+    validateOptions(url, options)
 
     if (shouldDryRun(options)) {
       printDryRun(url, options)

@@ -11,6 +11,7 @@ import {
   getErrorMessage,
   isError,
 } from '../../types'
+import { getFriendlyErrorMessage } from '../../lib/utils/errors'
 import { CONTENT_TYPES } from '../config/constants'
 import { applyCookieHeader } from './cookies'
 
@@ -90,6 +91,11 @@ export async function curl(
         logger().error(`Request timed out after ${timeoutMs}ms`)
       }
       throw error
+    }
+    const cause = isError(error) && 'cause' in error ? error.cause : error
+    const friendly = getFriendlyErrorMessage(cause) ?? getFriendlyErrorMessage(error)
+    if (friendly) {
+      logger().error(friendly)
     }
     logger().error(`Fetch response failed: ${getErrorMessage(error)}`)
     throw error

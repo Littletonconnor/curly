@@ -157,7 +157,9 @@ function getStatusColor(status: number): StatusColor {
  * Prints the response body to stdout with syntax highlighting.
  */
 export function printResponse(response: ResponseData['response']): void {
-  console.log(inspect(response, { depth: null, maxArrayLength: null, colors: true }))
+  console.log(
+    inspect(response, { depth: null, maxArrayLength: null, colors: !('NO_COLOR' in process.env) }),
+  )
 }
 
 /**

@@ -9,11 +9,11 @@ A phased plan for making curly a polished, impressive, and feature-complete mode
 Core quality improvements that make the tool feel solid and production-ready.
 
 ### Input Validation & Error Messages
-- [ ] Validate URL format before making requests (catch typos early)
+- ~~Validate URL format before making requests (catch typos early)~~ ✓
 - [ ] Validate header format (`Key: Value`) with helpful error on malformed input
-- [ ] Validate `--timeout` is a positive number
-- [ ] Validate `--max-redirects` is a non-negative integer
-- [ ] Validate `--retry` and `--retry-delay` values
+- ~~Validate `--timeout` is a positive number~~ ✓
+- ~~Validate `--max-redirects` is a non-negative integer~~ ✓
+- ~~Validate `--retry` and `--retry-delay` values~~ ✓
 - [ ] Improve error messages with actionable suggestions (e.g., "Did you mean --follow?")
 - [ ] Add `--retry-all-errors` flag to retry on HTTP errors (not just network errors)
 
@@ -233,8 +233,8 @@ Small improvements that punch above their weight.
 - [ ] Show request size in verbose mode (headers + body)
 - [ ] Auto-detect and warn about mixed HTTP/HTTPS redirect chains
 - [ ] Detect and pretty-print XML responses
-- [ ] Support `NO_COLOR` environment variable (https://no-color.org/)
+- ~~Support `NO_COLOR` environment variable (https://no-color.org/)~~ ✓
 - [ ] Add `--max-filesize` to abort downloads over a size limit
-- [ ] Short error summaries for common issues (ECONNREFUSED → "Connection refused - is the server running?")
+- ~~Short error summaries for common issues (ECONNREFUSED → "Connection refused - is the server running?")~~ ✓
 - [ ] `--location-trusted` to send auth headers on redirects (like curl)
 - [ ] Sort headers alphabetically in `-i` output for readability

@@ -32,6 +32,7 @@ export interface CurlResult {
   urlEffective: string
   numRedirects: number
   redirectUrl?: string
+  redirectChain: RedirectHop[]
 }
 
 export async function curl(
@@ -82,6 +83,7 @@ export async function curl(
         urlEffective: result.urlEffective,
         numRedirects: result.numRedirects,
         redirectUrl: result.redirectUrl,
+        redirectChain: result.redirectChain,
       }
     }, retryOptions)
   } catch (error: unknown) {
@@ -163,11 +165,29 @@ function createProxyAgent(proxyUrl: string | undefined): ProxyAgent | undefined 
   return new ProxyAgent(proxyUrl)
 }
 
+export interface RedirectHop {
+  status: number
+  from: string
+  to: string
+  methodChanged: boolean
+  method: string
+}
+
 export interface FetchResult {
   response: Response
   urlEffective: string
   numRedirects: number
   redirectUrl?: string
+  redirectChain: RedirectHop[]
+}
+
+/**
+ * Returns true for redirect status codes that should change the method to GET
+ * and drop the request body (301, 302, 303). Per HTTP spec, 307/308 must
+ * preserve the original method and body.
+ */
+function shouldRewriteMethod(status: number): boolean {
+  return status === 301 || status === 302 || status === 303
 }
 
 async function executeFetch(
@@ -179,9 +199,13 @@ async function executeFetch(
   let currentUrl = url
   let redirectCount = 0
   let lastRedirectUrl: string | undefined
+  let currentMethod = fetchOptions.method
+  let currentBody = fetchOptions.body
+  const redirectChain: RedirectHop[] = []
 
   while (true) {
-    const requestOptions = proxyAgent ? { ...fetchOptions, dispatcher: proxyAgent } : fetchOptions
+    const hopOptions = { ...fetchOptions, method: currentMethod, body: currentBody }
+    const requestOptions = proxyAgent ? { ...hopOptions, dispatcher: proxyAgent } : hopOptions
     const response = await fetch(currentUrl, requestOptions as RequestInit)
 
     if (!isRedirectStatus(response.status)) {
@@ -190,6 +214,7 @@ async function executeFetch(
         urlEffective: currentUrl,
         numRedirects: redirectCount,
         redirectUrl: lastRedirectUrl,
+        redirectChain,
       }
     }
 
@@ -202,6 +227,7 @@ async function executeFetch(
           urlEffective: currentUrl,
           numRedirects: redirectCount,
           redirectUrl: nextUrl,
+          redirectChain,
         }
       throw new Error(`Maximum redirects (${maxRedirects}) exceeded`)
     }
@@ -213,15 +239,35 @@ async function executeFetch(
         urlEffective: currentUrl,
         numRedirects: redirectCount,
         redirectUrl: lastRedirectUrl,
+        redirectChain,
       }
 
     lastRedirectUrl = new URL(location, currentUrl).href
-    currentUrl = lastRedirectUrl
+
+    // Per HTTP spec: 301/302/303 rewrite to GET and drop body.
+    // 307/308 preserve the original method and body.
+    const methodChanged = shouldRewriteMethod(response.status) && currentMethod !== 'GET'
+    if (shouldRewriteMethod(response.status)) {
+      currentMethod = 'GET'
+      currentBody = undefined
+    }
+
     redirectCount++
+    const hop: RedirectHop = {
+      status: response.status,
+      from: currentUrl,
+      to: lastRedirectUrl,
+      methodChanged,
+      method: currentMethod,
+    }
+    redirectChain.push(hop)
+
     logger().verbose(
       'redirect',
-      `Following redirect ${redirectCount}/${maxRedirects} → ${currentUrl}`,
+      `${response.status} ${currentUrl} → ${lastRedirectUrl}${methodChanged ? ` (method changed to ${currentMethod})` : ''}`,
     )
+
+    currentUrl = lastRedirectUrl
   }
 }
 

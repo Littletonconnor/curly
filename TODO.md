@@ -18,8 +18,8 @@ Core quality improvements that make the tool feel solid and production-ready.
 - [ ] Add `--retry-all-errors` flag to retry on HTTP errors (not just network errors)
 
 ### Redirect Handling
-- [ ] Preserve request method on 307/308 redirects (currently always follows as GET)
-- [ ] Show redirect chain in verbose mode (from → to for each hop)
+- ~~Preserve request method on 307/308 redirects (currently always follows as GET)~~ ✓
+- ~~Show redirect chain in verbose mode (from → to for each hop)~~ ✓
 
 ### History Management
 - [ ] Cap history file size (e.g., last 1000 entries)

@@ -10,7 +10,7 @@ Core quality improvements that make the tool feel solid and production-ready.
 
 ### Input Validation & Error Messages
 - ~~Validate URL format before making requests (catch typos early)~~ ✓
-- [ ] Validate header format (`Key: Value`) with helpful error on malformed input
+- ~~Validate header format (`Key: Value`) with helpful error on malformed input~~ ✓
 - ~~Validate `--timeout` is a positive number~~ ✓
 - ~~Validate `--max-redirects` is a non-negative integer~~ ✓
 - ~~Validate `--retry` and `--retry-delay` values~~ ✓
@@ -22,9 +22,9 @@ Core quality improvements that make the tool feel solid and production-ready.
 - ~~Show redirect chain in verbose mode (from → to for each hop)~~ ✓
 
 ### History Management
-- [ ] Cap history file size (e.g., last 1000 entries)
-- [ ] Add `--history clear` to reset history
-- [ ] Add `--history search <term>` to search past commands
+- ~~Cap history file size (e.g., last 1000 entries)~~ ✓
+- ~~Add `--history clear` to reset history~~ ✓ (implemented as `--history-clear`)
+- ~~Add `--history search <term>` to search past commands~~ ✓ (implemented as `--history-search <term>`)
 
 ### Cookie Handling
 - [ ] Validate Netscape cookie file format with clear error on malformed lines

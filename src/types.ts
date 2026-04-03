@@ -8,6 +8,8 @@ export interface FetchOptions {
   help?: boolean
   version?: boolean
   history?: boolean
+  'history-clear'?: boolean
+  'history-search'?: string
   method?: string
   headers?: string[]
   include?: boolean

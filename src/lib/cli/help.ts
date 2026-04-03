@@ -5,7 +5,9 @@ Options:
   -h, --help                   Show help menu
   -V, --version                Show version number
 
-  --history                    Show history logs (defaults to ~/curly_history.txt)
+  --history                    Show command history
+  --history-clear              Clear all command history
+  --history-search <term>      Search command history for a term
 
   -X, --method <METHOD>        HTTP method to use (default: GET)
 

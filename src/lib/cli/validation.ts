@@ -29,9 +29,25 @@ export function validateExportFlag(exportFormat: string | undefined, isLoadTest:
  */
 export function validateOptions(url: string, options: FetchOptions): void {
   validateUrl(url)
+  validateHeaders(options.headers)
   validateTimeout(options.timeout)
   validateMaxRedirects(options['max-redirects'])
   validateRetryOptions(options.retry, options['retry-delay'])
+}
+
+function validateHeaders(headers: string[] | undefined): void {
+  if (!headers) return
+  for (const header of headers) {
+    if (!header.includes(':')) {
+      logger().error(
+        `Invalid header format: "${header}"\n  Headers must be in "Key: Value" format (e.g., -H "Content-Type: application/json")`,
+      )
+    }
+    const key = header.split(':')[0].trim()
+    if (!key) {
+      logger().error(`Invalid header: "${header}" — header name cannot be empty`)
+    }
+  }
 }
 
 function validateUrl(url: string): void {

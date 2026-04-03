@@ -2,6 +2,8 @@ const OPTIONS = [
   '--help',
   '-h',
   '--history',
+  '--history-clear',
+  '--history-search',
   '--include',
   '-i',
   '--head',
@@ -192,6 +194,8 @@ _curly() {
     _arguments -s \\
         '(-h --help)'{-h,--help}'[Show help message]' \\
         '--history[Show command history]' \\
+        '--history-clear[Clear all command history]' \\
+        '--history-search[Search command history]:term:' \\
         '(-X --method)'{-X,--method}'[HTTP method]:method:((\${methods}))' \\
         '*'{-H,--headers}'[Add header]:header:' \\
         '*'{-d,--data}'[Request data]:data:_files' \\

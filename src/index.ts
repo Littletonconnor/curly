@@ -10,6 +10,8 @@ import {
 } from './lib/cli'
 import {
   printHistoryFile,
+  clearHistoryFile,
+  searchHistoryFile,
   writeHistoryFile,
   interpolate,
   loadConfig,
@@ -45,6 +47,16 @@ export async function main(): Promise<void> {
 
     if (cliFlags.help) {
       printHelpMessage()
+      process.exit(0)
+    }
+
+    if (cliFlags['history-clear']) {
+      await clearHistoryFile()
+      process.exit(0)
+    }
+
+    if (cliFlags['history-search'] !== undefined) {
+      await searchHistoryFile(cliFlags['history-search'])
       process.exit(0)
     }
 

@@ -14,7 +14,7 @@ Core quality improvements that make the tool feel solid and production-ready.
 - ~~Validate `--timeout` is a positive number~~ ✓
 - ~~Validate `--max-redirects` is a non-negative integer~~ ✓
 - ~~Validate `--retry` and `--retry-delay` values~~ ✓
-- [ ] Improve error messages with actionable suggestions (e.g., "Did you mean --follow?")
+- ~~Improve error messages with actionable suggestions (e.g., "Did you mean --follow?")~~ ✓
 - [ ] Add `--retry-all-errors` flag to retry on HTTP errors (not just network errors)
 
 ### Redirect Handling

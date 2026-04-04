@@ -31,6 +31,7 @@ export interface FetchOptions {
   user?: string
   retry?: string
   'retry-delay'?: string
+  'retry-all-errors'?: boolean
   profile?: string
   completions?: string
   save?: string
@@ -48,6 +49,12 @@ export interface FetchOptions {
   init?: boolean
 }
 
+export interface TimingData {
+  timeNamelookup?: number
+  timeConnect?: number
+  timeStarttransfer?: number
+}
+
 export interface ResponseData {
   response: unknown
   duration: number
@@ -57,6 +64,7 @@ export interface ResponseData {
   urlEffective?: string
   redirectUrl?: string
   numRedirects?: number
+  timing?: TimingData
 }
 
 export interface RequestResult {

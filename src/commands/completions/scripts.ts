@@ -40,6 +40,7 @@ const OPTIONS = [
   '-u',
   '--retry',
   '--retry-delay',
+  '--retry-all-errors',
   '--profile',
   '-p',
   '--completions',
@@ -217,6 +218,7 @@ _curly() {
         '(-u --user)'{-u,--user}'[Basic auth user:pass]:credentials:' \\
         '--retry[Retry count]:count:' \\
         '--retry-delay[Retry delay in ms]:milliseconds:' \\
+        '--retry-all-errors[Retry on HTTP errors too]' \\
         '(-p --profile)'{-p,--profile}'[Config profile]:profile:(\${profiles})' \\
         '--completions[Generate shell completions]:shell:(bash zsh install)' \\
         '--save[Save request as alias]:name:' \\

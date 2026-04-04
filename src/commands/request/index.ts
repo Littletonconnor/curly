@@ -11,7 +11,10 @@ import { getHttpStatusHint } from '../../lib/utils/errors'
 import { type ResponseData } from '../../types'
 
 export async function executeRequest(url: string, options: FetchOptions) {
-  const { response, duration, urlEffective, numRedirects, redirectUrl } = await curl(url, options)
+  const { response, duration, urlEffective, numRedirects, redirectUrl, timing } = await curl(
+    url,
+    options,
+  )
   const method = buildMethod(options)
 
   let data: ResponseData
@@ -27,6 +30,7 @@ export async function executeRequest(url: string, options: FetchOptions) {
       urlEffective,
       numRedirects,
       redirectUrl,
+      timing,
     }
   } else {
     data = await buildResponse({
@@ -36,6 +40,7 @@ export async function executeRequest(url: string, options: FetchOptions) {
       urlEffective,
       numRedirects,
       redirectUrl,
+      timing,
     })
   }
 

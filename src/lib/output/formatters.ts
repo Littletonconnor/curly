@@ -72,7 +72,7 @@ export async function stdout(
   }
 
   if (options['write-out']) {
-    printWriteOut(data, options['write-out'])
+    await printWriteOut(data, options['write-out'])
   }
 
   printStatusLine(data, options)
@@ -190,18 +190,42 @@ export function printHeaders(headers: Headers): void {
 
 /**
  * Prints formatted output using curl-style write-out format strings.
- * Supports variables like %{http_code}, %{time_total}, %{size_download},
- * %{content_type}, %{url_effective}, %{redirect_url}, %{num_redirects},
- * %{header_json}, and escape sequences like \n, \t, \r, and \\.
+ * Supports variables like %{http_code}, %{time_total}, %{time_namelookup},
+ * %{time_connect}, %{time_starttransfer}, %{size_download}, %{content_type},
+ * %{url_effective}, %{redirect_url}, %{num_redirects}, %{header_json},
+ * %output{filename} directive, and escape sequences like \n, \t, \r, and \\.
  */
-function printWriteOut(data: ResponseData, format: string): void {
+async function printWriteOut(data: ResponseData, format: string): Promise<void> {
   const contentType = data.headers.get('content-type') ?? ''
   const headerJson = JSON.stringify(Object.fromEntries(data.headers.entries()))
 
-  const output = format
+  const timeNamelookup = data.timing?.timeNamelookup
+  const timeConnect = data.timing?.timeConnect
+  const timeStarttransfer = data.timing?.timeStarttransfer
+
+  // Extract %output{filename} directive
+  let outputFile: string | null = null
+  let formatStr = format.replace(/%output\{([^}]+)\}/g, (_, filename) => {
+    outputFile = filename
+    return ''
+  })
+
+  const output = formatStr
     .replace(/%\{http_code\}/g, String(data.status))
     .replace(/%\{status_code\}/g, String(data.status))
     .replace(/%\{time_total\}/g, (data.duration / 1000).toFixed(6))
+    .replace(
+      /%\{time_namelookup\}/g,
+      timeNamelookup != null ? (timeNamelookup / 1000).toFixed(6) : '0.000000',
+    )
+    .replace(
+      /%\{time_connect\}/g,
+      timeConnect != null ? (timeConnect / 1000).toFixed(6) : '0.000000',
+    )
+    .replace(
+      /%\{time_starttransfer\}/g,
+      timeStarttransfer != null ? (timeStarttransfer / 1000).toFixed(6) : '0.000000',
+    )
     .replace(/%\{size_download\}/g, data.size)
     .replace(/%\{content_type\}/g, contentType)
     .replace(/%\{url_effective\}/g, data.urlEffective ?? '')
@@ -217,5 +241,14 @@ function printWriteOut(data: ResponseData, format: string): void {
       return escapes[char] ?? char
     })
 
-  console.log(output)
+  if (outputFile) {
+    try {
+      await fs.writeFile(outputFile, output, 'utf-8')
+      logger().verbose('output', `Write-out saved to: ${outputFile}`)
+    } catch {
+      logger().warn(`Failed to write write-out to file: ${outputFile}`)
+    }
+  } else {
+    console.log(output)
+  }
 }

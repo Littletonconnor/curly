@@ -15,7 +15,7 @@ Core quality improvements that make the tool feel solid and production-ready.
 - ~~Validate `--max-redirects` is a non-negative integer~~ ✓
 - ~~Validate `--retry` and `--retry-delay` values~~ ✓
 - ~~Improve error messages with actionable suggestions (e.g., "Did you mean --follow?")~~ ✓
-- [ ] Add `--retry-all-errors` flag to retry on HTTP errors (not just network errors)
+- ~~Add `--retry-all-errors` flag to retry on HTTP errors (not just network errors)~~ ✓
 
 ### Redirect Handling
 - ~~Preserve request method on 307/308 redirects (currently always follows as GET)~~ ✓
@@ -27,18 +27,18 @@ Core quality improvements that make the tool feel solid and production-ready.
 - ~~Add `--history search <term>` to search past commands~~ ✓ (implemented as `--history-search <term>`)
 
 ### Cookie Handling
-- [ ] Validate Netscape cookie file format with clear error on malformed lines
-- [ ] Support cookie expiration checking
-- [ ] Warn when sending cookies over non-HTTPS connections
+- ~~Validate Netscape cookie file format with clear error on malformed lines~~ ✓ (removed Netscape format support — JSON-only)
+- ~~Support cookie expiration checking~~ ✓ (removed with Netscape format)
+- ~~Warn when sending cookies over non-HTTPS connections~~ ✓ (removed with Netscape format)
 
 ### Write-Out Enhancements
 - ~~Add `%{url_effective}` (final URL after redirects)~~ ✓
 - ~~Add `%{redirect_url}` (redirect destination)~~ ✓
 - ~~Add `%{num_redirects}` (redirect count)~~ ✓
 - ~~Add `%{content_type}` (response content type)~~ ✓
-- [ ] Add `%{time_namelookup}`, `%{time_connect}`, `%{time_starttransfer}` for timing breakdown
+- ~~Add `%{time_namelookup}`, `%{time_connect}`, `%{time_starttransfer}` for timing breakdown~~ ✓
 - ~~Add `%{header_json}` for response headers as JSON~~ ✓
-- [ ] Support `%output{filename}` to send write-out to a file
+- ~~Support `%output{filename}` to send write-out to a file~~ ✓
 
 ---
 
@@ -229,7 +229,7 @@ Strengthen the foundation for long-term maintainability.
 Small improvements that punch above their weight.
 
 - ~~`--version` / `-V` flag to show version number~~ ✓
-- [ ] Colorize HTTP methods in verbose output (GET=green, POST=blue, DELETE=red)
+- ~~Colorize HTTP methods in verbose output (GET=green, POST=blue, DELETE=red)~~ ✓
 - [ ] Show request size in verbose mode (headers + body)
 - [ ] Auto-detect and warn about mixed HTTP/HTTPS redirect chains
 - [ ] Detect and pretty-print XML responses

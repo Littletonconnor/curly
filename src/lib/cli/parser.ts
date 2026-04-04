@@ -50,6 +50,7 @@ const CLI_OPTIONS = {
   user: { type: 'string' as const, short: 'u' },
   retry: { type: 'string' as const, default: '0' },
   'retry-delay': { type: 'string' as const, default: '1000' },
+  'retry-all-errors': { type: 'boolean' as const, default: false },
   profile: { type: 'string' as const, short: 'p' },
   completions: { type: 'string' as const },
   save: { type: 'string' as const },

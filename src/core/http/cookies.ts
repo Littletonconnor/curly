@@ -3,27 +3,17 @@ import { getErrorMessage } from '../../types'
 
 /**
  * Parses cookie file data and returns a formatted cookie header string.
- * Supports both JSON format (array of {name, value} objects or key-value object)
- * and Netscape cookie file format.
+ * Supports JSON format (array of {name, value} objects or key-value object).
  *
  * @param fileData - Raw contents of the cookie file
  * @returns Formatted cookie string for the Cookie header (e.g., "name1=value1; name2=value2")
  */
 export function applyCookieHeader(fileData: string): string {
-  let cookie = ''
   try {
-    cookie = parseJsonCookies(fileData)
-
-    return cookie
-  } catch {
-    try {
-      cookie = parseNetscapeCookies(fileData)
-    } catch (error: unknown) {
-      logger().error(`Failed parsing cookies as both JSON and Netscape: ${getErrorMessage(error)}`)
-    }
+    return parseJsonCookies(fileData)
+  } catch (error: unknown) {
+    return logger().error(`Failed parsing cookie file as JSON: ${getErrorMessage(error)}`)
   }
-
-  return cookie
 }
 
 /**
@@ -61,45 +51,6 @@ function parseJsonCookies(fileData: string) {
   }
 
   return cookies.join('; ').trim()
-}
-
-/**
- * Parses a Netscape-formatted cookie file and returns a cookie string.
- *
- * The Netscape cookie file format is a legacy format that consists of lines with seven
- * tab-separated fields:
- *
- * domain \t flag \t path \t secure \t expiration \t name \t value
- *
- * Lines starting with `#` are considered comments and are ignored.
- *
- * @example
- *  Sample Netscape Cookie File (`cookies.txt`)
- *  # Netscape HTTP Cookie File
- *  # http://curl.haxx.se/rfc/cookie_spec.html
- *  # This is a generated file!  Do not edit.
- *
- *  .example.com	TRUE	/	FALSE	1609459200	sessionId=abc123
- *  .example.com	TRUE	/	FALSE	1609459200	user=john_doe
- */
-function parseNetscapeCookies(fileData: string) {
-  const lines = fileData.split('\n')
-  const cookies: string[] = []
-
-  for (const line of lines) {
-    const trimmed = line.trim()
-    if (!trimmed || trimmed.startsWith('#')) continue
-
-    const parts = trimmed.split('\t')
-    if (parts.length >= 7) {
-      const [, , , , , name, value] = parts
-      if (name && value) {
-        cookies.push(`${name}=${value}`)
-      }
-    }
-  }
-
-  return cookies.join(';')
 }
 
 /**

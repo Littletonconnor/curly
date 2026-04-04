@@ -68,14 +68,19 @@ Options:
                                Supported variables:
                                  http_code / status_code  HTTP status code
                                  time_total               Total time in seconds
+                                 time_namelookup          DNS lookup time in seconds
+                                 time_connect             Connection time in seconds
+                                 time_starttransfer       Time to first byte (TTFB) in seconds
                                  size_download            Response size
                                  content_type             Response Content-Type
                                  url_effective            Final URL after redirects
                                  redirect_url             Redirect destination URL
                                  num_redirects            Number of redirects followed
                                  header_json              Response headers as JSON
+                               Supports %output{filename} to write output to a file
                                Example: curly -w "%{http_code}" https://example.com
-                               Example: curly -w "%{content_type}\n%{url_effective}" -L https://example.com
+                               Example: curly -w "%{time_starttransfer}" https://example.com
+                               Example: curly -w "%output{stats.txt}%{http_code}\n%{time_total}" https://example.com
 
   -t, --timeout <ms>           Request timeout in milliseconds
                                Example: curly -t 5000 https://example.com
@@ -110,6 +115,9 @@ Options:
   --retry-delay <ms>           Initial delay between retries in ms (default: 1000)
                                Uses exponential backoff (1s, 2s, 4s, ...)
                                Example: curly --retry 3 --retry-delay 500 https://example.com
+
+  --retry-all-errors           Retry on all errors including HTTP 4xx/5xx (not just network errors)
+                               Example: curly --retry 3 --retry-all-errors https://flaky-api.example.com
 
   -p, --profile <name>         Use a named profile from ~/.config/curly/config.json
                                Example: curly --profile prod /users

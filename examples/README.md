@@ -61,7 +61,6 @@ These examples use public APIs that are freely available for testing:
 The `sample-data/` directory contains files used by the examples:
 
 - `cookies.json` - Sample cookies in JSON format
-- `cookies.txt` - Sample cookies in Netscape format
 - `data.json` - Sample JSON payload
 - `upload.txt` - Sample file for upload testing
 

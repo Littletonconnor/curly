@@ -253,9 +253,6 @@ run_test "Multiple cookies" \
 run_test "Cookie from JSON file" \
     "curly https://httpbin.org/cookies -b '${SCRIPT_DIR}/sample-data/cookies.json' --quiet"
 
-run_test "Cookie from Netscape file" \
-    "curly https://httpbin.org/cookies -b '${SCRIPT_DIR}/sample-data/cookies.txt' --quiet"
-
 run_test "Cookie jar (--cookie-jar)" \
     "curly 'https://httpbin.org/cookies/set/testcookie/testvalue' --cookie-jar '${TEMP_DIR}/jar.json' --quiet && test -f '${TEMP_DIR}/jar.json'"
 

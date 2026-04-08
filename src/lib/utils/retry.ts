@@ -4,7 +4,9 @@ import { isError, isNodeError, getErrorMessage } from '../../types'
 export interface RetryOptions {
   maxRetries: number
   baseDelay: number
+  retryAllErrors?: boolean
   shouldRetry?: (error: unknown) => boolean
+  shouldRetryResult?: (result: unknown) => boolean
 }
 
 const defaultShouldRetry = (error: unknown): boolean => {
@@ -28,6 +30,7 @@ function sleep(ms: number): Promise<void> {
 /**
  * Wraps an async operation with retry logic using exponential backoff.
  * Retries on network errors (ECONNRESET, ECONNREFUSED, ETIMEDOUT) and AbortError.
+ * When shouldRetryResult is provided, also retries on successful results that match the predicate.
  *
  * @param operation - The async function to execute
  * @param options - Retry configuration (maxRetries, baseDelay, optional shouldRetry predicate)
@@ -35,13 +38,14 @@ function sleep(ms: number): Promise<void> {
  * @throws The last error if all retries are exhausted
  */
 export async function withRetry<T>(operation: () => Promise<T>, options: RetryOptions): Promise<T> {
-  const { maxRetries, baseDelay, shouldRetry = defaultShouldRetry } = options
+  const { maxRetries, baseDelay, shouldRetry = defaultShouldRetry, shouldRetryResult } = options
 
   if (maxRetries === 0) {
     return operation()
   }
 
   let lastError: unknown = null
+  let lastResult: T | undefined
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
@@ -50,7 +54,13 @@ export async function withRetry<T>(operation: () => Promise<T>, options: RetryOp
         logger().verbose('retry', `Attempt ${attempt + 1}/${maxRetries + 1}, waiting ${delay}ms...`)
         await sleep(delay)
       }
-      return await operation()
+      const result = await operation()
+      if (shouldRetryResult && shouldRetryResult(result) && attempt < maxRetries) {
+        lastResult = result
+        logger().verbose('retry', 'Retrying due to HTTP error status')
+        continue
+      }
+      return result
     } catch (error: unknown) {
       lastError = error
       if (!shouldRetry(error) || attempt >= maxRetries) {
@@ -60,5 +70,8 @@ export async function withRetry<T>(operation: () => Promise<T>, options: RetryOp
     }
   }
 
+  if (lastResult !== undefined) {
+    return lastResult
+  }
   throw lastError
 }

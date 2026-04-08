@@ -1,4 +1,6 @@
 import { readFileSync } from 'fs'
+import { performance as perf } from 'node:perf_hooks'
+import { styleText } from 'node:util'
 import { ProxyAgent } from 'undici'
 import { getContentTypeFromExtension, parseFormField, readBodyFromFile } from '../../lib/utils/file'
 import { logger } from '../../lib/utils/logger'
@@ -8,6 +10,7 @@ import {
   type CurlyRequestInit,
   type FetchOptions,
   type ResponseData,
+  type TimingData,
   getErrorMessage,
   isError,
 } from '../../types'
@@ -33,6 +36,7 @@ export interface CurlResult {
   numRedirects: number
   redirectUrl?: string
   redirectChain: RedirectHop[]
+  timing?: TimingData
 }
 
 export async function curl(
@@ -51,7 +55,7 @@ export async function curl(
   }
 
   const finalUrl = buildUrl(url, options.query)
-  logger().verbose('request', `${fetchOptions.method} ${finalUrl}`)
+  logger().verbose('request', `${colorizeMethod(fetchOptions.method)} ${finalUrl}`)
 
   if (fetchOptions.headers && Object.keys(fetchOptions.headers).length > 0) {
     logger().verbose('request', `Headers: ${JSON.stringify(fetchOptions.headers)}`)
@@ -64,6 +68,12 @@ export async function curl(
   const retryOptions = {
     maxRetries: parseIntOption(options.retry, 0),
     baseDelay: parseIntOption(options['retry-delay'], 1000),
+    ...(options['retry-all-errors'] && {
+      shouldRetryResult: (result: unknown) => {
+        const r = result as CurlResult
+        return r.response.status >= 400
+      },
+    }),
   }
 
   const proxyAgent = createProxyAgent(options.proxy)
@@ -72,7 +82,11 @@ export async function curl(
     return await withRetry(async () => {
       const startTime = performance.now()
       const result = await executeFetch(finalUrl, fetchOptions, maxRedirects, proxyAgent)
-      const duration = performance.now() - startTime
+      const timeStarttransfer = performance.now() - startTime
+      const duration = timeStarttransfer
+
+      const timing = collectResourceTiming(finalUrl, startTime)
+
       logger().verbose(
         'response',
         `${result.response.status} ${result.response.statusText} (${duration.toFixed(0)}ms)`,
@@ -84,6 +98,10 @@ export async function curl(
         numRedirects: result.numRedirects,
         redirectUrl: result.redirectUrl,
         redirectChain: result.redirectChain,
+        timing: {
+          ...timing,
+          timeStarttransfer,
+        },
       }
     }, retryOptions)
   } catch (error: unknown) {
@@ -290,6 +308,7 @@ export async function buildResponse({
   urlEffective,
   numRedirects,
   redirectUrl,
+  timing,
 }: {
   options: FetchOptions
   response: Response
@@ -297,6 +316,7 @@ export async function buildResponse({
   urlEffective?: string
   numRedirects?: number
   redirectUrl?: string
+  timing?: TimingData
 }): Promise<ResponseData> {
   const method = buildMethod(options)
   if (method === 'HEAD') {
@@ -309,6 +329,7 @@ export async function buildResponse({
       urlEffective,
       numRedirects,
       redirectUrl,
+      timing,
     }
   }
 
@@ -341,6 +362,7 @@ export async function buildResponse({
     urlEffective,
     numRedirects,
     redirectUrl,
+    timing,
   }
 }
 
@@ -581,4 +603,49 @@ export function buildBody(options: FetchOptions): string | undefined {
   }
 
   return undefined
+}
+
+type StyleColor = Parameters<typeof styleText>[0]
+
+const METHOD_COLORS: Record<string, StyleColor> = {
+  GET: 'green',
+  POST: 'blue',
+  PUT: 'yellow',
+  PATCH: 'yellow',
+  DELETE: 'red',
+  HEAD: 'cyan',
+  OPTIONS: 'magenta',
+}
+
+function colorizeMethod(method: string): string {
+  if ('NO_COLOR' in process.env) return method
+  const color = METHOD_COLORS[method.toUpperCase()] ?? 'white'
+  return styleText(color, method)
+}
+
+/**
+ * Attempts to collect DNS and connection timing from Node.js performance resource entries.
+ * Falls back gracefully if resource timing data is not available.
+ */
+function collectResourceTiming(
+  url: string,
+  _startTime: number,
+): Pick<TimingData, 'timeNamelookup' | 'timeConnect'> {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const entries = perf.getEntriesByType('resource') as any[]
+    const entry = entries.findLast((e) => e.name === url)
+
+    if (entry) {
+      perf.clearResourceTimings()
+      return {
+        timeNamelookup: entry.domainLookupEnd - entry.startTime,
+        timeConnect: entry.connectEnd - entry.startTime,
+      }
+    }
+  } catch {
+    // Resource timing not available
+  }
+
+  return {}
 }

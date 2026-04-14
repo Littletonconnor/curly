@@ -597,29 +597,25 @@ export function buildUrlEncodedBody(entries: string[]): string {
 }
 
 function encodeDataUrlencodeEntry(entry: string): string {
-  if (entry.startsWith('=')) {
-    return encodeURIComponent(entry.slice(1))
-  }
-
-  if (entry.startsWith('@')) {
-    const filePath = entry.slice(1)
-    return encodeURIComponent(readBodyFromFile(filePath))
-  }
-
   const eqIdx = entry.indexOf('=')
   const atIdx = entry.indexOf('@')
 
+  // No separator: encode the entire entry as the value
   if (eqIdx === -1 && atIdx === -1) {
     return encodeURIComponent(entry)
   }
 
+  // Split on the earliest separator. '=' means the rest is a literal value;
+  // '@' means the rest is a file path whose contents become the value.
   const useEquals = eqIdx !== -1 && (atIdx === -1 || eqIdx < atIdx)
   const sepIdx = useEquals ? eqIdx : atIdx
   const name = entry.slice(0, sepIdx)
   const rest = entry.slice(sepIdx + 1)
   const value = useEquals ? rest : readBodyFromFile(rest)
+  const encoded = encodeURIComponent(value)
 
-  return `${name}=${encodeURIComponent(value)}`
+  // Empty name (e.g. "=content" or "@file") → no prefix
+  return name ? `${name}=${encoded}` : encoded
 }
 
 export function buildBody(options: FetchOptions): string | undefined {

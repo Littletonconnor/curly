@@ -121,14 +121,28 @@ export async function main(): Promise<void> {
     const mergedCookies = mergeInterpolatedArrays(alias?.cookie, cliFlags.cookie)
     const mergedQuery = mergeInterpolatedArrays(alias?.query, cliFlags.query)
     const mergedForm = mergeInterpolatedArrays(alias?.form, cliFlags.form)
+    const mergedDataUrlencode = mergeInterpolatedArrays(
+      alias?.['data-urlencode'],
+      cliFlags['data-urlencode'],
+    )
 
     const hasData = (mergedData && mergedData.length > 0) || cliFlags['data-raw']
     const hasForm = mergedForm && mergedForm.length > 0
+    const hasUrlencode = mergedDataUrlencode && mergedDataUrlencode.length > 0
     if (hasData && hasForm) {
       console.error(
         'Cannot use -d/--data and -F/--form together.\n' +
           '  Use -d for raw/JSON data: curly -d \'{"key":"val"}\' URL\n' +
           "  Use -F for multipart form uploads: curly -F 'file=@photo.jpg' URL",
+      )
+      process.exit(1)
+    }
+    if (hasUrlencode && (hasData || hasForm)) {
+      console.error(
+        'Cannot use --data-urlencode together with -d/--data, --data-raw, or -F/--form.\n' +
+          '  --data-urlencode sends application/x-www-form-urlencoded\n' +
+          '  -d/--data-raw send application/json\n' +
+          '  -F/--form sends multipart/form-data',
       )
       process.exit(1)
     }
@@ -139,6 +153,7 @@ export async function main(): Promise<void> {
       headers: mergedHeaders,
       data: mergedData,
       'data-raw': cliFlags['data-raw'] ? interpolate(cliFlags['data-raw']) : undefined,
+      'data-urlencode': mergedDataUrlencode,
       cookie: mergedCookies,
       query: mergedQuery,
       form: mergedForm,
@@ -164,6 +179,7 @@ export async function main(): Promise<void> {
         method: cliFlags.method,
         headers: cliFlags.headers,
         data: cliFlags.data,
+        'data-urlencode': cliFlags['data-urlencode'],
         query: cliFlags.query,
         cookie: cliFlags.cookie,
         form: cliFlags.form,

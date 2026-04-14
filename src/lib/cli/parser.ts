@@ -38,6 +38,7 @@ const CLI_OPTIONS = {
   },
   data: { type: 'string' as const, short: 'd', multiple: true },
   'data-raw': { type: 'string' as const },
+  'data-urlencode': { type: 'string' as const, multiple: true },
   query: { type: 'string' as const, short: 'q', multiple: true },
   verbose: { type: 'boolean' as const, short: 'v', default: false },
   quiet: { type: 'boolean' as const, default: false },

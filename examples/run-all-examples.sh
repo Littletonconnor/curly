@@ -222,6 +222,16 @@ run_test "File upload (-F @file)" \
 run_test "Data from file (-d @file)" \
     "curly https://httpbin.org/post -d @${SCRIPT_DIR}/sample-data/data.json --quiet"
 
+run_test "URL-encoded data (--data-urlencode)" \
+    "curly https://httpbin.org/post --data-urlencode 'q=hello world & goodbye' --quiet"
+
+run_test "URL-encoded multiple fields" \
+    "curly https://httpbin.org/post --data-urlencode 'name=Jane Doe' --data-urlencode 'email=user+test@example.com' --quiet"
+
+run_test_output "URL-encoded sets form-urlencoded Content-Type" \
+    "curly https://httpbin.org/post --data-urlencode 'q=hello world' --quiet" \
+    "application/x-www-form-urlencoded"
+
 # -----------------------------------------------------------------------------
 # 4. QUERY PARAMETERS
 # -----------------------------------------------------------------------------

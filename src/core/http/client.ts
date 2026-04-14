@@ -458,7 +458,8 @@ export function buildMethod(options: FetchOptions): string {
   } else if (
     (options.data && options.data.length > 0) ||
     options['data-raw'] ||
-    (options.form && options.form.length > 0)
+    (options.form && options.form.length > 0) ||
+    (options['data-urlencode'] && options['data-urlencode'].length > 0)
   ) {
     return 'POST'
   } else {
@@ -483,7 +484,10 @@ export function buildMethod(options: FetchOptions): string {
  * headers created: {'Content-Type': 'application/json', 'foo': 'bar', 'cookie': 'VALUE1;VALUE2'}
  */
 export function buildHeaders(options: FetchOptions): Record<string, string> {
-  if (!options.headers && (options.data || options['data-raw'])) {
+  if (!options.headers && (options.data || options['data-raw'] || options['data-urlencode'])) {
+    if (options['data-urlencode'] && options['data-urlencode'].length > 0) {
+      return { 'Content-Type': 'application/x-www-form-urlencoded' }
+    }
     if (options.data?.length === 1 && options.data[0].startsWith('@')) {
       const filePath = options.data[0].slice(1)
       const contentType = getContentTypeFromExtension(filePath) ?? 'application/json'
@@ -578,7 +582,51 @@ function buildAuthHeader(options: FetchOptions): { Authorization: string } | und
   return { Authorization: `Basic ${encoded}` }
 }
 
+/**
+ * Builds a URL-encoded request body from --data-urlencode entries.
+ * Supported entry forms (matching curl's behavior):
+ *   "content"       → encode content as-is, no name prefix
+ *   "=content"      → encode content, no name prefix (explicit form)
+ *   "name=value"    → name=<encoded value> (name stays literal)
+ *   "@file"         → read file, encode contents, no name prefix
+ *   "name@file"     → name=<encoded file contents>
+ * Multiple entries are joined with '&'.
+ */
+export function buildUrlEncodedBody(entries: string[]): string {
+  return entries.map(encodeDataUrlencodeEntry).join('&')
+}
+
+function encodeDataUrlencodeEntry(entry: string): string {
+  if (entry.startsWith('=')) {
+    return encodeURIComponent(entry.slice(1))
+  }
+
+  if (entry.startsWith('@')) {
+    const filePath = entry.slice(1)
+    return encodeURIComponent(readBodyFromFile(filePath))
+  }
+
+  const eqIdx = entry.indexOf('=')
+  const atIdx = entry.indexOf('@')
+
+  if (eqIdx === -1 && atIdx === -1) {
+    return encodeURIComponent(entry)
+  }
+
+  const useEquals = eqIdx !== -1 && (atIdx === -1 || eqIdx < atIdx)
+  const sepIdx = useEquals ? eqIdx : atIdx
+  const name = entry.slice(0, sepIdx)
+  const rest = entry.slice(sepIdx + 1)
+  const value = useEquals ? rest : readBodyFromFile(rest)
+
+  return `${name}=${encodeURIComponent(value)}`
+}
+
 export function buildBody(options: FetchOptions): string | undefined {
+  if (options['data-urlencode'] && options['data-urlencode'].length > 0) {
+    return buildUrlEncodedBody(options['data-urlencode'])
+  }
+
   if ((!options.data || options.data.length === 0) && !options['data-raw']) return undefined
 
   if (options['data-raw']) {

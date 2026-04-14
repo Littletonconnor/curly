@@ -47,7 +47,7 @@ Core quality improvements that make the tool feel solid and production-ready.
 Important curl features that users expect from a curl-like tool.
 
 ### Request Body Improvements
-- [ ] `--data-urlencode` flag for URL-encoded form data
+- ~~`--data-urlencode` flag for URL-encoded form data~~ ✓
 - [ ] `--data-binary @file` to send file contents as-is (no stripping)
 - ~~`--json` flag as shortcut (sets Content-Type + Accept to application/json, like curl 7.82+)~~ ✓ (implemented as `-j`/`--json` structured JSON output flag)
 - [ ] Support reading request body from stdin (`-d @-`)

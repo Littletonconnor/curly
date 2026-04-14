@@ -10,6 +10,7 @@ export interface SavedAlias {
   method?: string
   headers?: string[]
   data?: string[]
+  'data-urlencode'?: string[]
   query?: string[]
   cookie?: string[]
   form?: string[]

@@ -1,4 +1,5 @@
 import { parseArgs } from 'node:util'
+import { type FetchOptions } from '../../types'
 import { suggestFlag } from '../utils/errors'
 
 const CLI_OPTIONS = {
@@ -71,12 +72,20 @@ const CLI_OPTIONS = {
 
 const KNOWN_FLAGS = Object.keys(CLI_OPTIONS)
 
-export function cli() {
+export interface ParsedCli {
+  values: FetchOptions
+  positionals: string[]
+}
+
+export function cli(): ParsedCli {
   try {
+    // parseArgs types multi-value options as `string | string[]`, but with
+    // `multiple: true` the runtime always yields `string[]`. Cast to the
+    // narrower FetchOptions shape the rest of the codebase expects.
     return parseArgs({
       options: CLI_OPTIONS,
       allowPositionals: true,
-    })
+    }) as unknown as ParsedCli
   } catch (error: unknown) {
     if (error instanceof Error) {
       const unknownMatch = error.message.match(/Unknown option '(--.+?)'/)

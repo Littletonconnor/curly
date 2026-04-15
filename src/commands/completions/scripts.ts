@@ -22,6 +22,7 @@ const OPTIONS = [
   '--data',
   '-d',
   '--data-raw',
+  '--data-urlencode',
   '--query',
   '-q',
   '--output',
@@ -96,7 +97,7 @@ _curly_completions() {
             COMPREPLY=( $(compgen -W "\${methods}" -- "\${cur}") )
             return 0
             ;;
-        -o|--output|-b|--cookie|--cookie-jar|-d|--data|-F|--form)
+        -o|--output|-b|--cookie|--cookie-jar|-d|--data|--data-urlencode|-F|--form)
             # File completion
             COMPREPLY=( $(compgen -f -- "\${cur}") )
             return 0
@@ -201,6 +202,7 @@ _curly() {
         '*'{-H,--headers}'[Add header]:header:' \\
         '*'{-d,--data}'[Request data]:data:_files' \\
         '--data-raw[Raw request data]:data:' \\
+        '*--data-urlencode[URL-encoded form data]:data:_files' \\
         '*'{-q,--query}'[Query parameter]:query:' \\
         '(-o --output)'{-o,--output}'[Output file]:file:_files' \\
         '*'{-b,--cookie}'[Cookie]:cookie:_files' \\

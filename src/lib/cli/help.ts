@@ -17,6 +17,17 @@ Options:
   --data-raw <data>            Raw data input
                                Example: curly --data-raw '{"name": "Connor"}' https://example.com/api
 
+  --data-urlencode <data>      URL-encode value before sending (application/x-www-form-urlencoded)
+                               Entry forms:
+                                 content         encode content, no name prefix
+                                 =content        encode content, no name prefix
+                                 name=value      name=<encoded value>
+                                 @file           encode file contents, no name prefix
+                                 name@file       name=<encoded file contents>
+                               Example: curly --data-urlencode "q=hello world" https://example.com/search
+                               Example: curly --data-urlencode "email=user+test@example.com" https://example.com/api
+                               Example: curly --data-urlencode "body@message.txt" https://example.com/api
+
   -F, --form <name=value>      Multipart form data (use @file for uploads)
                                Example: curly -F "file=@photo.jpg" -F "name=vacation" https://example.com/upload
                                Cannot be used with -d or --data-raw

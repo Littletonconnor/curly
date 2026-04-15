@@ -130,6 +130,25 @@ curly -X POST -d title="Hello" -d body="World" https://api.example.com/posts
 curly -X POST --data-raw '{"title": "Hello", "body": "World"}' https://api.example.com/posts
 ```
 
+**URL-encoded form data** (`application/x-www-form-urlencoded`):
+
+```sh
+# Value is percent-encoded (spaces, &, +, unicode, etc. handled automatically)
+curly --data-urlencode "q=hello world & goodbye" https://api.example.com/search
+# Sends: q=hello%20world%20%26%20goodbye
+
+# Encode only the value, keep the key literal
+curly --data-urlencode "email=user+test@example.com" https://api.example.com/signup
+
+# Read a value from a file
+curly --data-urlencode "body@message.txt" https://api.example.com/posts
+
+# Multiple fields
+curly --data-urlencode "name=Jane Doe" \
+      --data-urlencode "city=São Paulo" \
+      https://api.example.com/users
+```
+
 **From file**:
 
 ```sh
@@ -393,6 +412,7 @@ source ~/.zshrc    # zsh
 | `--headers` | `-H` | Add custom headers (repeatable) |
 | `--data` | `-d` | Key=value pairs or @filename (repeatable) |
 | `--data-raw` | | Send raw data |
+| `--data-urlencode` | | URL-encoded form data (repeatable) |
 | `--form` | `-F` | Multipart form data (repeatable) |
 | `--query` | `-q` | Query parameters (repeatable) |
 | `--cookie` | `-b` | Cookies (key=value or file path, repeatable) |

@@ -19,6 +19,7 @@ export interface FetchOptions {
   head?: boolean
   data?: string[]
   'data-raw'?: string
+  'data-urlencode'?: string[]
   query?: string[]
   verbose?: boolean
   quiet?: boolean

@@ -2,7 +2,7 @@
 # =============================================================================
 # 03-data-and-forms.sh - Request Data and Form Submissions
 # =============================================================================
-# Demonstrates: -d/--data, --data-raw, -F/--form, file references (@file)
+# Demonstrates: -d/--data, --data-raw, --data-urlencode, -F/--form, file references (@file)
 # API: httpbin.org
 # =============================================================================
 
@@ -91,6 +91,31 @@ echo ""
 echo ""
 
 # -----------------------------------------------------------------------------
+# URL-Encoded Data (--data-urlencode)
+# -----------------------------------------------------------------------------
+
+echo "9a. URL-encoded value with spaces and special chars"
+echo "    Command: curly https://httpbin.org/post --data-urlencode \"q=hello world & goodbye\""
+echo "    ---"
+curly https://httpbin.org/post --data-urlencode "q=hello world & goodbye"
+echo ""
+echo ""
+
+echo "9b. URL-encoded value only (name=value keeps name literal)"
+echo "    Command: curly https://httpbin.org/post --data-urlencode \"email=user+test@example.com\""
+echo "    ---"
+curly https://httpbin.org/post --data-urlencode "email=user+test@example.com"
+echo ""
+echo ""
+
+echo "9c. Multiple URL-encoded fields (joined with &)"
+echo "    Command: curly https://httpbin.org/post --data-urlencode \"name=Jane Doe\" --data-urlencode \"city=São Paulo\""
+echo "    ---"
+curly https://httpbin.org/post --data-urlencode "name=Jane Doe" --data-urlencode "city=São Paulo"
+echo ""
+echo ""
+
+# -----------------------------------------------------------------------------
 # Form Data (-F/--form)
 # -----------------------------------------------------------------------------
 
@@ -156,11 +181,17 @@ echo ""
 echo "  Raw Data (--data-raw):"
 echo "    --data-raw '{...}'   Send raw JSON/XML/text"
 echo ""
+echo "  URL-Encoded Data (--data-urlencode):"
+echo "    --data-urlencode 'k=v'   Encode value, keep key literal"
+echo "    --data-urlencode 'v'     Encode entire string"
+echo "    --data-urlencode 'k@f'   Encode file contents with key prefix"
+echo ""
 echo "  Form Data (-F/--form):"
 echo "    -F field=value       Form field"
 echo "    -F file=@path        File upload"
 echo ""
 echo "  Content-Type is auto-detected:"
 echo "    -d sets application/json"
+echo "    --data-urlencode sets application/x-www-form-urlencoded"
 echo "    -F sets multipart/form-data"
 echo ""

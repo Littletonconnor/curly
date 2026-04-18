@@ -102,10 +102,10 @@ Options:
   --max-redirects <num>        Maximum number of redirects to follow (default: 20)
                                Example: curly -L --max-redirects 5 https://example.com
 
-  -n, --requests <num>         Number of requests for load testing
+  -n, --requests <num>         Number of requests for load testing (default: 200)
                                Example: curly -n 100 https://example.com
 
-  -c, --concurrency <num>      Concurrency level for load testing
+  -c, --concurrency <num>      Concurrency level for load testing (default: 50)
                                Example: curly -n 100 -c 10 https://example.com
 
   -T, --tui                    Enable interactive TUI dashboard for load testing

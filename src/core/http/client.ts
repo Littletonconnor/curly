@@ -2,7 +2,12 @@ import { readFileSync } from 'fs'
 import { performance as perf } from 'node:perf_hooks'
 import { styleText } from 'node:util'
 import { ProxyAgent } from 'undici'
-import { getContentTypeFromExtension, parseFormField, readBodyFromFile } from '../../lib/utils/file'
+import {
+  getContentTypeFromExtension,
+  parseFormField,
+  readBodyFromFile,
+  readFileAsBuffer,
+} from '../../lib/utils/file'
 import { logger } from '../../lib/utils/logger'
 import { formatBytes, parseIntOption } from '../../lib/utils/parse'
 import { withRetry } from '../../lib/utils/retry'
@@ -15,7 +20,7 @@ import {
   isError,
 } from '../../types'
 import { getFriendlyErrorMessage } from '../../lib/utils/errors'
-import { CONTENT_TYPES } from '../config/constants'
+import { CONTENT_TYPES, TIMEOUT_EXIT_CODE } from '../config/constants'
 import { applyCookieHeader } from './cookies'
 
 export type { FetchOptions } from '../../types'
@@ -108,7 +113,7 @@ export async function curl(
     if (isError(error) && error.name === 'AbortError') {
       const wasExternalAbort = externalSignal?.aborted
       if (!wasExternalAbort && timeoutMs) {
-        logger().error(`Request timed out after ${timeoutMs}ms`)
+        logger().error(`Request timed out after ${timeoutMs}ms`, TIMEOUT_EXIT_CODE)
       }
       throw error
     }
@@ -389,11 +394,15 @@ export function buildUrl(url: string, queryParams: FetchOptions['query']): strin
   const urlWithQueryParams = new URL(url)
 
   for (const q of queryParams) {
-    if (!q.includes('=')) {
-      logger().error(`query params must be valid (e.g., -q foo=bar).`)
+    const eqIdx = q.indexOf('=')
+    if (eqIdx === -1) {
+      logger().error(
+        `Invalid query parameter: "${q}". Expected "key=value" (e.g., -q "search=hello")`,
+      )
     }
 
-    const [key, value] = q.split('=')
+    const key = q.slice(0, eqIdx)
+    const value = q.slice(eqIdx + 1)
     urlWithQueryParams.searchParams.append(key, value)
   }
 
@@ -432,7 +441,7 @@ export function buildFormData(formFields: string[]): FormData {
     const parsed = parseFormField(field)
 
     if (parsed.isFile) {
-      const fileBuffer = readFileSync(parsed.value)
+      const fileBuffer = readFileAsBuffer(parsed.value)
       const mimeType = getContentTypeFromExtension(parsed.value) ?? 'application/octet-stream'
       const blob = new Blob([fileBuffer], { type: mimeType })
 
@@ -498,15 +507,16 @@ export function buildHeaders(options: FetchOptions): Record<string, string> {
 
   const headers: Record<string, string> =
     options?.headers?.reduce((obj: Record<string, string>, h: string) => {
-      if (!h.includes(':')) {
-        logger().error('Headers are improperly formatted.')
-      } else if (h.toLowerCase().includes('cookie')) {
-        const [name, value] = h.split(/:(.+)/).map((part) => part.trim())
-        return { ...obj, [name]: value }
+      const colonIdx = h.indexOf(':')
+      if (colonIdx === -1) {
+        logger().error(
+          `Invalid header format: "${h}". Expected "Key: Value" (e.g., -H "Content-Type: application/json")`,
+        )
       }
 
-      const [key, value] = h.split(':')
-      return { ...obj, [key.trim()]: value.trim() }
+      const key = h.slice(0, colonIdx).trim()
+      const value = h.slice(colonIdx + 1).trim()
+      return { ...obj, [key]: value }
     }, {}) ?? {}
 
   return {
@@ -634,11 +644,15 @@ export function buildBody(options: FetchOptions): string | undefined {
     }
 
     const formattedData = options.data.reduce<Record<string, string>>((obj, d) => {
-      if (!d.includes('=')) {
-        logger().error('data must be formatted correctly (e.g., key1=value1).')
+      const eqIdx = d.indexOf('=')
+      if (eqIdx === -1) {
+        logger().error(
+          `Invalid data format: "${d}". Expected "key=value" (e.g., -d "name=John" -d "age=28")`,
+        )
       }
 
-      const [key, value] = d.split('=')
+      const key = d.slice(0, eqIdx)
+      const value = d.slice(eqIdx + 1)
       obj[key] = value
       return obj
     }, {})
@@ -667,6 +681,13 @@ function colorizeMethod(method: string): string {
   return styleText(color, method)
 }
 
+interface ResourceTimingEntry {
+  name: string
+  startTime: number
+  domainLookupEnd: number
+  connectEnd: number
+}
+
 /**
  * Attempts to collect DNS and connection timing from Node.js performance resource entries.
  * Falls back gracefully if resource timing data is not available.
@@ -676,8 +697,7 @@ function collectResourceTiming(
   _startTime: number,
 ): Pick<TimingData, 'timeNamelookup' | 'timeConnect'> {
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const entries = perf.getEntriesByType('resource') as any[]
+    const entries = perf.getEntriesByType('resource') as unknown as ResourceTimingEntry[]
     const entry = entries.findLast((e) => e.name === url)
 
     if (entry) {

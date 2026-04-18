@@ -1,5 +1,6 @@
 import { readFileSync } from 'fs'
 import { basename } from 'path'
+import { getErrorMessage, isNodeError } from '../../types'
 import { logger } from './logger'
 
 /**
@@ -59,11 +60,42 @@ export function isValidJson(str: unknown): boolean {
 }
 
 /**
+ * Exits with a friendly message for common filesystem errors.
+ * ENOENT → "File not found", EACCES → "Permission denied", other → generic.
+ */
+function exitOnFileError(filePath: string, error: unknown): never {
+  if (isNodeError(error) && error.code === 'ENOENT') {
+    return logger().error(`File not found: "${filePath}"`)
+  }
+  if (isNodeError(error) && error.code === 'EACCES') {
+    return logger().error(`Permission denied reading file: "${filePath}"`)
+  }
+  return logger().error(`Failed to read file "${filePath}": ${getErrorMessage(error)}`)
+}
+
+/**
  * Reads file contents to be used as a request body.
+ * Exits with a friendly error if the file is missing or unreadable.
  */
 export function readBodyFromFile(filePath: string): string {
   logger().verbose('request', `Reading request body from file: ${filePath}`)
-  return readFileSync(filePath, 'utf8')
+  try {
+    return readFileSync(filePath, 'utf8')
+  } catch (error: unknown) {
+    return exitOnFileError(filePath, error)
+  }
+}
+
+/**
+ * Reads file contents as a binary Buffer (e.g., for multipart uploads).
+ * Exits with a friendly error if the file is missing or unreadable.
+ */
+export function readFileAsBuffer(filePath: string): Buffer {
+  try {
+    return readFileSync(filePath)
+  } catch (error: unknown) {
+    return exitOnFileError(filePath, error)
+  }
 }
 
 /**

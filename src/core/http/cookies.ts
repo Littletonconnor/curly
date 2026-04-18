@@ -66,7 +66,11 @@ export function parseSetCookieHeaders(headers: Headers) {
 
   for (const cookie of setCookieHeaders) {
     const [nameAndValue] = cookie.split(';')
-    const [name, value] = nameAndValue.split('=')
+    const eqIdx = nameAndValue.indexOf('=')
+    if (eqIdx === -1) continue
+
+    const name = nameAndValue.slice(0, eqIdx).trim()
+    const value = nameAndValue.slice(eqIdx + 1).trim()
     cookieJar[name] = value
   }
 

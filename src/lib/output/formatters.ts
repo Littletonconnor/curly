@@ -3,6 +3,7 @@ import { createWriteStream } from 'node:fs'
 import { STATUS_CODES } from 'node:http'
 import { Readable, Transform } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
+import { type ReadableStream as WebReadableStream } from 'node:stream/web'
 import { inspect, styleText } from 'node:util'
 import { type FetchOptions } from '../../core/http/client'
 import { parseSetCookieHeaders } from '../../core/http/cookies'
@@ -132,7 +133,7 @@ export async function streamDownload(response: Response, filePath: string) {
     }
   }
 
-  const nodeReadable = Readable.fromWeb(response.body as any)
+  const nodeReadable = Readable.fromWeb(response.body as WebReadableStream<Uint8Array>)
   const writeStream = createWriteStream(filePath)
   await pipeline(nodeReadable, progressTransform, writeStream)
 

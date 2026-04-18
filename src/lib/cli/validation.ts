@@ -33,6 +33,7 @@ export function validateOptions(url: string, options: FetchOptions): void {
   validateTimeout(options.timeout)
   validateMaxRedirects(options['max-redirects'])
   validateRetryOptions(options.retry, options['retry-delay'])
+  validateLoadTestOptions(options.requests, options.concurrency)
 }
 
 function validateHeaders(headers: string[] | undefined): void {
@@ -83,6 +84,28 @@ function validateMaxRedirects(value: string | undefined): void {
   const parsed = parseInt(value, 10)
   if (isNaN(parsed) || parsed < 0) {
     logger().error(`Invalid --max-redirects value "${value}". Must be a non-negative integer.`)
+  }
+}
+
+function validateLoadTestOptions(
+  requests: string | undefined,
+  concurrency: string | undefined,
+): void {
+  if (requests !== undefined) {
+    const parsed = parseInt(requests, 10)
+    if (isNaN(parsed) || parsed <= 0) {
+      logger().error(
+        `Invalid --requests value "${requests}". Must be a positive integer (e.g., -n 100).`,
+      )
+    }
+  }
+  if (concurrency !== undefined) {
+    const parsed = parseInt(concurrency, 10)
+    if (isNaN(parsed) || parsed <= 0) {
+      logger().error(
+        `Invalid --concurrency value "${concurrency}". Must be a positive integer (e.g., -c 10).`,
+      )
+    }
   }
 }
 

@@ -69,7 +69,7 @@ function formatLogMessage(level: LogLevel, args: string[]): string {
  * - `debug(...args)` - Logs debug info when DEBUG=true environment variable is set
  * - `info(...args)` - Logs informational messages
  * - `warn(...args)` - Logs warning messages
- * - `error(...args)` - Logs error messages and exits the process with code 1
+ * - `error(message, exitCode?)` - Logs error message and exits the process (default code 1)
  */
 export function logger() {
   return {
@@ -95,9 +95,9 @@ export function logger() {
       console.log(formatLogMessage('warn', args))
     },
 
-    error(...args: string[]): never {
-      console.log(formatLogMessage('error', args))
-      process.exit(1)
+    error(message: string, exitCode: number = 1): never {
+      console.log(formatLogMessage('error', [message]))
+      process.exit(exitCode)
     },
   }
 }
